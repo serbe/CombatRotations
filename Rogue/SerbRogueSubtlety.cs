@@ -20,14 +20,16 @@ namespace ReBot {
 	        LeechingPoison = 108211,
 	    }
 
-		[JsonProperty("MainHand Poison"), JsonConverter(typeof(StringEnumConverter))]
+		[JsonProperty("Main hand Poison"), JsonConverter(typeof(StringEnumConverter))]
         public MainHandPoison MainHand = MainHandPoison.DeadlyPoison;
-        [JsonProperty("OffHand Poison"), JsonConverter(typeof(StringEnumConverter))]
+        [JsonProperty("Off hand Poison"), JsonConverter(typeof(StringEnumConverter))]
         public OffHandPoison OffHand = OffHandPoison.CripplingPoison;
-        [JsonProperty("Max energy")]
-		public int EnergyMax = 100;
+		[JsonProperty("Use range attack")]
+		public bool UseRange = false;
 		[JsonProperty("Run to enemy")]
 		public bool Run = false;
+		[JsonProperty("Max energy")]
+		public int EnergyMax = 100;
 		[JsonProperty("Solo DPS")]
 		public Int32 SoloDPS = 10000;
 		[JsonProperty("Instance DPS")]
@@ -70,9 +72,9 @@ namespace ReBot {
 		public int 		Enemy10			{ get { return Adds.Where(x => x.DistanceSquared <= 10 * 10).ToList().Count + 1; } }
 		// public int 		Enemy 			{ get { return Adds.Count + 1; } }
 		public double 	TimeToDie 		{ get { 
-			if (InRaid) return Target.MaxHealth * Target.HealthFraction / RaidDPS;
-			if (InInstance) return Target.MaxHealth * Target.HealthFraction / InstanceDPS;
-			return Target.MaxHealth * Target.HealthFraction / SoloDPS; }
+			if (InRaid) return Target.MaxHealth * TargetHealth / RaidDPS;
+			if (InInstance) return Target.MaxHealth * TargetHealth / InstanceDPS;
+			return Target.MaxHealth * TargetHealth / SoloDPS; }
 		}
 		public double 	Time 			{ get {
 			TimeSpan CombatTime = DateTime.Now.Subtract(StartBattle);
@@ -152,12 +154,17 @@ namespace ReBot {
 			return false;
 		}
 
+		public override bool AfterCombat () {
+			if (CastSelfPreventDouble("Stealth", () => InArena && !HasAura("Stealth"))) return true;
+            return false;
+		}
+
 		// # Executed every time the actor is available.
 		public override void Combat() {
-			if (needToStartAttack) {
-                needToStartAttack = false;
-                // API.StartCombat(LastTarget);
-            }
+			// if (needToStartAttack) {
+   //              needToStartAttack = false;
+   //              API.StartCombat(LastTarget);
+   //          }
 
 			if (InCombat == false) {
 				InCombat = true;
@@ -239,7 +246,6 @@ namespace ReBot {
 			if (Cast("Cheap Shot", () => IsPlayer && Me.HasAura("Stealth"))) return;
 
 			//------------------------------------
-
 			// actions=potion,name=draenic_agility,if=buff.bloodlust.react|target.time_to_die<40|(buff.shadow_reflection.up|(!talent.shadow_reflection.enabled&buff.shadow_dance.up))&(trinket.stat.agi.react|trinket.stat.multistrike.react|buff.archmages_greater_incandescence_agi.react)|((buff.shadow_reflection.up|(!talent.shadow_reflection.enabled&buff.shadow_dance.up))&target.time_to_die<136)
 			// actions+=/kick
 			if (!Me.HasAura("Stealth")) {
@@ -315,8 +321,9 @@ namespace ReBot {
 		Skill_4:
 			// actions+=/vanish,if=talent.shadow_focus.enabled&energy>=45&energy<=75&(combo_points<4|(talent.anticipation.enabled&combo_points+anticipation_charges<9))&buff.shadow_dance.down&buff.master_of_subtlety.down&debuff.find_weakness.remains<2
 			if (Cast("Vanish", () => HasSpell("Shadow Focus") && Energy >= 45 && Energy <= 75 && (ComboPoints < 4 || (HasSpell("Anticipation") && ComboPoints + Anticipation < 9)) && !Me.HasAura("Shadow Dance") && !Me.HasAura("Master of Subtlety") && Target.AuraTimeRemaining("Find Weakness") < 2)) {
-				needToStartAttack = true;
-				LastTarget = Target;
+				// API.Print("Vanish 4");
+				// needToStartAttack = true;
+				// LastTarget = Target;
 				return;
 			}
 			
@@ -339,9 +346,9 @@ namespace ReBot {
 		Skill_6:
 			// actions+=/vanish,if=talent.subterfuge.enabled&energy>=90&(combo_points<4|(talent.anticipation.enabled&combo_points+anticipation_charges<9))&buff.shadow_dance.down&buff.master_of_subtlety.down&debuff.find_weakness.remains<2
 			if (CastSelf("Vanish", () => HasSpell("Subterfuge") && Energy >= 90 && (ComboPoints < 4 || (HasSpell("Anticipation") && ComboPoints + Anticipation < 9)) && !Me.HasAura("Shadow Dance") && !Me.HasAura("Master of Subtlety") && Target.AuraTimeRemaining("Find Weakness") < 2)) {
-				needToStartAttack = true;
-				LastTarget = Target;
-				// API.ExecuteMacro("/stopattack");
+				// API.Print("Vanish 6");
+				// needToStartAttack = true;
+				// LastTarget = Target;
 				return;
 			}
 			
@@ -366,7 +373,9 @@ namespace ReBot {
 			// actions+=/run_action_list,name=pool
 			Pool();
 
-			if (!Target.IsInCombatRangeAndLoS && Target.CombatRange > 5 && Run)
+			if (Cast(RangedAtk, () => Energy >= 40 && !HasAura("Stealth") && Target.IsInLoS && Target.CombatRange > 10 && Target.CombatRange <= 30 && UseRange)) return;
+
+			if (!Target.IsInCombatRangeAndLoS && Target.CombatRange > 10 && Run)
 				RunToEnemy();
 		}
 
@@ -432,11 +441,9 @@ namespace ReBot {
 		}
 
 		public void RunToEnemy() {
-			// if (CastSelfPreventDouble("Stealth", () => !Me.InCombat && !HasAura("Stealth"))) return;
 			if (Cast("Shadowstep", () => !HasAura("Sprint") && HasSpell("Shadowstep"))) return;
 			if (CastSelf("Sprint", () => !HasAura("Sprint") && !HasAura("Burst of Speed"))) return;
 			if (CastSelf("Burst of Speed", () =>  Energy >= 20 && !HasAura("Sprint") && !HasAura("Burst of Speed") && HasSpell("Burst of Speed"))) return;
-			if (Cast(RangedAtk, () => Energy >= 40 && !HasAura("Stealth") && Target.IsInLoS)) return;
 		}
 	}
 }
