@@ -4,7 +4,6 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using ReBot.API;
-using RogueCommon;
 
 namespace ReBot {
 	[Rotation("Serb Subtlety Rogue", "Serb", WoWClass.Rogue, Specialization.RogueSubtlety)]
