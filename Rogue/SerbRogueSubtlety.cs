@@ -27,14 +27,20 @@ namespace ReBot {
 		public bool UseRange = false;
 		[JsonProperty("Run to enemy")]
 		public bool Run = false;
+		[JsonProperty("Use multitarget")]
+		public bool Multitarget = false;
+		[JsonProperty("UseVanish")]
+		public bool UseVanish = true;
+		[JsonProperty("AOE")]
+		public bool AOE = true;
 		[JsonProperty("Max energy")]
 		public int EnergyMax = 100;
 		[JsonProperty("Solo DPS")]
-		public Int32 SoloDPS = 10000;
+		public Int32 SoloDPS = 15000;
 		[JsonProperty("Instance DPS")]
 		public Int32 InstanceDPS = 60000;
 		[JsonProperty("Raid DPS")]
-		public Int32 RaidDPS = 200000;
+		public Int32 RaidDPS = 300000;
 
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
@@ -97,14 +103,13 @@ namespace ReBot {
 		}
 		public UnitObject AddInRange;
 		public String RangedAtk = "Throw";
-		public bool needToStartAttack = false;
 		public Int32 OraliusWhisperingCrystal = 118922;
 		public Int32 OraliusWhisperingCrystalBuff = 176151;
 		public Int32 CrystalOfInsanity = 86569;
 
 		public SerbRogueSubtlety() {
 			PullSpells = new string[] {
-				"Throw",
+				"Garrote",
 			};
 			if (HasSpell("Shuriken Toss"))
 				RangedAtk = "Shuriken Toss";
@@ -160,11 +165,6 @@ namespace ReBot {
 
 		// # Executed every time the actor is available.
 		public override void Combat() {
-			// if (needToStartAttack) {
-   //              needToStartAttack = false;
-   //              API.StartCombat(LastTarget);
-   //          }
-
 			if (InCombat == false) {
 				InCombat = true;
 				StartBattle = DateTime.Now;
@@ -230,12 +230,12 @@ namespace ReBot {
 				return;
 			} // 5512 = Healthstone
 			if (CastSelf("Recuperate", () => !InRaid && !InInstance && Health < 0.9 && Energy >= 30 && ComboPoints > 0 && !Me.HasAura("Recuperate"))) return;
-			if (CastSelf("Recuperate", () => !InRaid && Health < 0.3 && Energy >= 30 && ComboPoints > 0 && !Me.HasAura("Recuperate"))) return;
+			if (CastSelf("Recuperate", () => Health < 0.35 && Energy >= 30 && ComboPoints > 0 && !Me.HasAura("Recuperate"))) return;
 			if (CastSelf("Cloak of Shadows", () => TargettingMe && Health < 0.75 && Target.IsCasting && Target.RemainingCastTime < 1)) return;
             if (CastSelf("Cloak of Shadows", () => Me.Auras.Any(x => x.IsDebuff && x.DebuffType.Contains("magic")))) return;
 
 			// Protect
-			if (CastSelf("Evasion", () => TargettingMe && Health < 0.4 && (IsBoss(Target) || IsPlayer))) return;
+			if (CastSelf("Evasion", () => Health < 0.35)) return;
 			if (Health < 0.15 && !Me.HasAura("Stealth") && IsPlayer) {
 				CastSelf("Vanish");
 				API.ExecuteMacro("/stopattack");
@@ -250,21 +250,23 @@ namespace ReBot {
 			if (!Me.HasAura("Stealth")) {
 				// actions+=/kick
 				if (SpellCooldown("Kick") <= 0) {
-					AddInRange = Adds.Where(x => x.IsInCombatRangeAndLoS && x.DistanceSquared <= 5 * 5).ToList().FirstOrDefault(x => x.IsCastingAndInterruptible());
-					if (AddInRange != null)
-						if (Cast("Kick", AddInRange)) return;
-					else
+					if (Enemy > 1 && !isInterruptable && Multitarget) {
+						AddInRange = Adds.Where(x => x.IsInCombatRangeAndLoS && x.DistanceSquared <= 5 * 5).ToList().FirstOrDefault(x => x.IsCastingAndInterruptible());
+						if (AddInRange != null)
+							if (Cast("Kick", AddInRange)) return;
+					} else
 						if (Cast("Kick", () => isInterruptable)) return;
 				}
 				// Dispel Enrage
 				if (SpellCooldown("Shiv") <= 0 && Energy >= 20) {
-					AddInRange = Adds.Where(x => x.IsInCombatRangeAndLoS && x.DistanceSquared <= 5 * 5).ToList().FirstOrDefault(x => IsInEnrage(x));
-					if (AddInRange != null)
-						if (Cast("Shiv", AddInRange)) return;
-					else
+					if (Enemy > 1 && !IsInEnrage(Target) && !IsBoss(Target) && Multitarget) {
+						AddInRange = Adds.Where(x => x.IsInCombatRangeAndLoS && x.DistanceSquared <= 5 * 5).ToList().FirstOrDefault(x => IsInEnrage(x) && !IsBoss(x));
+						if (AddInRange != null)
+							if (Cast("Shiv", AddInRange)) return;
+					} else
 						if (Cast("Shiv", () => !IsBoss(Target) && IsInEnrage(Target))) return;
 				}
-				if (SpellCooldown("Gouge") <= 0 && Energy >= 45 && (InArena || InBG)) {
+				if (SpellCooldown("Gouge") <= 0 && Energy >= 45 && (InArena || InBG) && Multitarget) {
 					AddInRange = Adds.Where(x => x.IsInCombatRangeAndLoS && x.DistanceSquared <= 5 * 5).ToList().FirstOrDefault(x => x.IsCasting && !Me.IsNotInFront(x));
 					if (AddInRange != null)
 						if (Cast("Gouge", AddInRange)) return;
@@ -312,17 +314,14 @@ namespace ReBot {
 			if (Cast("Shadow Dance", () => Energy >= 50 && !Me.HasAura("Stealth") && !Me.HasAura("Vanish") && Target.AuraTimeRemaining("Find Weakness") < 2 || (Me.HasAura("Bloodlust") && (Target.HasAura("Hemorrhage") || Target.HasAura("Garrote") || Target.HasAura("Rupture"))))) return;
 			// actions+=/pool_resource,for_next=1,extra_amount=50
 			
-			if (Cooldown("Vanish") < TimeToRegen(50) && HasSpell("Shadow Focus")) {
+			if (UseVanish && Cooldown("Vanish") < TimeToRegen(50) && HasSpell("Shadow Focus")) {
 				Sleep = 50;
 				ToSkill = 4;
 				return;
 			}
 		Skill_4:
 			// actions+=/vanish,if=talent.shadow_focus.enabled&energy>=45&energy<=75&(combo_points<4|(talent.anticipation.enabled&combo_points+anticipation_charges<9))&buff.shadow_dance.down&buff.master_of_subtlety.down&debuff.find_weakness.remains<2
-			if (Cast("Vanish", () => HasSpell("Shadow Focus") && Energy >= 45 && Energy <= 75 && (ComboPoints < 4 || (HasSpell("Anticipation") && ComboPoints + Anticipation < 9)) && !Me.HasAura("Shadow Dance") && !Me.HasAura("Master of Subtlety") && Target.AuraTimeRemaining("Find Weakness") < 2)) {
-				// API.Print("Vanish 4");
-				// needToStartAttack = true;
-				// LastTarget = Target;
+			if (Cast("Vanish", () => UseVanish && HasSpell("Shadow Focus") && Energy >= 45 && Energy <= 75 && (ComboPoints < 4 || (HasSpell("Anticipation") && ComboPoints + Anticipation < 9)) && !Me.HasAura("Shadow Dance") && !Me.HasAura("Master of Subtlety") && Target.AuraTimeRemaining("Find Weakness") < 2)) {
 				return;
 			}
 			
@@ -337,17 +336,14 @@ namespace ReBot {
 			if (Cast("Shadowmeld", () => HasSpell("Shadowmeld") && HasSpell("Shadow Focus") && Energy >= 45 && Energy <=75 && (ComboPoints < 4 || (HasSpell("Anticipation") && ComboPoints + Anticipation < 9)) && !Me.HasAura("Shadow Dance") && !Me.HasAura("Master of Subtlety") && Target.AuraTimeRemaining("Find Weakness") < 2)) return;
 			// actions+=/pool_resource,for_next=1,extra_amount=90
 
-			if (Cooldown("Vanish") < TimeToRegen(90) && HasSpell("Subterfuge") && Me.AuraTimeRemaining("Shadow Dance") < TimeToRegen(90) && Me.AuraTimeRemaining("Master of Subtlety") < TimeToRegen(90)) {
+			if (UseVanish && Cooldown("Vanish") < TimeToRegen(90) && HasSpell("Subterfuge") && Me.AuraTimeRemaining("Shadow Dance") < TimeToRegen(90) && Me.AuraTimeRemaining("Master of Subtlety") < TimeToRegen(90)) {
 				Sleep = 90;
 				ToSkill = 6;
 				return;
 			}
 		Skill_6:
 			// actions+=/vanish,if=talent.subterfuge.enabled&energy>=90&(combo_points<4|(talent.anticipation.enabled&combo_points+anticipation_charges<9))&buff.shadow_dance.down&buff.master_of_subtlety.down&debuff.find_weakness.remains<2
-			if (CastSelf("Vanish", () => HasSpell("Subterfuge") && Energy >= 90 && (ComboPoints < 4 || (HasSpell("Anticipation") && ComboPoints + Anticipation < 9)) && !Me.HasAura("Shadow Dance") && !Me.HasAura("Master of Subtlety") && Target.AuraTimeRemaining("Find Weakness") < 2)) {
-				// API.Print("Vanish 6");
-				// needToStartAttack = true;
-				// LastTarget = Target;
+			if (CastSelf("Vanish", () => UseVanish && HasSpell("Subterfuge") && Energy >= 90 && (ComboPoints < 4 || (HasSpell("Anticipation") && ComboPoints + Anticipation < 9)) && !Me.HasAura("Shadow Dance") && !Me.HasAura("Master of Subtlety") && Target.AuraTimeRemaining("Find Weakness") < 2)) {
 				return;
 			}
 			
@@ -372,7 +368,7 @@ namespace ReBot {
 			// actions+=/run_action_list,name=pool
 			Pool();
 
-			if (Cast(RangedAtk, () => Energy >= 40 && !HasAura("Stealth") && Target.IsInLoS && Target.CombatRange > 10 && Target.CombatRange <= 30 && UseRange)) return;
+			if (Cast(RangedAtk, () => Energy >= 40 && !Me.IsMoving && !HasAura("Stealth") && Target.IsInLoS && Target.CombatRange > 10 && Target.CombatRange <= 30 && UseRange)) return;
 
 			if (!Target.IsInCombatRangeAndLoS && Target.CombatRange > 10 && Run)
 				RunToEnemy();
@@ -401,7 +397,7 @@ namespace ReBot {
 			if (Cast("Ambush", () => Me.HasAura("Stealth") || Me.HasAura("Vanish") || Me.HasAura("Shadow Dance"))) return;
 			// # If simulating AoE, it is recommended to use Anticipation as the level 90 talent.
 			// actions.generator+=/fan_of_knives,if=active_enemies>1
-			if (Cast("Fan of Knives", () => Energy >= 35 && Enemy10 > 1)) return;
+			if (Cast("Fan of Knives", () => Energy >= 35 && Enemy10 > 1 && AOE)) return;
 			// actions.generator+=/hemorrhage,if=(remains<duration*0.3&target.time_to_die>=remains+duration+8&debuff.find_weakness.down)|!ticking|position_front
 			if (Cast("Hemorrhage", () => Energy >= 30 && (Target.AuraTimeRemaining("Hemorrhage") < 7.2 && TimeToDie > Target.AuraTimeRemaining("Hemorrhage") + 24 && !Target.HasAura("Find Weakness")) || !Target.HasAura("Hemorrhage") || !Me.IsNotInFront(Target))) return;
 			// actions.generator+=/shuriken_toss,if=energy<65&energy.regen<16
@@ -415,7 +411,7 @@ namespace ReBot {
 		// # Combo point finishers
 		public void Finishers() {
 			// actions.finisher=rupture,cycle_targets=1,if=((!ticking|remains<duration*0.3)&active_enemies<=8&(cooldown.death_from_above.remains>0|!talent.death_from_above.enabled)|(buff.shadow_reflection.remains>8&dot.rupture.remains<12&buff.shadow_reflection.remains<10))&target.time_to_die>=8
-			if (Enemy > 1 && Energy >= 25) {
+			if (Enemy > 1 && Energy >= 25 && Multitarget && AOE) {
 				AddInRange = Adds.Where(x => x.IsInCombatRangeAndLoS && x.DistanceSquared <= 5 * 5).ToList().FirstOrDefault(x => ((!x.HasAura("Rupture") || x.AuraTimeRemaining("Rupture") < (4 + 4 * ComboPoints) * 0.3) && Enemy <= 8 && (SpellCooldown("Death from Above") > 0 || !HasSpell("Death from Above")) || (Me.AuraTimeRemaining("Shadow Reflection") > 8 && x.AuraTimeRemaining("Rupture") < 12 && Me.AuraTimeRemaining("Shadow Reflection") < 10)) && TimeToDie >= 8);
 				if (AddInRange != null)
 					if (Cast("Rupture", AddInRange)) return;
@@ -426,7 +422,7 @@ namespace ReBot {
 			// actions.finisher+=/death_from_above
 			if (Cast("Death from Above", () => Energy >= 50 && HasSpell("Death from Above"))) return;
 			// actions.finisher+=/crimson_tempest,if=(active_enemies>=2&debuff.find_weakness.down)|active_enemies>=3&(cooldown.death_from_above.remains>0|!talent.death_from_above.enabled)
-			if (Cast("Crimson Tempest", () => Energy >= 35 && (Enemy10 >= 2 && !Target.HasAura("Find Weakness")) || Enemy10 >= 3 && Target.AuraTimeRemaining("Crimson Tempest") < 3 && (SpellCooldown("Death from Above") > 0 || !HasSpell("Death from Above")))) return;
+			if (Cast("Crimson Tempest", () => AOE && Energy >= 35 && (Enemy10 >= 2 && !Target.HasAura("Find Weakness")) || Enemy10 >= 3 && Target.AuraTimeRemaining("Crimson Tempest") < 3 && (SpellCooldown("Death from Above") > 0 || !HasSpell("Death from Above")))) return;
 			// actions.finisher+=/eviscerate
 			if (Cast("Eviscerate", () => Energy >= 35)) return;
 			// actions.finisher+=/run_action_list,name=pool			
