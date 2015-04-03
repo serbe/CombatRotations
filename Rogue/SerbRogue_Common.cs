@@ -633,12 +633,12 @@ namespace ReBot
 
 		public virtual bool Dispatch (UnitObject o)
 		{
-			return Cast ("Dispatch", o, () => Usable ("Dispatch") && HasCost (30));
+			return Cast ("Dispatch", o, () => Usable ("Dispatch") && ((HasCost (30) && TargetHealth < 0.35) || Me.HasAura("Blindside")));
 		}
 
 		public virtual bool Dispatch ()
 		{
-			return Cast ("Dispatch", () => Usable ("Dispatch") && HasCost (30));
+			return Cast ("Dispatch", () => Usable ("Dispatch") && ((HasCost (30) && TargetHealth < 0.35) || Me.HasAura("Blindside")));
 		}
 	}
 }

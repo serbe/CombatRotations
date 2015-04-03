@@ -1,9 +1,11 @@
 ﻿<Properties StartupItem="ReBot.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Rogue\SerbRogueSubtletySC.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Rogue\SerbRogueCombatSC.cs">
     <Files>
-      <File FileName="Rogue\SerbRogue_Common.cs" Line="501" Column="130" />
-      <File FileName="Rogue\SerbRogueSubtletySC.cs" Line="366" Column="4" />
+      <File FileName="Rogue\SerbRogue_Common.cs" Line="534" Column="28" />
+      <File FileName="Rogue\SerbRogueSubtletySC.cs" Line="236" Column="227" />
+      <File FileName="Rogue\SerbRogueCombatSC.cs" Line="167" Column="2" />
+      <File FileName="Rogue\SerbRogueAssassinationSC.cs" Line="229" Column="56" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
