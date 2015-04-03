@@ -1,9 +1,0 @@
-D:\github\CombatRotations\bin\Debug\CombatRotations.dll
-D:\github\CombatRotations\bin\Debug\CombatRotations.pdb
-D:\github\CombatRotations\bin\Debug\Geometry.dll
-D:\github\CombatRotations\bin\Debug\Newtonsoft.Json.dll
-D:\github\CombatRotations\bin\Debug\ReBot.exe
-D:\github\CombatRotations\bin\Debug\ReBot.pdb
-D:\github\CombatRotations\obj\Debug\Rebot.csprojResolveAssemblyReference.cache
-D:\github\CombatRotations\obj\Debug\CombatRotations.dll
-D:\github\CombatRotations\obj\Debug\CombatRotations.pdb

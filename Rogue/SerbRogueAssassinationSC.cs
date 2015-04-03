@@ -72,7 +72,7 @@ namespace ReBot
 			if (OraliusWhisperingCrystal ())
 				return true;
 			
-			if (InCombat == true) {
+			if (InCombat) {
 				InCombat = false;
 				return true;
 			}
@@ -82,7 +82,7 @@ namespace ReBot
 
 		public override void Combat ()
 		{
-			if (InCombat == false) {
+			if (!InCombat) {
 				InCombat = true;
 				StartBattle = DateTime.Now;
 			}

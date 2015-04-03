@@ -78,7 +78,7 @@ namespace ReBot
 				return true;
 
 
-			if (InCombat == true) {
+			if (InCombat) {
 				InCombat = false;
 				return true;
 			}
@@ -88,7 +88,7 @@ namespace ReBot
 
 		public override void Combat ()
 		{
-			if (InCombat == false) {
+			if (!InCombat) {
 				InCombat = true;
 				StartBattle = DateTime.Now;
 			}
@@ -197,10 +197,8 @@ namespace ReBot
 						return;
 				}
 			}
-			if (HasAura ("Blade Flurry") && EnemyInRange (8) < 2) {
-				if (BladeFlurry ())
-					return;
-			}
+			if (HasAura ("Blade Flurry") && EnemyInRange (8) < 2)
+				CancelAura ("Blade Flurry");
 			// actions+=/shadow_reflection,if=(cooldown.killing_spree.remains<10&combo_points>3)|buff.adrenaline_rush.up
 			if ((HasSpell ("Killing Spree") && Cooldown ("Killing Spree") < 10 && ComboPoints > 3) || HasAura ("Adrenaline Rush")) {
 				if (ShadowReflection ())
