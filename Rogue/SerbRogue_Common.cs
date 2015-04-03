@@ -529,6 +529,11 @@ namespace ReBot
 			return Cast ("Rupture", o, () => Usable ("Rupture") && HasCost (25));
 		}
 
+		public virtual bool Rupture ()
+		{
+			return Cast ("Rupture", () => Usable ("Rupture") && HasCost (25));
+		}
+
 		public virtual bool Freedom ()
 		{
 			return WilloftheForsaken () || EveryManforHimself ();
@@ -599,6 +604,41 @@ namespace ReBot
 				return Vanish ();
 			}
 			return false;
+		}
+
+		public virtual bool Mutilate ()
+		{
+			return Cast ("Mutilate", () => Usable ("Mutilate") && HasCost (55));
+		}
+
+		public virtual bool Mutilate (UnitObject o)
+		{
+			return Cast ("Mutilate", o, () => Usable ("Mutilate") && HasCost (55));
+		}
+
+		public virtual bool Vendetta ()
+		{
+			return Cast ("Vendetta", () => Usable ("Vendetta") && Target.IsInCombatRangeAndLoS && (IsPlayer || IsElite));
+		}
+
+		public virtual bool Envenom ()
+		{
+			return Cast ("Envenom", () => Usable ("Envenom") && HasCost (35) && ComboPoints > 0);
+		}
+
+		public virtual bool Envenom (UnitObject o)
+		{
+			return Cast ("Envenom", o, () => Usable ("Envenom") && HasCost (35) && ComboPoints > 0);
+		}
+
+		public virtual bool Dispatch (UnitObject o)
+		{
+			return Cast ("Dispatch", o, () => Usable ("Dispatch") && HasCost (30));
+		}
+
+		public virtual bool Dispatch ()
+		{
+			return Cast ("Dispatch", () => Usable ("Dispatch") && HasCost (30));
 		}
 	}
 }
