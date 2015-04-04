@@ -45,11 +45,13 @@
     <Compile Include="Rogue\SerbRogueCombatSC.cs" />
     <Compile Include="Rogue\SerbRogueSubtletySC.cs" />
     <Compile Include="Rogue\SerbRogueAssassinationSC.cs" />
-    <Compile Include="Shaman\SerbDruid_Common.cs" />
+    <Compile Include="Druid\SerbDruid_Common.cs" />
+    <Compile Include="Druid\SerbDruidFeralSC.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shaman\" />
     <Folder Include="Rogue\" />
+    <Folder Include="Druid\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
