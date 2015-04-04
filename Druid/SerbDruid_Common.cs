@@ -9,7 +9,7 @@ namespace ReBot
 
 	public abstract class SerbDruid : CombatRotation
 	{
-		[JsonProperty("Maximum Energy")] 
+		[JsonProperty ("Maximum Energy")] 
 		public int EnergyMax = 100;
 		[JsonProperty ("Use StarFall")]
 		public bool UseStarFall;
@@ -148,7 +148,9 @@ namespace ReBot
 		// public bool TargettingMe { get { return Target.Target ==(UnitObject)Me; } }
 		public double EnergyTimeToMax {
 			get {
-				return EnergyMax - Energy / EnergyRegen; } }
+				return EnergyMax - Energy / EnergyRegen;
+			}
+		}
 
 
 		public double Time {
@@ -273,13 +275,13 @@ namespace ReBot
 			}
 			if (Usable ("Solar Beam")) {
 				if (EnemyInRange (40) > 1 && Multitarget) {
-					CycleTarget = targets.Where (x => x.IsInLoS && x.CombatRange <= 40 && x.IsCastingAndInterruptible() && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					CycleTarget = targets.Where (x => x.IsInLoS && x.CombatRange <= 40 && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (CycleTarget != null) {
 						if (SolarBeam (CycleTarget))
 							return true;
 					} 
 				} else {
-					if (Target.IsCastingAndInterruptible() && Target.IsInLoS && Target.CombatRange <= 40 && Target.RemainingCastTime > 0) {
+					if (Target.IsCastingAndInterruptible () && Target.IsInLoS && Target.CombatRange <= 40 && Target.RemainingCastTime > 0) {
 						if (SolarBeam (Target))
 							return true;
 					}
@@ -287,13 +289,13 @@ namespace ReBot
 			}
 			if (Usable ("Skull Bash")) {
 				if (EnemyInRange (13) > 1 && Multitarget) {
-					CycleTarget = targets.Where (x => x.IsInLoS && x.CombatRange <= 13 && x.IsCastingAndInterruptible() && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					CycleTarget = targets.Where (x => x.IsInLoS && x.CombatRange <= 13 && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (CycleTarget != null) {
 						if (SkullBash (CycleTarget))
 							return true;
 					} 
 				} else {
-					if (Target.IsCastingAndInterruptible() && Target.IsInLoS && Target.CombatRange <= 13 && Target.RemainingCastTime > 0) {
+					if (Target.IsCastingAndInterruptible () && Target.IsInLoS && Target.CombatRange <= 13 && Target.RemainingCastTime > 0) {
 						if (SkullBash (Target))
 							return true;
 					}
@@ -301,13 +303,13 @@ namespace ReBot
 			}
 			if (Usable ("Wild Charge")) {
 				if (EnemyInRange (25) > 1 && Multitarget) {
-					CycleTarget = targets.Where (x => x.IsInLoS && x.CombatRange >= 8 && x.CombatRange <= 25 && x.IsCasting && !IsBoss(x) && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					CycleTarget = targets.Where (x => x.IsInLoS && x.CombatRange >= 8 && x.CombatRange <= 25 && x.IsCasting && !IsBoss (x) && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (CycleTarget != null) {
 						if (WildCharge (CycleTarget))
 							return true;
 					} 
 				} else {
-					if (Target.IsInLoS && Target.CombatRange >= 8 && Target.CombatRange <= 25 && Target.IsCasting && !IsBoss(Target) && Target.RemainingCastTime > 0) {
+					if (Target.IsInLoS && Target.CombatRange >= 8 && Target.CombatRange <= 25 && Target.IsCasting && !IsBoss (Target) && Target.RemainingCastTime > 0) {
 						if (WildCharge (Target))
 							return true;
 					}
@@ -315,13 +317,13 @@ namespace ReBot
 			}
 			if (Usable ("Maim") && ComboPoints >= 3) {
 				if (EnemyInRange (6) > 1 && Multitarget) {
-					CycleTarget = targets.Where (x => x.IsInLoS && x.CombatRange <= 5 && x.IsCasting && !IsBoss(x) && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					CycleTarget = targets.Where (x => x.IsInLoS && x.CombatRange <= 5 && x.IsCasting && !IsBoss (x) && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (CycleTarget != null) {
 						if (Maim (CycleTarget))
 							return true;
 					} 
 				} else {
-					if (Target.IsInLoS && Target.CombatRange <= 5 && Target.IsCasting && !IsBoss(Target) && Target.RemainingCastTime > 0) {
+					if (Target.IsInLoS && Target.CombatRange <= 5 && Target.IsCasting && !IsBoss (Target) && Target.RemainingCastTime > 0) {
 						if (Maim (Target))
 							return true;
 					}
@@ -384,9 +386,13 @@ namespace ReBot
 		// 	return false;
 		// }
 
-		// public virtual bool Stealth() {
-		// 	return CastSelf("Stealth", () => Usable("Stealth") && !Me.HasAura("Stealth") && !Me.HasAura("Vanish") && !Me.HasAura("Shadow Dance") && !Me.HasAura("Subterfuge"));
-		// }
+		public virtual bool FerociousBite(UnitObject o) {
+			return Cast("Ferocious Bite", o, () => Usable("Ferocious Bite") && HasEnergy(25) && ComboPoints > 0);
+		 }
+
+		public virtual bool FerociousBite() {
+			return Cast("Ferocious Bite", () => Usable("Ferocious Bite") && HasEnergy(25) && ComboPoints > 0);
+		}
 
 		public virtual bool CenarionWard ()
 		{
@@ -403,17 +409,20 @@ namespace ReBot
 			return CastSelf ("Moonkin Form", () => Usable ("Moonkin Form") && !Me.HasAura ("Moonkin Form"));
 		}
 
-		public virtual bool FaerieSwarm(UnitObject o) {
-			return Cast("Faerie Swarm", o, () => HasEnergy(30) && o.CombatRange < 35 && o.IsInLoS);
-		 }
+		public virtual bool FaerieSwarm (UnitObject o)
+		{
+			return Cast ("Faerie Swarm", o, () => HasEnergy (30) && o.CombatRange < 35 && o.IsInLoS);
+		}
 
-		public virtual bool SkullBash(UnitObject o) {
-			return Cast("Skull Bash", o, () => Usable("Skull Bash"));
-		 }
+		public virtual bool SkullBash (UnitObject o)
+		{
+			return Cast ("Skull Bash", o, () => Usable ("Skull Bash"));
+		}
 
-		public virtual bool WildCharge(UnitObject o) {
-			return Cast("Wild Charge", o, () => Usable("Wild Charge"));
-		 }
+		public virtual bool WildCharge (UnitObject o)
+		{
+			return Cast ("Wild Charge", o, () => Usable ("Wild Charge"));
+		}
 
 		public virtual bool Starfall ()
 		{
@@ -490,48 +499,57 @@ namespace ReBot
 			return Cast ("Starfire", () => Usable ("Starfire") && Target.IsInCombatRangeAndLoS);
 		}
 
-		public virtual bool Maim(UnitObject o) {
-			return Cast("Maim", o, () => Usable("Maim") && HasEnergy(35) && ComboPoints > 0);
-		 }
+		public virtual bool Maim (UnitObject o)
+		{
+			return Cast ("Maim", o, () => Usable ("Maim") && HasEnergy (35) && ComboPoints > 0);
+		}
 
-		// public virtual bool Eviscerate() {
-		// 	return Cast("Eviscerate", () => Usable("Eviscerate") && HasCost(35) && ComboPoints > 0);
-		// }
+		public virtual bool Berserk ()
+		{
+			return CastSelf ("Berserk", () => Usable ("Berserk") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer));
+		}
 
-		// public virtual bool KidneyShot() {
-		// 	return Cast("Kidney Shot", () => Usable("Kidney Shot") && HasCost(25) && ComboPoints > 0 && !Me.HasAura("Stealth") && !Me.HasAura("Vanish") && !Me.HasAura("Shadow Dance") && !Me.HasAura("Subterfuge"));
-		// }
+		public virtual bool BloodFury ()
+		{
+			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer));
+		}
 
-		// public virtual bool CrimsonTempest() {
-		// 	return Cast("Crimson Tempest", () => Usable("Crimson Tempest") && HasCost(35) && ComboPoints > 0);
-		// }
+		public virtual bool TigersFury ()
+		{
+			return CastSelf ("Tiger's Fury", () => Usable ("Tiger's Fury"));
+		}
 
-		// public virtual bool Shadowstep() {
-		// 	return Cast("Shadowstep", () => Usable("Shadowstep") && Target.CombatRange <= 25);
-		// }
+		public virtual bool IncarnationKingoftheJungle ()
+		{
+			return CastSelf ("Incarnation: King of the Jungle", () => Usable ("Incarnation: King of the Jungle") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer));
+		}
 
-		// public virtual bool Sprint() {
-		// 	return CastSelf("Sprint", () => Usable("Sprint"));
-		// }
+		public virtual bool Shadowmeld ()
+		{
+			return CastSelf ("Shadowmeld", () => Usable ("Shadowmeld"));
+		}
 
-		 public virtual bool Healthstone() {
+		public virtual bool Healthstone ()
+		{
 			// Analysis disable once CompareOfFloatsByEqualityOperator
-		 	if (API.HasItem(5512) && API.ItemCooldown(5512) == 0)
-		 		return API.UseItem(5512);
-		 	return false;
-		 }
+			if (API.HasItem (5512) && API.ItemCooldown (5512) == 0)
+				return API.UseItem (5512);
+			return false;
+		}
 
-		 public virtual bool CrystalOfInsanity() {
-		 	if (API.HasItem(CrystalOfInsanityID) && !Me.HasAura("Visions of Insanity") && API.ItemCooldown(CrystalOfInsanityID) == 0)
-		 		return API.UseItem(CrystalOfInsanityID);
-		 	return false;
-		 }
+		public virtual bool CrystalOfInsanity ()
+		{
+			if (API.HasItem (CrystalOfInsanityID) && !Me.HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityID) == 0)
+				return API.UseItem (CrystalOfInsanityID);
+			return false;
+		}
 
-		 public virtual bool OraliusWhisperingCrystal() {
-		 	if (API.HasItem(OraliusWhisperingCrystalID) && !Me.HasAura("Whispers of Insanity") && API.ItemCooldown(OraliusWhisperingCrystalID) == 0)
-		 		return API.UseItem(OraliusWhisperingCrystalID);
-		 	return false;
-		 }
+		public virtual bool OraliusWhisperingCrystal ()
+		{
+			if (API.HasItem (OraliusWhisperingCrystalID) && !Me.HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalID) == 0)
+				return API.UseItem (OraliusWhisperingCrystalID);
+			return false;
+		}
 
 		// public virtual bool TricksoftheTrade() {
 		// 	if (Usable("Tricks of the Trade")) {
@@ -541,25 +559,27 @@ namespace ReBot
 		// 	return false;
 		// }
 
-		public virtual bool CatForm() {
-			return CastSelf ("Cat Form", () => !Me.HasAura("Claws of Shirvallah") && !Me.HasAura("Cat Form"));
+		public virtual bool CatForm ()
+		{
+			return CastSelf ("Cat Form", () => !Me.HasAura ("Claws of Shirvallah") && !Me.HasAura ("Cat Form"));
+		}
+
+		public virtual bool Rake ()
+		{
+			return Cast ("Rake", () => Usable ("Rake") && HasEnergy (35));
+		}
+
+		public virtual bool SavageRoar() {
+			return CastSelf("Savage Roar", () => Usable("Savage Roar") && HasEnergy(25) && ComboPoints > 0);
 		 }
 
-		 public virtual bool Rake() {
-		 	return Cast("Rake", () => Usable("Rake") && HasEnergy(35));
+		public virtual bool Rip() {
+			return Cast("Rip", () => Usable("Rip") && HasEnergy(30));
 		 }
 
-		// public virtual bool Hemorrhage() {
-		// 	return Cast("Hemorrhage", () => Usable("Hemorrhage") && HasCost(30));
-		// }
-
-		// public virtual bool ShurikenToss() {
-		// 	return Cast("Shuriken Toss", () => Usable("Shuriken Toss") && HasCost(40));
-		// }
-
-		// public virtual bool Rupture(UnitObject o) {
-		// 	return Cast("Rupture", o, () => Usable("Rupture") && HasCost(25));
-		// }
+		public virtual bool Rip(UnitObject o) {
+			return Cast("Rip", o, () => Usable("Rip") && HasEnergy(30));
+		 }
 
 		// public virtual bool Freedom() {
 		// 	if (WilloftheForsaken()) return true;

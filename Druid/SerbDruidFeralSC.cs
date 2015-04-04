@@ -180,14 +180,47 @@ namespace ReBot
 						return;
 				}
 				//	actions+=/berserking,sync=tigers_fury
+				if (Me.HasAura ("Tiger's Fury")) {
+					if (Berserking ())
+						return; 
+				}
 				//	actions+=/arcane_torrent,sync=tigers_fury
+				if (Me.HasAura ("Tiger's Fury")) {
+					if (ArcaneTorrent ())
+						return;
+				}
 				//	actions+=/tigers_fury,if=(!buff.omen_of_clarity.react&energy.max-energy>=60)|energy.max-energy>=80
+				if ((!Me.HasAura ("Clearcasting") && EnergyMax - Energy >= 60) || EnergyMax - Energy >= 80) {
+					if (TigersFury ())
+						return;
+				}
 				//	actions+=/incarnation,if=cooldown.berserk.remains<10&energy.time_to_max>1
+				if (Cooldown ("Berserk") < 10 && EnergyTimeToMax > 1) {
+					if (IncarnationKingoftheJungle ())
+						return;
+				}
 				//	actions+=/shadowmeld,if=dot.rake.remains<4.5&energy>=35&dot.rake.pmultiplier<2&(buff.bloodtalons.up|!talent.bloodtalons.enabled)&(!talent.incarnation.enabled|cooldown.incarnation.remains>15)&!buff.king_of_the_jungle.up
+				if (Target.AuraTimeRemaining ("Rake", true) < 4.5 && Energy >= 35 && (Me.HasAura ("Bloodtalons") || !HasSpell ("Bloodtalons")) && (!HasSpell ("Incarnation: King of the Jungle") || Cooldown ("Incarnation: King of the Jungle") > 15) && !Me.HasAura ("King of the Jungle")) {
+					if (Shadowmeld ())
+						return;
+				}
 				//	# Keep Rip from falling off during execute range.
 				//	actions+=/ferocious_bite,cycle_targets=1,if=dot.rip.ticking&dot.rip.remains<3&target.health.pct<25
+				CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && x.HasAura ("Rip", true) && x.AuraTimeRemaining ("Rip", true) < 3 && x.HealthFraction < 0.25).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (FerociousBite (CycleTarget))
+						return;
+				}
 				//	actions+=/healing_touch,if=talent.bloodtalons.enabled&buff.predatory_swiftness.up&(combo_points>=4|buff.predatory_swiftness.remains<1.5)
+				if (HasSpell ("Bloodtalons") && Me.HasAura ("Predatory Swiftness") && (ComboPoints >= 4 || Me.AuraTimeRemaining ("Predatory Swiftness") < 1.5)) {
+					if (HealingTouch ())
+						return;
+				}
 				//	actions+=/savage_roar,if=buff.savage_roar.down
+				if (!Me.HasAura ("Savage Roar")) {
+					if (SavageRoar ())
+						return;
+				}
 				//	actions+=/pool_resource,for_next=1
 				//	actions+=/thrash_cat,cycle_targets=1,if=remains<4.5&(active_enemies>=2&set_bonus.tier17_2pc|active_enemies>=4)
 				//	actions+=/call_action_list,name=finisher,if=combo_points=5
@@ -195,39 +228,13 @@ namespace ReBot
 				//	actions+=/call_action_list,name=maintain,if=combo_points<5
 				//	actions+=/pool_resource,for_next=1
 				//	actions+=/thrash_cat,cycle_targets=1,if=remains<4.5&active_enemies>=2
+//				if (Target.AuraTimeRemaining ("Thrash", true) < 4.5 && EnemyInRange (8) >= 4) {
+//					if (Thrash ())
+//						return;
+//				}
 				//	actions+=/call_action_list,name=generator,if=combo_points<5
 
 
-				// actions+=/use_item,slot=trinket2,if=(prev.tigers_fury&(target.time_to_die>trinket.stat.any.cooldown|target.time_to_die<45))|prev.berserk|(buff.king_of_the_jungle.up&time<10)
-				// actions+=/potion,name=draenic_agility,if=(buff.berserk.remains>10&(target.time_to_die<180|(trinket.proc.all.react&target.health.pct<25)))|target.time_to_die<=40
-				// actions+=/blood_fury,sync=tigers_fury
-				// actions+=/berserking,sync=tigers_fury
-				// if (CastSelf("Berserking", () => Me.HasAura("Tiger's Fury") && (IsPlayer || IsElite))) return; // id 26297 Troll Racial
-				// actions+=/arcane_torrent,sync=tigers_fury
-				if (CastSelf ("Arcane Torrent", () => Me.HasAura ("Tiger's Fury") && (IsPlayer || IsElite)))
-					return;
-				// actions+=/tigers_fury,if=(!buff.omen_of_clarity.react&energy.max-energy>=60)|energy.max-energy>=80
-				if (CastSelf ("Tiger's Fury", () => (!Me.HasAura ("Clearcasting") && EnergyMax - Energy >= 60) || EnergyMax - Energy >= 80))
-					return;
-				// actions+=/incarnation,if=cooldown.berserk.remains<10&energy.time_to_max>1
-				if (CastSelf ("Incarnation: King of the Jungle", () => HasSpell ("Incarnation: King of the Jungle") && SpellCooldown ("Berserk") < 10 && EnergyTimeToMax > 1))
-					return;
-				// actions+=/shadowmeld,if=dot.rake.remains<4.5&energy>=35&dot.rake.pmultiplier<2&(buff.bloodtalons.up|!talent.bloodtalons.enabled)&(!talent.incarnation.enabled|cooldown.incarnation.remains>15)&!buff.king_of_the_jungle.up
-				if (CastSelf ("Shadowmeld", () => HasSpell ("Shadowmeld") && Target.AuraTimeRemaining ("Rake", true) < 4.5 && Energy >= 35 && (Me.HasAura ("Bloodtalons") || !HasSpell ("Bloodtalons") && (!HasSpell ("Incarnation: King of the Jungle") || SpellCooldown ("Incarnation: King of the Jungle") > 15)) && !Me.HasAura ("King of the Jungle")))
-					return;
-				// # Keep Rip from falling off during execute range.
-				// actions+=/ferocious_bite,cycle_targets=1,if=dot.rip.ticking&dot.rip.remains<3&target.health.pct<25
-				// if ((Energy >= 25 || Me.HasAura("Clearcasting")) && ComboPoints > 0) {
-				CycleTarget = targets.Where (target => target.IsInCombatRangeAndLoS && target.AuraTimeRemaining ("Rip", true) < 3 && target.HealthFraction < 0.25).OrderBy (target => target.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Cast ("Ferocious Bite", CycleTarget, () => CycleTarget != null))
-					return; 
-				// }
-				// actions+=/healing_touch,if=talent.bloodtalons.enabled&buff.predatory_swiftness.up&(combo_points>=4|buff.predatory_swiftness.remains<1.5)
-				if (CastSelf ("Healing Touch", () => HasSpell ("Bloodtalons") && Me.HasAura ("Predatory Swiftness") && (ComboPoints >= 4 || Me.AuraTimeRemaining ("Predatory Swiftness") < 1.5)))
-					return;
-				// actions+=/savage_roar,if=buff.savage_roar.down
-				if (CastSelf ("Savage Roar", () => Energy >= 25 && ComboPoints > 0 && !Me.HasAura ("Savage Roar")))
-					return;
 				// actions+=/pool_resource,for_next=1
 				//			if (Energy < 50 && !Me.HasAura ("Clearcasting") && Target.AuraTimeRemaining ("Thrash", true) + TimeToRegen (50) < 4.5 && Enemy (8) >= 4) {
 				//				Sleep = 50;
@@ -236,8 +243,6 @@ namespace ReBot
 				//			}
 				// actions+=/thrash_cat,cycle_targets=1,if=remains<4.5&(active_enemies>=2&set_bonus.tier17_2pc|active_enemies>=4)
 				// if (Cast("Thrash", () => (Energy >= 50 || Me.HasAura("Clearcasting")) && Target.AuraTimeRemaining("Thrash", true) < 4.5 && Enemy(8) >= 4)) return;
-				if (Cast ("Thrash", () => Target.AuraTimeRemaining ("Thrash", true) < 4.5 && EnemyInRange (8) >= 4))
-					return;
 				// actions+=/call_action_list,name=finisher,if=combo_points=5
 				if (ComboPoints == 5)
 					Finishers ();
@@ -272,36 +277,47 @@ namespace ReBot
 			targets.Add (Target);
 
 			//	actions.finisher=ferocious_bite,cycle_targets=1,max_energy=1,if=target.health.pct<25&dot.rip.ticking
+			if (Energy >= 50) {
+				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && u.HealthFraction < 0.25 && u.HasAura ("Rip", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (FerociousBite (CycleTarget))
+						return;
+				}
+			}
 			//	actions.finisher+=/rip,cycle_targets=1,if=remains<7.2&persistent_multiplier>dot.rip.pmultiplier&target.time_to_die-remains>18
+			if (HasEnergy (30)) {
+				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Rip", true) < 7.2 && TimeToDie(u) - u.AuraTimeRemaining ("Rip", true) > 18).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (Rip (CycleTarget))
+						return;
+				}
+			}
 			//	actions.finisher+=/rip,cycle_targets=1,if=remains<7.2&persistent_multiplier=dot.rip.pmultiplier&(energy.time_to_max<=1|!talent.bloodtalons.enabled)&target.time_to_die-remains>18
+			if (HasEnergy (30)) {
+				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Rip", true) < 7.2 && (EnergyTimeToMax <= 1 || !HasSpell("Bloodtalons")) && TimeToDie(u) - u.AuraTimeRemaining ("Rip", true) > 18).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (Rip (CycleTarget))
+						return;
+				}
+			}
 			//	actions.finisher+=/rip,cycle_targets=1,if=remains<2&target.time_to_die-remains>18
+			if (HasEnergy (30)) {
+				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Rip", true) < 2 && TimeToDie(u) - u.AuraTimeRemaining ("Rip", true) > 18).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (Rip (CycleTarget))
+						return;
+				}
+			}
 			//	actions.finisher+=/savage_roar,if=(energy.time_to_max<=1|buff.berserk.up|cooldown.tigers_fury.remains<3)&buff.savage_roar.remains<12.6
+			if ((EnergyTimeToMax <= 1 || Me.HasAura ("Berserk") || Cooldown ("Tiger's Fury") < 3) && Me.AuraTimeRemaining ("Savage Roar") < 12.6) {
+				if (SavageRoar ())
+					return;
+			}
 			//	actions.finisher+=/ferocious_bite,max_energy=1,if=(energy.time_to_max<=1|buff.berserk.up|cooldown.tigers_fury.remains<3)
-
-
-
-			// actions.finisher=ferocious_bite,cycle_targets=1,max_energy=1,if=target.health.pct<25&dot.rip.ticking
-			// if ((Energy >= 50 || Me.HasAura("Clearcasting"))) {
-			CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && u.HealthFraction < 0.25 && u.HasAura ("Rip", true)).DefaultIfEmpty (null).FirstOrDefault ();
-			if (Cast ("Ferocious Bite", CycleTarget, () => CycleTarget != null))
-				return; 
-			// }
-			// actions.finisher+=/rip,cycle_targets=1,if=remains<7.2&persistent_multiplier>dot.rip.pmultiplier&target.time_to_die-remains>18
-			// if (Energy >= 30) {
-			// 	CycleTargets = targets.Where(target => target.IsInCombatRangeAndLoS && target.CombatRange <= 6 && target.AuraTimeRemaining("Rip", true) < 7.2 && TimeToDie(target) - target.AuraTimeRemaining("Rip", true) > 18).OrderBy(target => target.HealthFraction).DefaultIfEmpty(null).FirstOrDefault();
-			// 	if (Cast("Rip", CycleTargets, () => CycleTargets != null)) return;
-			// }
-			// actions.finisher+=/rip,cycle_targets=1,if=remains<2&target.time_to_die-remains>18
-			CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Rip", true) < 2).DefaultIfEmpty (null).FirstOrDefault ();
-			if (Cast ("Rip", CycleTarget, () => CycleTarget != null))
-				return;
-			// actions.finisher+=/savage_roar,if=(energy.time_to_max<=1|buff.berserk.up|cooldown.tigers_fury.remains<3)&buff.savage_roar.remains<12.6
-			if (CastSelf ("Savage Roar", () => (EnergyTimeToMax <= 1 || Me.HasAura ("Berserk") || SpellCooldown ("Tiger's Fury") < 3) && Me.AuraTimeRemaining ("Savage Roar") < 12.6))
-				return;
-			// actions.finisher+=/ferocious_bite,max_energy=1,if=(energy.time_to_max<=1|buff.berserk.up|cooldown.tigers_fury.remains<3)
-			// if (Cast("Ferocious Bite", () => (Energy >= 50 || Me.HasAura("Clearcasting")) && (EnergyTimeToMax <= 1 || Me.HasAura("Berserk") || Me.AuraTimeRemaining("Tiger's Fury") < 3))) return;
-			if (Cast ("Ferocious Bite", () => (EnergyTimeToMax <= 1 || Me.HasAura ("Berserk") || SpellCooldown ("Tiger's Fury") < 3)))
-				return;
+			if (Energy >= 50 && (EnergyTimeToMax <= 1 || Me.HasAura ("Berserk") || SpellCooldown ("Tiger's Fury") < 3)) {
+				if (FerociousBite ())
+					return;
+			}
 		}
 
 		public void Maintains ()
@@ -317,20 +333,20 @@ namespace ReBot
 
 			// actions.maintain=rake,cycle_targets=1,if=remains<3&((target.time_to_die-remains>3&active_enemies<3)|target.time_to_die-remains>6)
 			// if (Energy >= 35 || Me.HasAura("Clearcasting")) {
-			CycleTargets = targets.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Rake", true) < 3).DefaultIfEmpty (null).FirstOrDefault ();
-			if (Cast ("Rake", CycleTargets, () => CycleTargets != null))
+			CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Rake", true) < 3).DefaultIfEmpty (null).FirstOrDefault ();
+			if (Cast ("Rake", CycleTarget, () => CycleTarget != null))
 				return;
 			// }
 			// actions.maintain+=/rake,cycle_targets=1,if=remains<4.5&(persistent_multiplier>=dot.rake.pmultiplier|(talent.bloodtalons.enabled&(buff.bloodtalons.up|!buff.predatory_swiftness.up)))&((target.time_to_die-remains>3&active_enemies<3)|target.time_to_die-remains>6)
 			// if (Energy >= 35 || Me.HasAura("Clearcasting") ) {
-			CycleTargets = targets.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Rake", true) < 4.5 && (HasSpell ("Bloodtalons") && (Me.HasAura ("Bloodtalons") || !Me.HasAura ("Predatory Swiftness")))).DefaultIfEmpty (null).FirstOrDefault ();
-			if (Cast ("Rake", CycleTargets, () => CycleTargets != null))
+			CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Rake", true) < 4.5 && (HasSpell ("Bloodtalons") && (Me.HasAura ("Bloodtalons") || !Me.HasAura ("Predatory Swiftness")))).DefaultIfEmpty (null).FirstOrDefault ();
+			if (Cast ("Rake", CycleTarget, () => CycleTarget != null))
 				return;
 			// }
 			// actions.maintain+=/moonfire_cat,cycle_targets=1,if=remains<4.2&active_enemies<=5&target.time_to_die-remains>tick_time*5
 			if (UseMoonfire && EnemyInRange (40) <= 5) {
-				CycleTargets = targets.Where (u => u.IsInLoS && u.CombatRange <= 40 && u.AuraTimeRemaining ("Moonfire", true) < 4.2).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Cast ("Moonfire", CycleTargets, () => CycleTargets != null))
+				CycleTarget = targets.Where (u => u.IsInLoS && u.CombatRange <= 40 && u.AuraTimeRemaining ("Moonfire", true) < 4.2).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Cast ("Moonfire", CycleTarget, () => CycleTarget != null))
 					return;
 			}
 			// actions.maintain+=/rake,cycle_targets=1,if=persistent_multiplier>dot.rake.pmultiplier&active_enemies=1&((target.time_to_die-remains>3&active_enemies<3)|target.time_to_die-remains>6)
