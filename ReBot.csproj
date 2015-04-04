@@ -45,6 +45,7 @@
     <Compile Include="Rogue\SerbRogueCombatSC.cs" />
     <Compile Include="Rogue\SerbRogueSubtletySC.cs" />
     <Compile Include="Rogue\SerbRogueAssassinationSC.cs" />
+    <Compile Include="Shaman\SerbDruid_Common.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shaman\" />
