@@ -229,6 +229,12 @@ namespace ReBot
 			return HasSpell (s) && Cooldown (s) == 0;
 		}
 
+		public bool Usable (string s, double d)
+		{ 
+			// Analysis disable once CompareOfFloatsByEqualityOperator
+			return HasSpell (s) && Cooldown (s) <= d;
+		}
+
 		public int AmbushCost {
 			get {
 				int Cost = 60;
