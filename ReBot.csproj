@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{8B6FD31A-9BBD-40E5-88C7-DF04C6D6C718}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Rebot</RootNamespace>
+    <RootNamespace>ReBot</RootNamespace>
     <AssemblyName>CombatRotations</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
