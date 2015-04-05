@@ -388,17 +388,17 @@ namespace ReBot
 
 		public virtual bool BloodFury ()
 		{
-			return CastSelf ("BloodFury", () => Usable ("Blood Fury") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer));
+			return CastSelf ("BloodFury", () => Usable ("Blood Fury") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
 		}
 
 		public virtual bool Berserking ()
 		{
-			return CastSelf ("Berserking", () => Usable ("Berserking") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer));
+			return CastSelf ("Berserking", () => Usable ("Berserking") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
 		}
 
 		public virtual bool ArcaneTorrent ()
 		{
-			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer));
+			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
 		}
 
 		public virtual bool BladeFlurry ()
@@ -408,7 +408,7 @@ namespace ReBot
 
 		public virtual bool ShadowReflection ()
 		{
-			return Cast ("Shadow Reflection", () => Usable ("Shadow Reflection") && Target.CombatRange <= 20 && (IsElite || IsPlayer));
+			return Cast ("Shadow Reflection", () => Usable ("Shadow Reflection") && Target.CombatRange <= 20 && (IsElite || IsPlayer || EnemyInRange(10) > 2));
 		}
 
 		public virtual bool Vanish ()
@@ -428,12 +428,12 @@ namespace ReBot
 
 		public virtual bool AdrenalineRush ()
 		{
-			return CastSelf ("Adrenaline Rush", () => Usable ("Adrenaline Rush") && (IsPlayer || IsElite) && Target.IsInCombatRangeAndLoS);
+			return CastSelf ("Adrenaline Rush", () => Usable ("Adrenaline Rush") && (IsPlayer || IsElite || EnemyInRange(10) > 2) && Target.IsInCombatRangeAndLoS);
 		}
 
 		public virtual bool KillingSpree ()
 		{
-			return Cast ("Killing Spree", () => Usable ("Killing Spree") && (IsPlayer || IsElite) && Target.CombatRange <= 10);
+			return Cast ("Killing Spree", () => Usable ("Killing Spree") && (IsPlayer || IsElite || EnemyInRange(10) > 2) && Target.CombatRange <= 10);
 		}
 
 		public virtual bool RevealingStrike ()
@@ -487,7 +487,7 @@ namespace ReBot
 		public virtual bool CrystalOfInsanity ()
 		{
 			// Analysis disable once CompareOfFloatsByEqualityOperator
-			if (API.HasItem (CrystalOfInsanityID) && !HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityID) == 0)
+			if (!InArena && API.HasItem (CrystalOfInsanityID) && !HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityID) == 0)
 				return (API.UseItem (CrystalOfInsanityID));
 			return false;
 		}
