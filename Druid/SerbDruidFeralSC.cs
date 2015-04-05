@@ -10,7 +10,6 @@ namespace ReBot
 
 	public class SerbDruidFeralSC : SerbDruid
 	{
-		
 
 		[JsonProperty ("PvP Healing")]
 		public bool PvPHealing = true;
@@ -21,21 +20,6 @@ namespace ReBot
 
 		public double Sleep;
 		public string Skill;
-
-		public bool hasCatForm ()
-		{
-			return (HasAura ("Cat Form") || HasAura ("Claws of Shirvallah"));
-		}
-
-		public bool CastCatForm ()
-		{
-			if (!hasCatForm ()) {
-				// Cast("Claws of Shirvallah");
-				CastSelf ("Cat Form");
-				return true;
-			}
-			return false;
-		}
 
 		public 	SerbDruidFeralSC ()
 		{
