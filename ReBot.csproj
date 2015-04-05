@@ -48,11 +48,14 @@
     <Compile Include="Druid\SerbDruid_Common.cs" />
     <Compile Include="Druid\SerbDruidFeralSC.cs" />
     <Compile Include="Druid\SerbDruidBalanceSC.cs" />
+    <Compile Include="Hunter\SerbHunter_Common.cs" />
+    <Compile Include="Hunter\SerbHunterBeastmasterSC.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shaman\" />
     <Folder Include="Rogue\" />
     <Folder Include="Druid\" />
+    <Folder Include="Hunter\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
