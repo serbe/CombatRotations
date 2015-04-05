@@ -481,12 +481,12 @@ namespace ReBot
 
 		public virtual bool Moonfire ()
 		{
-			return Cast ("Moonfire", () => Usable ("Moonfire") && Eclipse <= 0 && Target.IsInCombatRangeAndLoS);
+			return Cast ("Moonfire", () => Usable ("Moonfire") && Target.IsInLoS && Target.CombatRange <= 40);
 		}
 
 		public virtual bool Moonfire (UnitObject o)
 		{
-			return Cast ("Moonfire", o, () => Usable ("Moonfire") && Eclipse <= 0 && o.IsInCombatRangeAndLoS);
+			return Cast ("Moonfire", o, () => Usable ("Moonfire") && o.IsInLoS && o.CombatRange <= 40);
 		}
 
 		public virtual bool Wrath ()
@@ -551,13 +551,9 @@ namespace ReBot
 			return false;
 		}
 
-		// public virtual bool TricksoftheTrade() {
-		// 	if (Usable("Tricks of the Trade")) {
-		// 		CycleTarget = Group.GetGroupMemberObjects().Where(x => !x.IsDead && x.IsInLoS && x.CombatRange < 100 && x.IsTank).OrderBy(x => x.HealthFraction).DefaultIfEmpty(null).FirstOrDefault();
-		// 		if (Cast("Tricks of the Trade", CycleTarget, () => CycleTarget != null)) return true;
-		// 	}
-		// 	return false;
-		// }
+		public virtual bool CelestialAlignment() {
+			return CastSelf("Celestial Alignment", () => Usable ("Celestial Alignment") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer));
+		 }
 
 		public virtual bool CatForm ()
 		{
@@ -567,6 +563,11 @@ namespace ReBot
 		public virtual bool Rake ()
 		{
 			return Cast ("Rake", () => Usable ("Rake") && HasEnergy (35));
+		}
+
+		public virtual bool Rake (UnitObject o)
+		{
+			return Cast ("Rake", o, () => Usable ("Rake") && HasEnergy (35));
 		}
 
 		public virtual bool SavageRoar() {
@@ -595,17 +596,17 @@ namespace ReBot
 		// 	return CastSelf("Every Man for Himself", () => Usable("Every Man for Himself"));
 		// }
 
-		// public virtual bool SmokeBomb() {
-		// 	return CastSelf("Smoke Bomb", () => Usable("Smoke Bomb"));
-		// }
+		public virtual bool Swipe() {
+			return Cast("Swipe", () => Usable("Swipe") && HasEnergy(45));
+		 }
 
-		// public virtual bool Premeditation() {
-		// 	return CastSelf("Premeditation", () => Usable("Premeditation") && Me.HasAura("Stealth"));
-		// }
+		public virtual bool Shred() {
+			return CastSelf("Shred", () => Usable("Shred") && HasEnergy(40));
+		 }
 
-		// public virtual bool Feint() {
-		// 	return CastSelf("Feint", () => Usable("Feint") && HasCost(20) && !Me.HasAura("Feint"));
-		// }
+		public virtual bool Thrash(UnitObject o) {
+			return Cast("Thrash", o, () => Usable("Thrash") && HasEnergy(50));
+		 }
 
 		// public virtual bool CheapShot() {
 		// 	return Cast("Cheap Shot", () => Usable("Cheap Shot") && HasCost(40) && (Me.HasAura("Stealth") || Me.HasAura("Subterfuge") || Me.HasAura("Shadow Dance")));
