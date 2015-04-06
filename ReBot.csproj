@@ -50,12 +50,15 @@
     <Compile Include="Druid\SerbDruidBalanceSC.cs" />
     <Compile Include="Hunter\SerbHunter_Common.cs" />
     <Compile Include="Hunter\SerbHunterBeastmasterSC.cs" />
+    <Compile Include="Warlock\SerbWarlock_Common.cs" />
+    <Compile Include="Warlock\SerbWarlockDemonologySC.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shaman\" />
     <Folder Include="Rogue\" />
     <Folder Include="Druid\" />
     <Folder Include="Hunter\" />
+    <Folder Include="Warlock\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
