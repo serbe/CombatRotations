@@ -34,24 +34,25 @@ namespace ReBot
 
 		public override bool OutOfCombat ()
 		{
-			// actions.precombat=flask,type=greater_draenic_agility_flask
-			// actions.precombat+=/food,type=salty_squid_roll
-			// actions.precombat+=/summon_pet
+			//	actions.precombat=flask,type=greater_draenic_agility_flask
+			//	actions.precombat+=/food,type=salty_squid_roll
+			//	actions.precombat+=/summon_pet
 			if (!Me.HasAlivePet && !HasSpell ("Lone Wolf")) {
 				if (SummonPet (Slot))
 					return true;
 			}
-			// # Snapshot raid buffed stats before combat begins and pre-potting is done.
-			// actions.precombat+=/snapshot_stats
-			// actions.precombat+=/exotic_munitions,ammo_type=poisoned,if=active_enemies<3
-			// actions.precombat+=/exotic_munitions,ammo_type=incendiary,if=active_enemies>=3
+			//	# Snapshot raid buffed stats before combat begins and pre-potting is done.
+			//	actions.precombat+=/snapshot_stats
 			if (HasSpell ("Exotic Munitions")) {
 				if (ExoticMunitions (Exo))
 					return true;
 			}
-			// actions.precombat+=/potion,name=draenic_agility
-			// actions.precombat+=/glaive_toss
-			// actions.precombat+=/focusing_shot,if=!talent.glaive_toss.enabled
+			//	actions.precombat+=/exotic_munitions,ammo_type=poisoned,if=active_enemies<3
+			//	actions.precombat+=/exotic_munitions,ammo_type=incendiary,if=active_enemies>=3
+			//	actions.precombat+=/potion,name=draenic_agility
+			//	actions.precombat+=/glaive_toss
+			//	actions.precombat+=/focusing_shot
+
 
 			if (!Me.HasAura ("Trap Launcher")) {
 				if (TrapLauncher ())
@@ -122,18 +123,19 @@ namespace ReBot
 			// if (CastOnTerrain("Explosive Trap", Target.Position, () => FireTrap && IsPlayer && Target.AuraTimeRemaining("Explosive Trap", true) < 5)) return;
 
 			if (API.ExecuteLua<bool> ("return IsShiftKeyDown()")) {
-				if (Target.CombatRange > 5 && Target.IsInCombatRangeAndLoS) {
-					if (CastOnTerrain ("Binding Shot", Target.Position, () => Cooldown ("Binding Shot") == 0))
-						;
+				if (Target.CombatRange > 5 && Target.IsInLoS && Target.CombatRange <= 30) {
+					if (BindingShot (Target))
+						return;
 				}
+
 				// if (IceTrap && Me.HasAura("Trap Launcher") && (IsPlayer || IsElite) && Target.CombatRange > 10) {
 				// 	var IceTarget = new Vector3((Target.Position.X + Me.Position.X) / 2, (Target.Position.Y + Me.Position.Y) / 2, (Target.Position.Z + Me.Position.Z) / 2);
 				// 	if (CastOnTerrain("Ice Trap", IceTarget, () => Cooldown("Ice Trap") == 0)) return;
 				// }
-				if (InArena && Cooldown ("Freezing Trap") == 0 && EnemyWithTarget (Target, 15) == 0) {
-					CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && x.IsPlayer && x != Target).DefaultIfEmpty (null).FirstOrDefault ();
+				if ((InArena || InBG) && Usable ("Freezing Trap") && EnemyWithTarget (Target, 15) == 0) {
+					CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && x.IsPlayer && x != Target && x.CanParticipateInCombat).DefaultIfEmpty (null).FirstOrDefault ();
 					if (CycleTarget != null) {
-						if (CastOnTerrain ("Freezing Trap", CycleTarget.Position, () => CycleTarget != null))
+						if (FreezingTrap(CycleTarget))
 							return;
 					}
 				}
@@ -144,40 +146,85 @@ namespace ReBot
 			// 	if (Cast("Ice Trap", () => IceTrap)) { API.ExecuteLua(Click); return; }
 			//          }
 
-			if (CastSelf ("Master's Call", () => Cooldown ("Master's Call") == 0 && !Me.CanParticipateInCombat))
-				;
+			if (Me.CanNotParticipateInCombat()) {
+				if (Freedom ())
+					return;
+			}
 
-			if (Cast ("Mend Pet", () => Me.HasAlivePet && Me.Pet.HealthFraction <= 0.8 && !Me.Pet.HasAura ("Mend Pet")))
+			//Heal
+			if (Me.HasAlivePet) {
+				if (Me.Pet.HealthFraction <= 0.8) {
+					if (MendPet ())
+						return;
+				}
+				if (Me.Pet.HealthFraction <= 0.3) {
+					if (LastStand ())
+						return;
+				}
+				if (Health <= 0.3) {
+					if (RoarofSacrifice ())
+						return;
+				}
+			}
+			if (Health <= 0.3) {
+				if (Exhilaration ())
+					return;
+			}
+			if (Health < 0.4) {
+				if (Deterrence ())
+					return;
+			}
+			if (Health <= 0.2) {
+				if (FeignDeath ())
+					return;
+			}
+
+
+			//	actions=auto_shot
+			//	actions+=/use_item,name=beating_heart_of_the_mountain
+			//	actions+=/arcane_torrent,if=focus.deficit>=30
+			if (FocusDeflict >= 30) {
+				if (ArcaneTorrent ())
+					return;
+			}
+			//	actions+=/blood_fury
+			if (BloodFury ())
 				return;
-			if (Cast ("Last Stand", () => Me.HasAlivePet && Me.Pet.HealthFraction <= 0.3 && !Me.Pet.HasAura ("Last Stand")))
-				;
-
-			if (CastSelfPreventDouble ("Roar of Sacrifice", () => Me.HasAlivePet && Health <= 0.3))
-				;
-			if (CastSelf ("Exhilaration", () => HasSpell ("Exhilaration") && Health <= 0.3))
-				;
-			if (CastSelf ("Deterrence", () => Health < 0.4 && !Me.HasAura ("Deterrence")))
-				;
-			if (CastSelfPreventDouble ("Feign Death", () => Health <= 0.20))
-				;
-
-			// actions=auto_shot
-			// actions+=/use_item,name=gorashans_lodestone_spike
-			// actions+=/use_item,name=kihras_adrenaline_injector
-			// actions+=/arcane_torrent,if=focus.deficit>=30
-			if (Cast ("Arcane Torrent", () => FocusDeflict >= 30 && (IsElite || IsPlayer)))
-				;
-			// actions+=/blood_fury
-			if (Cast ("Blood Fury", () => (IsElite || IsPlayer)))
-				;
-			// actions+=/berserking
-			if (Cast ("Berserking", () => (IsElite || IsPlayer)))
-				;
-			// actions+=/potion,name=draenic_agility,if=!talent.stampede.enabled&buff.bestial_wrath.up&target.health.pct<=20|target.time_to_die<=20
-			// actions+=/potion,name=draenic_agility,if=talent.stampede.enabled&cooldown.stampede.remains<1&(buff.bloodlust.up|buff.focus_fire.up)|target.time_to_die<=25
-			// actions+=/stampede,if=buff.bloodlust.up|buff.focus_fire.up|target.time_to_die<=25
+			//	actions+=/berserking
+			if (Berserking ())
+				return;
+			//	actions+=/potion,name=draenic_agility,if=!talent.stampede.enabled&buff.bestial_wrath.up&target.health.pct<=20|target.time_to_die<=20
+			//	actions+=/potion,name=draenic_agility,if=talent.stampede.enabled&cooldown.stampede.remains<1&(buff.bloodlust.up|buff.focus_fire.up)|target.time_to_die<=25
+			//	actions+=/stampede,if=buff.bloodlust.up|buff.focus_fire.up|target.time_to_die<=25
 			if (Cast ("Stampede", () => HasSpell ("Stampede") && (Me.HasAura ("Bloodlust") || Me.HasAura ("Focus Fire")) && (IsElite || IsPlayer)))
 				return;
+			//	actions+=/dire_beast
+			//	actions+=/focus_fire,if=buff.focus_fire.down&((cooldown.bestial_wrath.remains<1&buff.bestial_wrath.down)|(talent.stampede.enabled&buff.stampede.remains)|pet.cat.buff.frenzy.remains<1)
+			//	actions+=/bestial_wrath,if=focus>30&!buff.bestial_wrath.up
+			//	actions+=/multishot,if=active_enemies>1&pet.cat.buff.beast_cleave.remains<0.5
+			//	actions+=/focus_fire,five_stacks=1,if=buff.focus_fire.down
+			//	actions+=/barrage,if=active_enemies>1
+			//	actions+=/explosive_trap,if=active_enemies>5
+			//	actions+=/multishot,if=active_enemies>5
+			//	actions+=/kill_command
+			//	actions+=/a_murder_of_crows
+			//	actions+=/kill_shot,if=focus.time_to_max>gcd
+			//	actions+=/focusing_shot,if=focus<50
+			//	# Cast a second shot for steady focus if that won't cap us.
+			//	actions+=/cobra_shot,if=buff.pre_steady_focus.up&buff.steady_focus.remains<7&(14+cast_regen)<focus.deficit
+			//	actions+=/explosive_trap,if=active_enemies>1
+			//	# Prepare for steady focus refresh if it is running out.
+			//	actions+=/cobra_shot,if=talent.steady_focus.enabled&buff.steady_focus.remains<4&focus<50
+			//	actions+=/glaive_toss
+			//	actions+=/barrage
+			//	actions+=/powershot,if=focus.time_to_max>cast_time
+			//	actions+=/cobra_shot,if=active_enemies>5
+			//	actions+=/arcane_shot,if=(buff.thrill_of_the_hunt.react&focus>35)|buff.bestial_wrath.up
+			//	actions+=/arcane_shot,if=focus>=75
+			//	actions+=/cobra_shot
+
+
+
 			// actions+=/dire_beast
 			if (Cast ("Dire Beast", () => HasSpell ("Dire Beast")))
 				return;

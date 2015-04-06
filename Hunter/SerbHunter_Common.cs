@@ -439,12 +439,95 @@ namespace ReBot
 					}
 				}
 			}
+			return false;
 		}
 
 		public virtual bool TranquilizingShot(UnitObject u) {
 			return Cast ("Tranquilizing Shot", u, () => Usable ("Tranquilizing Shot") && (HasGlyph (119384) || HasFocus (50)) && u.IsInLoS && u.CombatRange <= 40);
 		}
 
+		public virtual bool BindingShot(UnitObject u) {
+			return CastOnTerrain ("Binding Shot", u.Position, () => Usable ("Binding Shot") && u.IsInLoS && u.CombatRange <= 30);
+		}
+
+		public virtual bool FreezingTrap(UnitObject u) {
+			return CastOnTerrain ("Freezing Trap", u.Position, () => Usable ("Freezing Trap") && u.IsInLoS && u.CombatRange <= 40);
+		}
+
+		public virtual bool Freedom() {
+			return WilloftheForsaken () || EveryManforHimself () || MastersCall();
+		}
+
+		public virtual bool WilloftheForsaken() {
+			return CastSelf("Will of the Forsaken", () => Usable("Will of the Forsaken"));
+		}
+
+		public virtual bool EveryManforHimself() {
+			return CastSelf("Every Man for Himself", () => Usable("Every Man for Himself"));
+		}
+
+		public virtual bool MastersCall() {
+			return CastSelf ("Master's Call", () => Usable ("Master's Call") && Me.HasAlivePet && Me.Pet.CombatRange <= 40);
+		}
+
+		public virtual bool LastStand() {
+			return CastSelf ("Last Stand", () => Usable ("Last Stand") && Me.HasAlivePet);
+		}
+
+		public virtual bool RoarofSacrifice() {
+			return CastSelf ("Roar of Sacrifice", () => Usable ("Roar of Sacrifice") && Me.HasAlivePet && Me.Pet.CombatRange <= 40);
+		}
+
+		public virtual bool Exhilaration() {
+			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+		}
+
+		public virtual bool Deterrence() {
+			return Cast ("Deterrence", () => Usable ("Deterrence"));
+		}
+
+		public virtual bool FeignDeath() {
+			return Cast ("Feign Death", () => Usable ("Feign Death") && !Me.HasAura("Feign Death"));
+		}
+
+		public virtual bool BloodFury ()
+		{
+			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+		}
+
+		public virtual bool Berserking ()
+		{
+			return CastSelf ("Berserking", () => Usable ("Berserking") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+		}
+
+		public virtual bool ArcaneTorrent ()
+		{
+			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+		}
+
+		public virtual bool Exhilaration() {
+			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+		}
+
+		public virtual bool Exhilaration() {
+			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+		}
+
+		public virtual bool Exhilaration() {
+			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+		}
+
+		public virtual bool Exhilaration() {
+			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+		}
+
+		public virtual bool Exhilaration() {
+			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+		}
+
+		public virtual bool Exhilaration() {
+			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+		}
 	}
 }
 

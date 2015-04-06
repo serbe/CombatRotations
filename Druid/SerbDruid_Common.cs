@@ -451,6 +451,11 @@ namespace ReBot
 			return Cast ("Starfall", () => Usable ("Starfall") && Target.IsInLoS && Target.CombatRange <= 40);
 		}
 
+		public virtual bool BloodFury ()
+		{
+			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+		}
+
 		public virtual bool Berserking ()
 		{
 			return CastSelf ("Berserking", () => Usable ("Berserking") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
@@ -524,11 +529,6 @@ namespace ReBot
 		public virtual bool Berserk ()
 		{
 			return CastSelf ("Berserk", () => Usable ("Berserk") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
-		}
-
-		public virtual bool BloodFury ()
-		{
-			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
 		}
 
 		public virtual bool TigersFury ()
