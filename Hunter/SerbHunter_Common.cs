@@ -268,9 +268,31 @@ namespace ReBot
 		//				i = Math.Floor (i * 0.25);
 		//			return i;
 		//		}
-		//
+
 		public bool HasFocus (double i)
 		{
+			if (Me.HasAura ("Burning Adrenaline"))
+				i = 0;
+			return Focus >= i;
+		}
+
+		// Multi-Shot and Aimed Shot
+		public bool HasAMFocus (double i)
+		{
+			if (Me.HasAura ("Multi-Shot"))
+				i = i - 20;
+			if (Me.HasAura ("Thrill of the Hunt"))
+				i = i - 20;
+			if (Me.HasAura ("Burning Adrenaline"))
+				i = 0;
+			return Focus >= i;
+		}
+
+		// Arcane Shot
+		public bool HasArcaneFocus (double i)
+		{
+			if (Me.HasAura ("Thrill of the Hunt"))
+				i = i - 20;
 			if (Me.HasAura ("Burning Adrenaline"))
 				i = 0;
 			return Focus >= i;
@@ -505,29 +527,85 @@ namespace ReBot
 			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
 		}
 
-		public virtual bool Exhilaration() {
-			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+		public virtual bool Stampede() {
+			return Cast ("Stampede", () => Usable ("Stampede") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
 		}
 
-		public virtual bool Exhilaration() {
-			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+		public virtual bool DireBeast() {
+			return Cast ("Dire Beast", () => Usable ("Dire Beast"));
 		}
 
-		public virtual bool Exhilaration() {
-			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+		public virtual bool FocusFire() {
+			return Cast ("Focus Fire", () => Usable ("Focus Fire"));
 		}
 
-		public virtual bool Exhilaration() {
-			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+		public virtual bool BestialWrath() {
+			return Cast ("Bestial Wrath", () => Usable ("Bestial Wrath"));
 		}
 
-		public virtual bool Exhilaration() {
-			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+		public virtual bool MultiShot() {
+			return Cast ("MultiShot", () => Usable ("MultiShot") && HasAMFocus(40) && Target.IsInLoS && Target.CombatRange <= 40);
 		}
 
-		public virtual bool Exhilaration() {
-			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+		public virtual bool Barrage() {
+			return Cast ("Barrage", () => Usable ("Barrage") && Focus >= 60 && Target.IsInLoS && Target.CombatRange <= 40);
 		}
+
+		public virtual bool ExplosiveTrap(UnitObject u) {
+			return CastOnTerrain ("Explosive Trap", u.Position, () => Usable ("Explosive Trap") && u.IsInLoS && u.CombatRange <= 40);
+		}
+
+		public virtual bool KillCommand() {
+			return Cast ("Kill Command", () => Usable ("Kill Command") && Me.HasAlivePet && HasFocus(40));
+		}
+	
+		public virtual bool AMurderofCrows() {
+			return Cast ("A Murder of Crows", () => Usable ("A Murder of Crows") && Focus >= 30 && Target.IsInLoS && Target.CombatRange <= 40);
+		}
+	
+		public virtual bool KillShot() {
+			return Cast ("Kill Shot", () => Usable ("Kill Shot") && (Target.HealthFraction < 0.20 || (HasSpell("Enhanced Kill Shot") && Target.HealthFraction < 0.35)) && Target.IsInLoS && Target.CombatRange <= 40);
+		}
+
+		public virtual bool FocusingShot() {
+			return Cast ("Focusing Shot", () => Usable ("Focusing Shot") && !Me.IsMoving && Target.IsInLoS && Target.CombatRange <= 40);
+		}
+
+		public virtual bool CobraShot() {
+			return Cast ("Cobra Shot", () => Usable ("Cobra Shot") && Target.IsInLoS && Target.CombatRange <= 40);
+		}
+
+		public virtual bool GlaiveToss() {
+			return Cast ("Glaive Toss", () => Usable ("Glaive Toss") && Focus >= 15 && Target.IsInLoS && Target.CombatRange <= 40);
+		}
+
+		public virtual bool Powershot() {
+			return Cast ("Powershot", () => Usable ("Powershot") && Focus >= 15 && Target.IsInLoS && Target.CombatRange <= 40);
+		}
+
+		public virtual bool ArcaneShot() {
+			return Cast ("Arcane Shot", () => Usable ("Arcane Shot") && HasArcaneFocus(30) && Target.IsInLoS && Target.CombatRange <= 40);
+		}
+
+//		public virtual bool Exhilaration() {
+//			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+//		}
+//
+//		public virtual bool Exhilaration() {
+//			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+//		}
+//
+//		public virtual bool Exhilaration() {
+//			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+//		}
+//
+//		public virtual bool Exhilaration() {
+//			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+//		}
+//
+//		public virtual bool Exhilaration() {
+//			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+//		}
 	}
 }
 

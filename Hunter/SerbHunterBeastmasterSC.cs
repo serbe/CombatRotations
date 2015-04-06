@@ -135,7 +135,7 @@ namespace ReBot
 				if ((InArena || InBG) && Usable ("Freezing Trap") && EnemyWithTarget (Target, 15) == 0) {
 					CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && x.IsPlayer && x != Target && x.CanParticipateInCombat).DefaultIfEmpty (null).FirstOrDefault ();
 					if (CycleTarget != null) {
-						if (FreezingTrap(CycleTarget))
+						if (FreezingTrap (CycleTarget))
 							return;
 					}
 				}
@@ -146,7 +146,7 @@ namespace ReBot
 			// 	if (Cast("Ice Trap", () => IceTrap)) { API.ExecuteLua(Click); return; }
 			//          }
 
-			if (Me.CanNotParticipateInCombat()) {
+			if (Me.CanNotParticipateInCombat ()) {
 				if (Freedom ())
 					return;
 			}
@@ -196,98 +196,107 @@ namespace ReBot
 			//	actions+=/potion,name=draenic_agility,if=!talent.stampede.enabled&buff.bestial_wrath.up&target.health.pct<=20|target.time_to_die<=20
 			//	actions+=/potion,name=draenic_agility,if=talent.stampede.enabled&cooldown.stampede.remains<1&(buff.bloodlust.up|buff.focus_fire.up)|target.time_to_die<=25
 			//	actions+=/stampede,if=buff.bloodlust.up|buff.focus_fire.up|target.time_to_die<=25
-			if (Cast ("Stampede", () => HasSpell ("Stampede") && (Me.HasAura ("Bloodlust") || Me.HasAura ("Focus Fire")) && (IsElite || IsPlayer)))
-				return;
+			if (Me.HasAura ("Bloodlust") || Me.HasAura ("Focus Fire")) {
+				if (Stampede ())
+					return;
+			}
 			//	actions+=/dire_beast
+			if (DireBeast ())
+				return;
 			//	actions+=/focus_fire,if=buff.focus_fire.down&((cooldown.bestial_wrath.remains<1&buff.bestial_wrath.down)|(talent.stampede.enabled&buff.stampede.remains)|pet.cat.buff.frenzy.remains<1)
+			if (!Me.HasAura ("Focus Fire") && ((Cooldown ("Bestial Wrath") < 1 && !Me.HasAura ("Bestial Wrath")) || (HasSpell ("Stampede") && Me.HasAura ("Stampede")) || Me.Pet.AuraTimeRemaining ("Frenzy") < 1)) {
+				if (FocusFire ())
+					return;
+			}
 			//	actions+=/bestial_wrath,if=focus>30&!buff.bestial_wrath.up
+			if (Focus > 30 && !Me.HasAura ("Bestial Wrath")) {
+				if (BestialWrath ())
+					return;
+			}
 			//	actions+=/multishot,if=active_enemies>1&pet.cat.buff.beast_cleave.remains<0.5
+			if (EnemyWithTarget (Target, 10) > 1 && Me.Pet.AuraTimeRemaining ("Beast Cleave") < 0.5) {
+				if (MultiShot ())
+					return;
+			}
 			//	actions+=/focus_fire,five_stacks=1,if=buff.focus_fire.down
+//			Me.HasAura ("Frenzy", false, 5)
+
 			//	actions+=/barrage,if=active_enemies>1
+			if (EnemyWithTarget (Target, 25) > 1) {
+				if (Barrage ())
+					return;
+			}
 			//	actions+=/explosive_trap,if=active_enemies>5
+			if (FireTrap && (EnemyWithTarget (Target, 8) > 5 || IsPlayer || IsElite)) {
+				if (ExplosiveTrap (Target))
+					return;
+			}
 			//	actions+=/multishot,if=active_enemies>5
+			if (EnemyWithTarget (Target, 15) > 5) {
+				if (MultiShot ())
+					return;
+			}
 			//	actions+=/kill_command
+			if (KillCommand ())
+				return;
 			//	actions+=/a_murder_of_crows
+			if (AMurderofCrows ())
+				return;
 			//	actions+=/kill_shot,if=focus.time_to_max>gcd
+			if (FocusDeflict / FocusRegen > 1) {
+				if (KillShot ())
+					return;
+			}
 			//	actions+=/focusing_shot,if=focus<50
+			if (Focus < 50) {
+				if (FocusingShot ())
+					return;
+			}
 			//	# Cast a second shot for steady focus if that won't cap us.
 			//	actions+=/cobra_shot,if=buff.pre_steady_focus.up&buff.steady_focus.remains<7&(14+cast_regen)<focus.deficit
+			if (Me.HasAura ("Steady Focus") && Me.AuraTimeRemaining ("Steady Focus") < 7 && (14 + 2 * FocusRegen) <= FocusDeflict) {
+				if (CobraShot ())
+					return;
+			}
 			//	actions+=/explosive_trap,if=active_enemies>1
+			if (FireTrap && (EnemyWithTarget (Target, 8) > 1 || IsPlayer || IsElite)) {
+				if (ExplosiveTrap (Target))
+					return;
+			}
 			//	# Prepare for steady focus refresh if it is running out.
 			//	actions+=/cobra_shot,if=talent.steady_focus.enabled&buff.steady_focus.remains<4&focus<50
+			if (HasSpell ("Steady Focus") && Me.AuraTimeRemaining ("Steady Focus") < 4 && Focus < 50) {
+				if (CobraShot ())
+					return;
+			}
 			//	actions+=/glaive_toss
+			if (GlaiveToss ())
+				return;
 			//	actions+=/barrage
+			if (Barrage ())
+				return;
 			//	actions+=/powershot,if=focus.time_to_max>cast_time
+			if (FocusDeflict / FocusRegen > 2.25) {
+				if (Powershot ())
+					return;
+			}
 			//	actions+=/cobra_shot,if=active_enemies>5
+			if (EnemyInRange (40) > 5) {
+				if (CobraShot ())
+					return;
+			}
 			//	actions+=/arcane_shot,if=(buff.thrill_of_the_hunt.react&focus>35)|buff.bestial_wrath.up
+			if ((Me.HasAura ("Thrill of the Hunt") && Focus > 35) || Me.HasAura ("Bestial Wrath")) {
+				if (ArcaneShot ())
+					return;
+			}
 			//	actions+=/arcane_shot,if=focus>=75
+			if (Focus >= 75) {
+				if (ArcaneShot ())
+					return;
+			}
 			//	actions+=/cobra_shot
-
-
-
-			// actions+=/dire_beast
-			if (Cast ("Dire Beast", () => HasSpell ("Dire Beast")))
-				return;
-			// actions+=/explosive_trap,if=active_enemies>1
-			if (CastOnTerrain ("Explosive Trap", Target.Position, () => FireTrap && (EnemyWithTarget (Target, 8) > 1 || IsPlayer || IsElite)))
-				return;
-			// actions+=/focus_fire,if=buff.focus_fire.down&(cooldown.bestial_wrath.remains<1|(talent.stampede.enabled&buff.stampede.remains))
-			if (Cast ("Focus Fire", () => !Me.HasAura ("Focus Fire") && (Cooldown ("Bestial Wrath") < 1 || (HasSpell ("Stampede") && Me.HasAura ("Stampede")))))
-				return;
-			// actions+=/bestial_wrath,if=focus>30&!buff.bestial_wrath.up
-			if (Cast ("Bestial Wrath", () => Focus > 30 && !Me.HasAura ("Bestial Wrath")))
-				;
-			// actions+=/multishot,if=active_enemies>1&pet.cat.buff.beast_cleave.down
-			if (Cast ("Multi-Shot", () => Focus >= 40 && EnemyWithTarget (Target, 10) > 1 && !Me.Pet.HasAura ("Beast Cleave")))
-				return;
-			// actions+=/barrage,if=active_enemies>1
-			if (Cast ("Barrage", () => HasSpell ("Barrage") && Focus >= 60 && EnemyWithTarget (Target, 15) > 1))
-				return;
-			// actions+=/multishot,if=active_enemies>5
-			if (Cast ("Multi-Shot", () => Focus >= 40 && EnemyWithTarget (Target, 10) > 5))
-				return;
-			// actions+=/focus_fire,five_stacks=1
-			if (CastSelf ("Focus Fire", () => Me.HasAura ("Frenzy", false, 5)))
-				return;
-			// actions+=/barrage,if=active_enemies>1
-			if (Cast ("Barrage", () => HasSpell ("Barrage") && Focus >= 60 && EnemyWithTarget (Target, 10) > 1))
-				return;
-			// actions+=/kill_command
-			if (Cast ("Kill Command", () => Focus >= 40))
-				return;
-			// actions+=/a_murder_of_crows
-			if (Cast ("A Murder of Crows", () => Focus >= 30))
-				return;
-			// actions+=/kill_shot,if=focus.time_to_max>gcd
-			if (Cast ("Kill Shot", () => TargetHealth <= 0.35 && FocusDeflict / FocusRegen > 1))
-				return;
-			// actions+=/focusing_shot,if=focus<50
-			if (Cast ("Focusing Shot", () => HasSpell ("Focusing Shot") && Focus < 50))
-				return;
-			// # Cast a second shot for steady focus if that won't cap us.
-			// actions+=/cobra_shot,if=buff.pre_steady_focus.up&(14+cast_regen)<=focus.deficit
-			if (Cast ("Cobra Shot", () => Me.HasAura ("Steady Focus") && (14 + 2 * FocusRegen) <= FocusDeflict))
-				return;
-			// actions+=/glaive_toss
-			if (Cast ("Glaive Toss",	() => Focus >= 15 && HasSpell ("Glaive Toss")))
-				return;
-			// actions+=/barrage
-			if (Cast ("Barrage", () => Focus >= 60 && HasSpell ("Barrage")))
-				return;
-			// actions+=/powershot,if=focus.time_to_max>cast_time
-			if (Cast ("Powershot", () => HasSpell ("Powershot") && FocusDeflict / FocusRegen > 2.25))
-				return;
-			// actions+=/cobra_shot,if=active_enemies>5
-			if (Cast ("Cobra Shot", () => EnemyInRange (40) > 5))
-				return;
-			// actions+=/arcane_shot,if=(buff.thrill_of_the_hunt.react&focus>35)|buff.bestial_wrath.up
-			if (Cast ("Arcane Shot", () => (Me.HasAura ("Thrill of the Hunt") && Focus > 35) || Me.HasAura ("Bestial Wrath")))
-				return;
-			// actions+=/arcane_shot,if=focus>=75
-			if (Cast ("Arcane Shot", () => Focus >= 75))
-				return;
-			// actions+=/cobra_shot
-			if (Cast ("Cobra Shot"))
+			if (CobraShot ())
 				return;
 		}
 	}
