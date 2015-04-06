@@ -25,50 +25,68 @@ namespace ReBot
 			if (DarkIntent ())
 				return true;
 			//actions.precombat+=/summon_pet,if=!talent.demonic_servitude.enabled&(!talent.grimoire_of_sacrifice.enabled|buff.grimoire_of_sacrifice.down)
-			if (!HasSpell("Demonic Servitude") && (!HasSpell("Grimoire of Supremacy") ||
+			if (!HasSpell ("Demonic Servitude") && (!HasSpell ("Grimoire of Sacrifice") || !Me.HasAura ("Grimoire of Sacrifice"))) {
+				if (SummonPet ())
+					return true;
+			}
 			//actions.precombat+=/summon_doomguard,if=talent.demonic_servitude.enabled&active_enemies<9
 			//actions.precombat+=/summon_infernal,if=talent.demonic_servitude.enabled&active_enemies>=9
 			//actions.precombat+=/snapshot_stats
 			//actions.precombat+=/potion,name=draenic_intellect
 			//actions.precombat+=/soul_fire
 
-			// actions.precombat+=/summon_doomguard,if=talent.demonic_servitude.enabled&active_enemies<5
-			// actions.precombat+=/summon_infernal,if=talent.demonic_servitude.enabled&active_enemies>=5
-			// actions.precombat+=/snapshot_stats
-			// actions.precombat+=/service_pet,if=talent.grimoire_of_service.enabled
-			if (Cast ("Grimoire of Service", () => !Me.HasAura ("Grimoire of Service")))
-				return true;
-			// actions.precombat+=/potion,name=draenic_intellect
-			// actions.precombat+=/soul_fire
+//			if (Cast ("Grimoire of Service", () => !Me.HasAura ("Grimoire of Service")))
+//				return true;
 
-			if (API.HasItem (CrystalOfInsanity) && !Me.HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanity) == 0) {
-				API.UseItem (CrystalOfInsanity);
+			if (CrystalOfInsanity ())
 				return true;
-			}
 
-			if (API.HasItem (OraliusWhisperingCrystal) && !HasAura (OraliusWhisperingCrystalBuff) && API.ItemCooldown (OraliusWhisperingCrystal) == 0) {
-				API.UseItem (OraliusWhisperingCrystal);
+			if (OraliusWhisperingCrystal ())
 				return true;
-			}
 
-			if (InCombat == true) {
+			if (InCombat) {
 				InCombat = false;
 				return true;
 			}
-
-			return false;
 
 			return false;
 		}
 
 		public override void Combat ()
 		{
+			if (!InCombat) {
+				InCombat = true;
+				StartBattle = DateTime.Now;
+			}
+
 			//actions=potion,name=draenic_intellect,if=buff.bloodlust.react|(buff.dark_soul.up&(trinket.proc.any.react|trinket.stacking_proc.any.react>6)&!buff.demonbolt.remains)|target.health.pct<20
 			//actions+=/berserking
+			if (Berserking ())
+				return;
 			//actions+=/blood_fury
+			if (BloodFury ())
+				return;
 			//actions+=/arcane_torrent
+			if (ArcaneTorrent ())
+				return;
 			//actions+=/mannoroths_fury
+			if (MannorothsFury ())
+				return;
 			//actions+=/dark_soul,if=talent.demonbolt.enabled&((charges=2&((!glyph.imp_swarm.enabled&(dot.corruption.ticking|trinket.proc.haste.remains<=10))|cooldown.imp_swarm.remains))|target.time_to_die<buff.demonbolt.remains|(!buff.demonbolt.remains&demonic_fury>=790))
+			if (HasSpell ("Demonbolt") && ((SpellCharges ("Dark Soul: Instability") == 2 && ((!HasGlyph (56242) && (Target.HasAura ("Corruption", true))) || Cooldown ("Imp Swarm") == 0)) || TimeToDie (Target) < Me.AuraTimeRemaining ("Demonbolt") || (!Me.HasAura ("Demonbolt") && Fury >= 790))) {
+				if (DarkSoul ())
+					return;
+			}
+			// actions+=/dark_soul,if=!talent.demonbolt.enabled&(charges=2|!talent.archimondes_darkness.enabled|(target.time_to_die<=20&!glyph.dark_soul.enabled|target.time_to_die<=10)|(target.time_to_die<=60&demonic_fury>400)|((trinket.stacking_proc.multistrike.remains>7.5|trinket.proc.any.remains>7.5)&demonic_fury>=400))
+			if (!HasSpell ("Demonbolt") && (SpellCharges ("Dark Soul: Instability") == 2 && !HasSpell ("Archimonde's Darkness") || (TimeToDie (Target) <= 20 && !HasGlyph (159665) || TimeToDie (Target)) || (TimeToDie (Target) <= 60 && Fury > 400))) {
+				if (DarkSoul ())
+					return;
+			}
+			// actions+=/imp_swarm,if=!talent.demonbolt.enabled&(buff.dark_soul.up|(cooldown.dark_soul.remains>(120%(1%spell_haste)))|time_to_die<32)&time>3
+			if (!HasSpell ("Demonbolt") && (Me.HasAura ("Dark Soul: Instability") || TimeToDie (Target) < 32) && Time > 3) {
+				if (ImpSwarm ())
+					return;
+			}
 			//actions+=/dark_soul,if=!talent.demonbolt.enabled&((charges=2&(time>6|(debuff.shadowflame.stack=1&action.hand_of_guldan.in_flight)))|!talent.archimondes_darkness.enabled|(target.time_to_die<=20&!glyph.dark_soul.enabled|target.time_to_die<=10)|(target.time_to_die<=60&demonic_fury>400)|((trinket.stacking_proc.multistrike.remains>7.5|trinket.proc.any.remains>7.5)&demonic_fury>=400))
 			//actions+=/imp_swarm,if=!talent.demonbolt.enabled&(buff.dark_soul.up|(cooldown.dark_soul.remains>(120%(1%spell_haste)))|time_to_die<32)&time>3
 			//actions+=/felguard:felstorm

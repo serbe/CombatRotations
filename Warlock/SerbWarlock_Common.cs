@@ -239,11 +239,69 @@ namespace ReBot
 		}
 
 		public virtual bool SummonPet() {
-			if (Cast ("Felguard", () => !HasSpell ("Demonic Servitude") && (!HasSpell ("Grimoire of Supremacy") && (!HasSpell ("Grimoire of Service") || !Me.HasAura ("Grimoire of Service")))))
-				return true;
-			if (Cast ("Wrathguard", () => !HasSpell ("Demonic Servitude") && (HasSpell ("Grimoire of Supremacy") && (!HasSpell ("Grimoire of Service") || !Me.HasAura ("Grimoire of Service")))))
-				return true;
-			
+//			if (Cast ("Felguard", () => !HasSpell ("Demonic Servitude") && (!HasSpell ("Grimoire of Supremacy") && (!HasSpell ("Grimoire of Service") || !Me.HasAura ("Grimoire of Service")))))
+//				return true;
+//			if (Cast ("Wrathguard", () => !HasSpell ("Demonic Servitude") && (HasSpell ("Grimoire of Supremacy") && (!HasSpell ("Grimoire of Service") || !Me.HasAura ("Grimoire of Service")))))
+//				return true;
+			return false;
+		}
+
+		public virtual bool BloodFury ()
+		{
+			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+		}
+
+		public virtual bool Berserking ()
+		{
+			return CastSelf ("Berserking", () => Usable ("Berserking") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+		}
+
+		public virtual bool ArcaneTorrent ()
+		{
+			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+		}
+
+		public virtual bool MannorothsFury ()
+		{
+			return CastSelf ("Mannoroth's Fury", () => Usable ("Mannoroth's Fury") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+		}
+
+		public virtual bool DarkSoul() {
+			if (CastSelf("Dark Soul: Misery", () => Usable("Dark Soul: Misery") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2)))
+				return true; 
+			if (CastSelf("Dark Soul: Instability", () => Usable("Dark Soul: Instability") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2)))
+				return true; 
+			if (CastSelf("Dark Soul: Knowledge", () => Usable("Dark Soul: Knowledge") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2)))
+				return true; 
+			return false;
+		}
+
+		public virtual bool ImpSwarm() {
+			return Cast ("Imp Swarm", () => Usable ("Imp Swarm") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+		}
+
+		public virtual bool Healthstone ()
+		{
+			// Analysis disable once CompareOfFloatsByEqualityOperator
+			if (API.HasItem (5512) && API.ItemCooldown (5512) == 0)
+				return API.UseItem (5512);
+			return false;
+		}
+
+		public virtual bool CrystalOfInsanity ()
+		{
+			// Analysis disable once CompareOfFloatsByEqualityOperator
+			if (!InArena && API.HasItem (CrystalOfInsanityID) && !Me.HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityID) == 0)
+				return API.UseItem (CrystalOfInsanityID);
+			return false;
+		}
+
+		public virtual bool OraliusWhisperingCrystal ()
+		{
+			// Analysis disable once CompareOfFloatsByEqualityOperator
+			if (API.HasItem (OraliusWhisperingCrystalID) && !Me.HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalID) == 0)
+				return API.UseItem (OraliusWhisperingCrystalID);
+			return false;
 		}
 	}
 }
