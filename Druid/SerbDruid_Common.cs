@@ -374,7 +374,7 @@ namespace ReBot
 
 		public virtual bool Rejuvenation (UnitObject o)
 		{
-			return Cast ("Rejuvenation", o, () => Usable ("Rejuvenation") && !Me.HasAura("Rejuvenation") && o.IsInLoS && o.CombatRange <= 40);
+			return Cast ("Rejuvenation", o, () => Usable ("Rejuvenation") && !o.HasAura("Rejuvenation") && o.IsInLoS && o.CombatRange <= 40);
 		}
 
 		public virtual bool HealingTouch ()
