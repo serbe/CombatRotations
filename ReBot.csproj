@@ -52,6 +52,8 @@
     <Compile Include="Hunter\SerbHunterBeastmasterSC.cs" />
     <Compile Include="Warlock\SerbWarlock_Common.cs" />
     <Compile Include="Warlock\SerbWarlockDemonologySC.cs" />
+    <Compile Include="DeathKnight\DeathKnight_Common.cs" />
+    <Compile Include="DeathKnight\DeathKnightUnholy.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shaman\" />
@@ -59,6 +61,7 @@
     <Folder Include="Druid\" />
     <Folder Include="Hunter\" />
     <Folder Include="Warlock\" />
+    <Folder Include="DeathKnight\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
