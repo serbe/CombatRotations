@@ -78,7 +78,7 @@ namespace ReBot
 					return;
 			}
 			// actions+=/dark_soul,if=!talent.demonbolt.enabled&(charges=2|!talent.archimondes_darkness.enabled|(target.time_to_die<=20&!glyph.dark_soul.enabled|target.time_to_die<=10)|(target.time_to_die<=60&demonic_fury>400)|((trinket.stacking_proc.multistrike.remains>7.5|trinket.proc.any.remains>7.5)&demonic_fury>=400))
-			if (!HasSpell ("Demonbolt") && (SpellCharges ("Dark Soul: Instability") == 2 && !HasSpell ("Archimonde's Darkness") || (TimeToDie (Target) <= 20 && !HasGlyph (159665) || TimeToDie (Target)) || (TimeToDie (Target) <= 60 && Fury > 400))) {
+			if (!HasSpell ("Demonbolt") && (SpellCharges ("Dark Soul: Instability") == 2 && !HasSpell ("Archimonde's Darkness") || (TimeToDie (Target) <= 20 && !HasGlyph (159665) || TimeToDie (Target) <= 10) || (TimeToDie (Target) <= 60 && Fury > 400))) {
 				if (DarkSoul ())
 					return;
 			}

@@ -1,5 +1,6 @@
 ﻿using System;
 using ReBot.API;
+using Newtonsoft.Json;
 
 namespace ReBot
 {
