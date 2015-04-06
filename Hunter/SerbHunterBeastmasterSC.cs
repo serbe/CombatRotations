@@ -7,21 +7,21 @@ using Newtonsoft.Json.Converters;
 
 namespace ReBot
 {
-	[Rotation("Serb Hunter Beastmastery", "Serb", WoWClass.Hunter, Specialization.HunterBeastMastery, 40, 40)]
+	[Rotation ("Serb Hunter Beastmastery", "Serb", WoWClass.Hunter, Specialization.HunterBeastMastery, 40, 40)]
 
 	public class SerbHunterBeastmasterSC : SerbHunter
 	{
-		[JsonProperty("Use Pet"), JsonConverter(typeof(StringEnumConverter))]							
+		[JsonProperty ("Use Pet"), JsonConverter (typeof(StringEnumConverter))]							
 		public UsePet Pet = UsePet.UsePet;
-		[JsonProperty("Pet Slot"), JsonConverter(typeof(StringEnumConverter))]							
+		[JsonProperty ("Pet Slot"), JsonConverter (typeof(StringEnumConverter))]							
 		public PetSlot Slot = PetSlot.PetSlot1;
-		[JsonProperty("Exotic Munitions"), JsonConverter(typeof(StringEnumConverter))]							
+		[JsonProperty ("Exotic Munitions"), JsonConverter (typeof(StringEnumConverter))]							
 		public ExoticMunitionsType Exo = ExoticMunitionsType.NoExoticMunitions;
-		[JsonProperty("Use Misdirection")]
+		[JsonProperty ("Use Misdirection")]
 		public bool UseMD = true;
-		[JsonProperty("Use fire trap")]
+		[JsonProperty ("Use fire trap")]
 		public bool FireTrap = false;
-		[JsonProperty("Use ice trap")]
+		[JsonProperty ("Use ice trap")]
 		public bool IceTrap = false;
 
 		public SerbHunterBeastmasterSC ()
@@ -32,11 +32,12 @@ namespace ReBot
 			};
 		}
 
-		public override bool OutOfCombat() {
+		public override bool OutOfCombat ()
+		{
 			// actions.precombat=flask,type=greater_draenic_agility_flask
 			// actions.precombat+=/food,type=salty_squid_roll
 			// actions.precombat+=/summon_pet
-			if (!Me.HasAlivePet && !HasSpell("Lone Wolf")) {
+			if (!Me.HasAlivePet && !HasSpell ("Lone Wolf")) {
 				if (SummonPet (Slot))
 					return true;
 			}
@@ -44,16 +45,20 @@ namespace ReBot
 			// actions.precombat+=/snapshot_stats
 			// actions.precombat+=/exotic_munitions,ammo_type=poisoned,if=active_enemies<3
 			// actions.precombat+=/exotic_munitions,ammo_type=incendiary,if=active_enemies>=3
-			if (HasSpell("Exotic Munitions")) {
+			if (HasSpell ("Exotic Munitions")) {
 				if (ExoticMunitions (Exo))
-					return true;}
+					return true;
+			}
 			// actions.precombat+=/potion,name=draenic_agility
 			// actions.precombat+=/glaive_toss
 			// actions.precombat+=/focusing_shot,if=!talent.glaive_toss.enabled
 
-			Cast("Trap Launcher", () => !Me.HasAura("Trap Launcher"));
+			if (!Me.HasAura ("Trap Launcher")) {
+				if (TrapLauncher ())
+					return true;
+			}
 
-			if (HasSpell("Lone Wolf")) {
+			if (HasSpell ("Lone Wolf")) {
 				if (LoneWolf (Pet))
 					return true;
 			}
@@ -69,64 +74,67 @@ namespace ReBot
 			if (OraliusWhisperingCrystal ())
 				return true;
 
-			InCombat = false;
+			if (InCombat) {
+				InCombat = false;
+			}
 
 			return false;
 		}
 
-		public override void Combat() {
+		public override void Combat ()
+		{
 			if (!InCombat) {
 				InCombat = true;
 				StartBattle = DateTime.Now;
 			}
 
 			var targets = Adds;
-			targets.Add(Target);
+			targets.Add (Target);
 
-			if (HasAura("Aspect of the Pack")) {
-				CancelAura("Aspect of the Pack");
+			if (HasAura ("Aspect of the Pack")) {
+				CancelAura ("Aspect of the Pack");
 			}
-			if (HasAura("Aspect of the Cheetah")) {
-				CancelAura("Aspect of the Cheetah");
+			if (HasAura ("Aspect of the Cheetah")) {
+				CancelAura ("Aspect of the Cheetah");
 			}
 
-			if (CastSelf("Trap Launcher", () => !Me.HasAura("Trap Launcher"))) return;
+			if (!Me.HasAura ("Trap Launcher")) {
+				if (TrapLauncher ())
+					return;
+			}
 
 			if (!InArena && !InBG && Me.HasAlivePet && UseMD) {
 				if (Misdirection ())
 					return;
 			}
 
-			if (Cast("Concussive Shot", () => !InRaid && Target.IsFleeing && !Target.HasAura("Concussive Shot"))) return;
+			if (!InRaid && !InInstance && Target.IsFleeing) {
+				if (ConcussiveShot ())
+					return;
+			}
 
-			if (Cooldown("Counter Shot") == 0) {
-				CycleTarget = targets.Where(x => x.IsInCombatRangeAndLoS && x.IsCastingAndInterruptible() && x.RemainingCastTime > 0).DefaultIfEmpty(null).FirstOrDefault();
-				if (Cast("Counter Shot", CycleTarget, () => CycleTarget != null));
-			}
-			if (Cooldown("Tranquilizing Shot") == 0) {
-				if (InArena || InBG) {
-					CycleTarget = targets.Where(x => x.IsInCombatRangeAndLoS && x.IsPlayer && x.Auras.Any(a => a.IsStealable)).DefaultIfEmpty(null).FirstOrDefault();
-					if (Cast("Tranquilizing Shot", CycleTarget, () => CycleTarget != null)) return;
-				} else {
-					CycleTarget = targets.Where(x => x.IsInCombatRangeAndLoS && x.Auras.Any(a => a.IsStealable)).DefaultIfEmpty(null).FirstOrDefault();
-					if (Cast("Tranquilizing Shot", CycleTarget, () => CycleTarget != null)) return;
-				}
-			}
+			if (Interrupt ())
+				return;
+
+			if (Tranquilizing ())
+				return;
 
 			// if (CastOnTerrain("Explosive Trap", Target.Position, () => FireTrap && IsPlayer && Target.AuraTimeRemaining("Explosive Trap", true) < 5)) return;
 
-			if(API.ExecuteLua<bool>("return IsShiftKeyDown()")) {
+			if (API.ExecuteLua<bool> ("return IsShiftKeyDown()")) {
 				if (Target.CombatRange > 5 && Target.IsInCombatRangeAndLoS) {
-					if (CastOnTerrain("Binding Shot", Target.Position, () => Cooldown("Binding Shot") == 0));
+					if (CastOnTerrain ("Binding Shot", Target.Position, () => Cooldown ("Binding Shot") == 0))
+						;
 				}
 				// if (IceTrap && Me.HasAura("Trap Launcher") && (IsPlayer || IsElite) && Target.CombatRange > 10) {
 				// 	var IceTarget = new Vector3((Target.Position.X + Me.Position.X) / 2, (Target.Position.Y + Me.Position.Y) / 2, (Target.Position.Z + Me.Position.Z) / 2);
 				// 	if (CastOnTerrain("Ice Trap", IceTarget, () => Cooldown("Ice Trap") == 0)) return;
 				// }
-				if (InArena && Cooldown("Freezing Trap") == 0 && EnemyWithTarget(Target, 15) == 0) {
-					CycleTarget = targets.Where(x => x.IsInCombatRangeAndLoS && x.IsPlayer && x != Target).DefaultIfEmpty(null).FirstOrDefault();
+				if (InArena && Cooldown ("Freezing Trap") == 0 && EnemyWithTarget (Target, 15) == 0) {
+					CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && x.IsPlayer && x != Target).DefaultIfEmpty (null).FirstOrDefault ();
 					if (CycleTarget != null) {
-						if (CastOnTerrain("Freezing Trap", CycleTarget.Position, () => CycleTarget != null)) return;
+						if (CastOnTerrain ("Freezing Trap", CycleTarget.Position, () => CycleTarget != null))
+							return;
 					}
 				}
 			}
@@ -136,72 +144,104 @@ namespace ReBot
 			// 	if (Cast("Ice Trap", () => IceTrap)) { API.ExecuteLua(Click); return; }
 			//          }
 
-			if (CastSelf("Master's Call", () => Cooldown("Master's Call") == 0 && !Me.CanParticipateInCombat));
+			if (CastSelf ("Master's Call", () => Cooldown ("Master's Call") == 0 && !Me.CanParticipateInCombat))
+				;
 
-			if (Cast("Mend Pet", () => Me.HasAlivePet && Me.Pet.HealthFraction <= 0.8 && !Me.Pet.HasAura("Mend Pet"))) return;
-			if (Cast("Last Stand", () => Me.HasAlivePet && Me.Pet.HealthFraction <= 0.3 && !Me.Pet.HasAura("Last Stand")));
+			if (Cast ("Mend Pet", () => Me.HasAlivePet && Me.Pet.HealthFraction <= 0.8 && !Me.Pet.HasAura ("Mend Pet")))
+				return;
+			if (Cast ("Last Stand", () => Me.HasAlivePet && Me.Pet.HealthFraction <= 0.3 && !Me.Pet.HasAura ("Last Stand")))
+				;
 
-			if (CastSelfPreventDouble("Roar of Sacrifice", () => Me.HasAlivePet && Health <= 0.3));
-			if (CastSelf("Exhilaration", () => HasSpell("Exhilaration") &&Health <= 0.3));
-			if (CastSelf("Deterrence", () => Health < 0.4 && !Me.HasAura("Deterrence")));
-			if (CastSelfPreventDouble("Feign Death", () => Health <= 0.20));
+			if (CastSelfPreventDouble ("Roar of Sacrifice", () => Me.HasAlivePet && Health <= 0.3))
+				;
+			if (CastSelf ("Exhilaration", () => HasSpell ("Exhilaration") && Health <= 0.3))
+				;
+			if (CastSelf ("Deterrence", () => Health < 0.4 && !Me.HasAura ("Deterrence")))
+				;
+			if (CastSelfPreventDouble ("Feign Death", () => Health <= 0.20))
+				;
 
 			// actions=auto_shot
 			// actions+=/use_item,name=gorashans_lodestone_spike
 			// actions+=/use_item,name=kihras_adrenaline_injector
 			// actions+=/arcane_torrent,if=focus.deficit>=30
-			if (Cast("Arcane Torrent", () => FocusDeflict >= 30 && (IsElite || IsPlayer)));
+			if (Cast ("Arcane Torrent", () => FocusDeflict >= 30 && (IsElite || IsPlayer)))
+				;
 			// actions+=/blood_fury
-			if (Cast("Blood Fury", () => (IsElite || IsPlayer)));
+			if (Cast ("Blood Fury", () => (IsElite || IsPlayer)))
+				;
 			// actions+=/berserking
-			if (Cast("Berserking", () => (IsElite || IsPlayer)));
+			if (Cast ("Berserking", () => (IsElite || IsPlayer)))
+				;
 			// actions+=/potion,name=draenic_agility,if=!talent.stampede.enabled&buff.bestial_wrath.up&target.health.pct<=20|target.time_to_die<=20
 			// actions+=/potion,name=draenic_agility,if=talent.stampede.enabled&cooldown.stampede.remains<1&(buff.bloodlust.up|buff.focus_fire.up)|target.time_to_die<=25
 			// actions+=/stampede,if=buff.bloodlust.up|buff.focus_fire.up|target.time_to_die<=25
-			if (Cast("Stampede", () => HasSpell("Stampede") && (Me.HasAura("Bloodlust") || Me.HasAura("Focus Fire")) && (IsElite || IsPlayer))) return;
+			if (Cast ("Stampede", () => HasSpell ("Stampede") && (Me.HasAura ("Bloodlust") || Me.HasAura ("Focus Fire")) && (IsElite || IsPlayer)))
+				return;
 			// actions+=/dire_beast
-			if (Cast("Dire Beast", () => HasSpell("Dire Beast"))) return;
+			if (Cast ("Dire Beast", () => HasSpell ("Dire Beast")))
+				return;
 			// actions+=/explosive_trap,if=active_enemies>1
-			if (CastOnTerrain("Explosive Trap", Target.Position, () => FireTrap && (EnemyWithTarget(Target, 8) > 1 || IsPlayer || IsElite))) return;
+			if (CastOnTerrain ("Explosive Trap", Target.Position, () => FireTrap && (EnemyWithTarget (Target, 8) > 1 || IsPlayer || IsElite)))
+				return;
 			// actions+=/focus_fire,if=buff.focus_fire.down&(cooldown.bestial_wrath.remains<1|(talent.stampede.enabled&buff.stampede.remains))
-			if (Cast("Focus Fire", () => !Me.HasAura("Focus Fire") && (Cooldown("Bestial Wrath") < 1 || (HasSpell("Stampede") && Me.HasAura("Stampede"))))) return;
+			if (Cast ("Focus Fire", () => !Me.HasAura ("Focus Fire") && (Cooldown ("Bestial Wrath") < 1 || (HasSpell ("Stampede") && Me.HasAura ("Stampede")))))
+				return;
 			// actions+=/bestial_wrath,if=focus>30&!buff.bestial_wrath.up
-			if (Cast("Bestial Wrath", () => Focus > 30 && !Me.HasAura("Bestial Wrath")));
+			if (Cast ("Bestial Wrath", () => Focus > 30 && !Me.HasAura ("Bestial Wrath")))
+				;
 			// actions+=/multishot,if=active_enemies>1&pet.cat.buff.beast_cleave.down
-			if (Cast("Multi-Shot", () => Focus >= 40 && EnemyWithTarget(Target, 10) > 1 && !Me.Pet.HasAura("Beast Cleave"))) return;
+			if (Cast ("Multi-Shot", () => Focus >= 40 && EnemyWithTarget (Target, 10) > 1 && !Me.Pet.HasAura ("Beast Cleave")))
+				return;
 			// actions+=/barrage,if=active_enemies>1
-			if (Cast("Barrage", () => HasSpell("Barrage") && Focus >= 60 && EnemyWithTarget(Target, 15) > 1)) return;
+			if (Cast ("Barrage", () => HasSpell ("Barrage") && Focus >= 60 && EnemyWithTarget (Target, 15) > 1))
+				return;
 			// actions+=/multishot,if=active_enemies>5
-			if (Cast("Multi-Shot", () => Focus >= 40 && EnemyWithTarget(Target, 10) > 5)) return;
+			if (Cast ("Multi-Shot", () => Focus >= 40 && EnemyWithTarget (Target, 10) > 5))
+				return;
 			// actions+=/focus_fire,five_stacks=1
-			if (CastSelf("Focus Fire", () => Me.HasAura("Frenzy", false, 5))) return;
+			if (CastSelf ("Focus Fire", () => Me.HasAura ("Frenzy", false, 5)))
+				return;
 			// actions+=/barrage,if=active_enemies>1
-			if (Cast("Barrage", () => HasSpell("Barrage") && Focus >= 60 && EnemyWithTarget(Target, 10) > 1)) return;
+			if (Cast ("Barrage", () => HasSpell ("Barrage") && Focus >= 60 && EnemyWithTarget (Target, 10) > 1))
+				return;
 			// actions+=/kill_command
-			if (Cast("Kill Command", () => Focus >= 40)) return;
+			if (Cast ("Kill Command", () => Focus >= 40))
+				return;
 			// actions+=/a_murder_of_crows
-			if (Cast("A Murder of Crows", () => Focus >= 30)) return;
+			if (Cast ("A Murder of Crows", () => Focus >= 30))
+				return;
 			// actions+=/kill_shot,if=focus.time_to_max>gcd
-			if (Cast("Kill Shot", () => TargetHealth <= 0.35 && FocusDeflict / FocusRegen > 1)) return;
+			if (Cast ("Kill Shot", () => TargetHealth <= 0.35 && FocusDeflict / FocusRegen > 1))
+				return;
 			// actions+=/focusing_shot,if=focus<50
-			if (Cast("Focusing Shot", () => HasSpell("Focusing Shot") && Focus < 50)) return;
+			if (Cast ("Focusing Shot", () => HasSpell ("Focusing Shot") && Focus < 50))
+				return;
 			// # Cast a second shot for steady focus if that won't cap us.
 			// actions+=/cobra_shot,if=buff.pre_steady_focus.up&(14+cast_regen)<=focus.deficit
-			if (Cast("Cobra Shot", () => Me.HasAura("Steady Focus") && (14 + 2 * FocusRegen) <= FocusDeflict)) return;
+			if (Cast ("Cobra Shot", () => Me.HasAura ("Steady Focus") && (14 + 2 * FocusRegen) <= FocusDeflict))
+				return;
 			// actions+=/glaive_toss
-			if (Cast("Glaive Toss",	() => Focus >= 15 && HasSpell("Glaive Toss"))) return;
+			if (Cast ("Glaive Toss",	() => Focus >= 15 && HasSpell ("Glaive Toss")))
+				return;
 			// actions+=/barrage
-			if (Cast("Barrage", () => Focus >= 60 && HasSpell("Barrage"))) return;
+			if (Cast ("Barrage", () => Focus >= 60 && HasSpell ("Barrage")))
+				return;
 			// actions+=/powershot,if=focus.time_to_max>cast_time
-			if (Cast("Powershot", () => HasSpell("Powershot") && FocusDeflict / FocusRegen > 2.25)) return;
+			if (Cast ("Powershot", () => HasSpell ("Powershot") && FocusDeflict / FocusRegen > 2.25))
+				return;
 			// actions+=/cobra_shot,if=active_enemies>5
-			if (Cast("Cobra Shot", () => EnemyInRange(40) > 5)) return;
+			if (Cast ("Cobra Shot", () => EnemyInRange (40) > 5))
+				return;
 			// actions+=/arcane_shot,if=(buff.thrill_of_the_hunt.react&focus>35)|buff.bestial_wrath.up
-			if (Cast("Arcane Shot", () => (Me.HasAura("Thrill of the Hunt") && Focus > 35) || Me.HasAura("Bestial Wrath"))) return;
+			if (Cast ("Arcane Shot", () => (Me.HasAura ("Thrill of the Hunt") && Focus > 35) || Me.HasAura ("Bestial Wrath")))
+				return;
 			// actions+=/arcane_shot,if=focus>=75
-			if (Cast("Arcane Shot", () => Focus >= 75)) return;
+			if (Cast ("Arcane Shot", () => Focus >= 75))
+				return;
 			// actions+=/cobra_shot
-			if (Cast("Cobra Shot")) return;
+			if (Cast ("Cobra Shot"))
+				return;
 		}
 	}
 }

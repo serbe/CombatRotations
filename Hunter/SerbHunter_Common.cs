@@ -269,12 +269,12 @@ namespace ReBot
 		//			return i;
 		//		}
 		//
-		//		public bool HasCost (double i)
-		//		{
-		//			if (Me.HasAura ("Shadow Focus"))
-		//				i = Math.Floor (i * 0.25);
-		//			return Energy >= i;
-		//		}
+		public bool HasFocus (double i)
+		{
+			if (Me.HasAura ("Burning Adrenaline"))
+				i = 0;
+			return Focus >= i;
+		}
 
 		public double TimeToDie (UnitObject o)
 		{
@@ -366,23 +366,85 @@ namespace ReBot
 				return API.UseItem (OraliusWhisperingCrystalID);
 			return false;
 		}
-	
-		public virtual bool MendPet() {
+
+		public virtual bool MendPet ()
+		{
 			return Cast ("Mend Pet", () => Usable ("Mend Pet") && Me.HasAlivePet && Me.Pet.HasAura ("Mend Pet") && Me.Pet.CombatRange <= 45);
 		}
-	
-		public virtual bool Misdirection() {
-			if (!IsSolo) {
+
+		public virtual bool Misdirection ()
+		{
+			if (Usable ("Misdirection")) {
+				if (!IsSolo) {
+					CycleTarget = Group.GetGroupMemberObjects ().Where (x => !x.IsDead && x.IsInLoS && x.CombatRange < 100 && x.IsTank).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Cast ("Misdirection", CycleTarget, () => CycleTarget != null))
+						return true;
+				}
 				
-			if (Cast ("Misdirection", Me.Focus, () => Cooldown ("Misdirection") == 0 && Me.Focus != null))
-				return true;
-			if (CastPreventDouble ("Misdirection", () => HasGlyph (56829), Me.Pet, 8000))
-				return true;
-			if (Cast ("Misdirection", Me.Pet, () => Cooldown ("Misdirection") == 0))
-				return true;
+				if (Cast ("Misdirection", Me.Focus, () => Me.Focus != null))
+					return true;
+				if (CastPreventDouble ("Misdirection", () => HasGlyph (56829), Me.Pet, 8000))
+					return true;
+				if (Cast ("Misdirection", Me.Pet))
+					return true;
+			}
+			return false;
+		}
+
+		public virtual bool TrapLauncher ()
+		{
+			return CastSelf ("Trap Launcher", () => Usable ("Trap Launcher"));
+		}
+
+		public virtual bool ConcussiveShot()
+		{
+			return Cast ("Concussive Shot", () => Usable ("Concussive Shot") && !Target.HasAura ("Concussive Shot"));
+		}
+
+		public virtual bool Interrupt() {
+			var targets = Adds;
+			targets.Add(Target);
+
+			if (Usable("Counter Shot")) {
+				CycleTarget = targets.Where(x => x.IsInCombatRangeAndLoS && x.IsCastingAndInterruptible() && x.RemainingCastTime > 0).DefaultIfEmpty(null).FirstOrDefault();
+				if (CycleTarget != null) {
+					if (CounterShot (CycleTarget))
+						return true;
+				}
+			}
 
 			return false;
 		}
+
+		public virtual bool CounterShot(UnitObject u) {
+			return Cast ("Counter Shot", u, () => Usable ("Counter Shot") && u.IsInLoS && u.CombatRange <= 40);
+		}
+
+		public virtual bool Tranquilizing() {
+			var targets = Adds;
+			targets.Add (Target);
+
+			if (Usable ("Tranquilizing Shot")) {
+				if (InArena || InBG) {
+					CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && x.IsPlayer && x.Auras.Any (a => a.IsStealable)).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (TranquilizingShot (CycleTarget))
+							return true;
+					}
+				} else {
+					CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && x.Auras.Any (a => a.IsStealable)).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (TranquilizingShot (CycleTarget))
+							return true;
+					}
+				}
+			}
+		}
+
+		public virtual bool TranquilizingShot(UnitObject u) {
+			return Cast ("Tranquilizing Shot", u, () => Usable ("Tranquilizing Shot") && (HasGlyph (119384) || HasFocus (50)) && u.IsInLoS && u.CombatRange <= 40);
+		}
+
 	}
 }
 
