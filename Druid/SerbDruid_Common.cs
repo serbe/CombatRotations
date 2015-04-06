@@ -359,7 +359,7 @@ namespace ReBot
 
 		public virtual bool SolarBeam (UnitObject o)
 		{
-			return Cast ("Solar Beam", o, () => Usable ("Solar Beam"));
+			return Cast ("Solar Beam", o, () => Usable ("Solar Beam") && o.IsInLoS && o.CombatRange <= 40);
 		}
 
 		public virtual bool MarkoftheWild ()
@@ -473,7 +473,7 @@ namespace ReBot
 
 		public virtual bool Starsurge ()
 		{
-			return Cast ("Starsurge", () => Usable ("Starsurge") && Target.IsInLoS && Target.CombatRange <= 40);
+			return Cast ("Starsurge", () => Usable ("Starsurge") && Target.IsInLoS && Target.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura("Empowered Moonkin") || HasSpell("Enhanced Starsurge")));
 		}
 
 		public virtual bool IncarnationChosenofElune ()
@@ -493,12 +493,12 @@ namespace ReBot
 
 		public virtual bool StellarFlare ()
 		{
-			return Cast ("Stellar Flare", () => Usable ("Stellar Flare") && Target.IsInLoS && Target.CombatRange <= 40);
+			return Cast ("Stellar Flare", () => Usable ("Stellar Flare") && Target.IsInLoS && Target.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura("Empowered Moonkin")));
 		}
 
 		public virtual bool StellarFlare (UnitObject o)
 		{
-			return Cast ("Stellar Flare", o, () => Usable ("Stellar Flare") && o.IsInLoS && o.CombatRange <= 40);
+			return Cast ("Stellar Flare", o, () => Usable ("Stellar Flare") && o.IsInLoS && o.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura("Empowered Moonkin")));
 		}
 
 		public virtual bool Moonfire ()
@@ -513,12 +513,12 @@ namespace ReBot
 
 		public virtual bool Wrath ()
 		{
-			return Cast ("Wrath", () => Usable ("Wrath") && Target.IsInLoS && Target.CombatRange <= 40);
+			return Cast ("Wrath", () => Usable ("Wrath") && Target.IsInLoS && Target.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura("Empowered Moonkin")));
 		}
 
 		public virtual bool Starfire ()
 		{
-			return Cast ("Starfire", () => Usable ("Starfire") && Target.IsInLoS && Target.CombatRange <= 40);
+			return Cast ("Starfire", () => Usable ("Starfire") && Target.IsInLoS && Target.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura("Elune's Wrath") || Me.HasAura("Empowered Moonkin")));
 		}
 
 		public virtual bool Maim (UnitObject o)
