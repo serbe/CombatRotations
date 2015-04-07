@@ -1,6 +1,7 @@
 ﻿using System;
 using ReBot.API;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace ReBot
 {
@@ -65,6 +66,12 @@ namespace ReBot
 				}
 			}
 			return x;
+		}
+
+		public double Health {
+			get {
+				return Me.HealthFraction;
+			}
 		}
 
 		public int RunicPower { 
@@ -324,35 +331,169 @@ namespace ReBot
 			return Cast ("Festering Strike", () => Usable ("Festering Strike") && ((HasFrost && HasBlood) || (HasFrost && HasDeath) || (HasDeath && HasBlood) || Death == 2));
 		}
 
-		//		public virtual bool SoulReaper ()
-		//		{
-		//			return Cast ("Soul Reaper", () => Usable ("Soul Reaper") && (HasUnholy || HasDeath));
-		//		}
-		//
-		//		public virtual bool SoulReaper ()
-		//		{
-		//			return Cast ("Soul Reaper", () => Usable ("Soul Reaper") && (HasUnholy || HasDeath));
-		//		}
-		//
-		//		public virtual bool SoulReaper ()
-		//		{
-		//			return Cast ("Soul Reaper", () => Usable ("Soul Reaper") && (HasUnholy || HasDeath));
-		//		}
-		//
-		//		public virtual bool SoulReaper ()
-		//		{
-		//			return Cast ("Soul Reaper", () => Usable ("Soul Reaper") && (HasUnholy || HasDeath));
-		//		}
-		//
-		//		public virtual bool SoulReaper ()
-		//		{
-		//			return Cast ("Soul Reaper", () => Usable ("Soul Reaper") && (HasUnholy || HasDeath));
-		//		}
+		public virtual bool Interrupt ()
+		{
+			var targets = Adds;
+			targets.Add (Target);
+
+			if (Usable ("Mind Freeze")) {
+				if (InArena || InBG) {
+					CycleTarget = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCastingAndInterruptible () && u.IsInCombatRangeAndLoS && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (MindFreeze (CycleTarget))
+							return true;
+					}
+				} else {
+					CycleTarget = targets.Where (u => u.IsCastingAndInterruptible () && u.IsInCombatRangeAndLoS && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (MindFreeze (CycleTarget))
+							return true;
+					}
+				}
+			}
+
+			if (Usable ("Strangulate")) {
+				if (InArena || InBG) {
+					CycleTarget = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsHealer && u.IsCastingAndInterruptible () && u.IsInLoS && u.CombatRange <= 30 && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (Strangulate (CycleTarget))
+							return true;
+					}
+					CycleTarget = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCastingAndInterruptible () && u.IsInLoS && u.CombatRange <= 30 && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (Strangulate (CycleTarget))
+							return true;
+					}
+				} else {
+					CycleTarget = targets.Where (u => u.IsCastingAndInterruptible () && u.IsInLoS && u.CombatRange <= 30 && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (Strangulate (CycleTarget))
+							return true;
+					}
+				}
+			}
+
+			if (Usable ("Asphyxiate")) {
+				if (InArena || InBG) {
+					CycleTarget = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsHealer && u.IsCastingAndInterruptible () && u.IsInLoS && u.CombatRange <= 30 && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (Asphyxiate (CycleTarget))
+							return true;
+					}
+					CycleTarget = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCastingAndInterruptible () && u.IsInLoS && u.CombatRange <= 30 && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (Asphyxiate (CycleTarget))
+							return true;
+					}
+				} else {
+					CycleTarget = targets.Where (u => u.IsCastingAndInterruptible () && u.IsInLoS && u.CombatRange <= 30 && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (Asphyxiate (CycleTarget))
+							return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		public virtual bool Heal ()
+		{
+			if (Health <= 0.6) {
+				if (DeathSiphon ())
+					return true;
+			}
+			if (!InRaid && Health < 0.9) {
+				if (DeathStrike ())
+					return true;
+			}
+			if (Health < 0.7) {
+				if (Lichborne ())
+					return true;
+			}
+			if (Health < 0.5) {
+				if (VampiricBlood ())
+					return true;
+			}
+			if (Health < 0.3 && !Me.HasAura ("Army of the Dead") && !Me.HasAura ("Dancing Rune Weapon") && !Me.HasAura ("Vampiric Blood")) {
+				if (IceboundFortitude ())
+					return true;
+			}
+			if (Health < 0.8 && !Me.HasAura ("Army of the Dead") && !Me.HasAura ("Icebound Fortitude") && !Me.HasAura ("Bone Shield") && !Me.HasAura ("Vampiric Blood")) {
+				if (DancingRuneWeapon ())
+					return true;
+			}
+			if (Health < 0.5) {
+				if (DeathPact ())
+					return true;
+			}
+			
+			return false;
+		}
+
+		public virtual bool MindFreeze (UnitObject u)
+		{
+			return Cast ("Mind Freeze", u, () => Usable ("MindFreeze"));
+		}
+
+		public virtual bool Strangulate (UnitObject u)
+		{
+			return Cast ("Strangulate", u, () => Usable ("Strangulate") && (HasBlood || HasDeath) && u.IsInLoS && u.CombatRange <= 30);
+		}
+
+		public virtual bool Asphyxiate (UnitObject u)
+		{
+			return Cast ("Asphyxiate", u, () => Usable ("Asphyxiate") && u.IsInLoS && u.CombatRange <= 30);
+		}
+
+		public virtual bool DeathSiphon ()
+		{
+			return Cast ("Death Siphon", () => Usable ("Death Siphon") && HasDeath && Target.IsInLoS && Target.CombatRange <= 30);
+		}
+
+		public virtual bool DeathStrike ()
+		{
+			return Cast ("Death Strike", () => Usable ("Death Strike") && ((HasFrost && HasUnholy) || (HasFrost && HasDeath) || (HasDeath && HasUnholy) || Death == 2));
+		}
 
 		public virtual bool BreathofSindragosa ()
 		{
 			return CastSelf ("Breath of Sindragosa", () => Usable ("Breath of Sindragosa") && RunicPower > 0 && (IsElite || IsPlayer) && Target.IsInLoS && Target.CombatRange <= 10);
 		}
+
+		public virtual bool Lichborne ()
+		{
+			return CastSelf ("Lichborne", () => Usable ("Lichborne"));
+		}
+
+		public virtual bool ArmyoftheDead ()
+		{
+			return CastSelf ("Army of the Dead", () => Usable ("Army of the Dead") && (IsPlayer || IsBoss (Target)) && ((HasBlood && HasFrost && HasUnholy) || (HasDeath && HasFrost && HasUnholy) || (HasBlood && HasDeath && HasUnholy) || (HasBlood && HasFrost && HasDeath) || ((HasBlood || HasFrost || HasUnholy) && Death >= 2) || Death >= 3));
+		}
+
+		public virtual bool VampiricBlood ()
+		{
+			return CastSelf ("Vampiric Blood", () => Usable ("Vampiric Blood"));
+		}
+
+		public virtual bool IceboundFortitude ()
+		{
+			return CastSelf ("Icebound Fortitude", () => Usable ("Icebound Fortitude"));
+		}
+
+		public virtual bool DancingRuneWeapon ()
+		{
+			return CastSelf ("Dancing Rune Weapon", () => Usable ("Dancing Rune Weapon") && Target.IsInLoS && Target.CombatRange <= 30);
+		}
+
+		public virtual bool DeathPact ()
+		{
+			return CastSelf ("Death Pact", () => Usable ("Death Pact"));
+		}
+
+		//		public virtual bool VampiricBlood() {
+		//			return CastSelf ("Vampiric Blood", () => Usable ("Vampiric Blood"));
+		//		}
 	}
 }
 

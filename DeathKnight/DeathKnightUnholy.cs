@@ -34,6 +34,56 @@ namespace ReBot
 
 		public override void Combat ()
 		{
+			if (Health < 0.9) {
+				if (Heal ())
+					return;}
+
+			if (CastOnTerrain ("Desecrated Ground", Target.Position, () => HasSpell ("Desecrated Ground") && Me.MovementSpeed < 1))
+				return;
+
+			if (!Me.HasAura ("Dancing Rune Weapon") && !Me.HasAura ("Icebound Fortitude") && !Me.HasAura ("Vampiric Blood")) {
+				if (ArmyoftheDead ())
+					return;
+			}
+			if (Cast ("Rune Tap", () => HasSpell ("Rune Tap") && Me.HasRune (RuneType.Blood) && Health < 0.5 && !Me.HasAura ("Army of the Dead") && !Me.HasAura ("Dancing Rune Weapon") && !Me.HasAura ("Bone Shield") && !Me.HasAura ("Vampiric Blood") && !Me.HasAura ("Icebound Fortitude")))
+				return;
+
+			var targets = Adds;
+			targets.Add (Target);
+
+			if (Interrupt ())
+				return;
+
+			if (HasSpell ("Anti-Magic Zone") && Cooldown ("Anti-Magic Zone") == 0 && !HasGlobalCooldown ()) {
+				var AntiMagicZoneTarget = targets.Where (u => u.IsCasting && u.Target == (UnitObject)Me && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CastOnTerrain ("Anti-Magic Zone", Me.Position, () => Health <= 0.5 && !Me.HasAura ("Anti-Magic Shell") && AntiMagicZoneTarget != null))
+					return;
+			}
+
+			if (HasSpell ("Anti-Magic Shell") && Cooldown ("Anti-Magic Shell") == 0 && !HasGlobalCooldown ()) {
+				var AntiMagicShellTarget = targets.Where (u => u.IsCasting && u.Target == (UnitObject)Me && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CastSelf ("Anti-Magic Shell", () => AntiMagicShellTarget != null && Health <= 0.8))
+					return;
+			}
+
+			if (Cast ("Chains of Ice", () => HasSpell ("Chains of Ice") && IsPlayer && Target.IsFleeing && !Target.HasAura ("Chains of Ice") && Target.MovementSpeed >= 1))
+				return;
+			if (Cast ("Remorseless Winter", () => HasSpell ("Remorseless Winter") && (EnemyInRange (8) >= 2 || (IsPlayer && Target.CombatRange < 8))))
+				return;
+
+			// if (CastSelf("Dark Simulacrum", () => Target.IsPlayer && Target.IsCasting && Me.GetPower(WoWPowerType.RunicPower) >= 20)) return;
+			// if (CastSelf("Dark Simulacrum", () => Target.HpGreaterThanOrElite(0.2) && Target.IsCasting && Me.GetPower(WoWPowerType.RunicPower) >= 20)) return;
+
+			if (Health < 0.45) {
+				if (Healthstone ())
+					return;
+			}
+
+			if (Me.HasAlivePet) {
+				Me.PetAssist ();
+			}
+
+
 			//actions=auto_attack
 			//actions+=/deaths_advance,if=movement.remains>2
 			//actions+=/run_action_list,name=bos,if=talent.breath_of_sindragosa.enabled
