@@ -41,19 +41,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rogue\SerbRogue_Common.cs" />
     <Compile Include="Rogue\SerbRogueCombatSC.cs" />
     <Compile Include="Rogue\SerbRogueSubtletySC.cs" />
     <Compile Include="Rogue\SerbRogueAssassinationSC.cs" />
-    <Compile Include="Druid\SerbDruid_Common.cs" />
     <Compile Include="Druid\SerbDruidFeralSC.cs" />
     <Compile Include="Druid\SerbDruidBalanceSC.cs" />
-    <Compile Include="Hunter\SerbHunter_Common.cs" />
     <Compile Include="Hunter\SerbHunterBeastmasterSC.cs" />
-    <Compile Include="Warlock\SerbWarlock_Common.cs" />
     <Compile Include="Warlock\SerbWarlockDemonologySC.cs" />
-    <Compile Include="DeathKnight\DeathKnight_Common.cs" />
-    <Compile Include="DeathKnight\DeathKnightUnholy.cs" />
+    <Compile Include="Rogue\SerbRogue.cs" />
+    <Compile Include="Druid\SerbDruid.cs" />
+    <Compile Include="DeathKnight\SerbDeathKnight.cs" />
+    <Compile Include="DeathKnight\SerbDeathKnightUnholy.cs" />
+    <Compile Include="Hunter\SerbHunter.cs" />
+    <Compile Include="Warlock\SerbWarlock.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shaman\" />
