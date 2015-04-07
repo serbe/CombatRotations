@@ -271,7 +271,7 @@ namespace ReBot
 
 		public virtual bool DarkTransformation ()
 		{
-			return Cast ("Dark Transformation", () => Usable ("Dark Transformation") && Me.HasAlivePet && (HasSpell ("Enhanced Dark Transformation") || (HasDeath || HasUnholy)));
+			return Cast ("Dark Transformation", () => Usable ("Dark Transformation") && Me.HasAlivePet && Me.GetAura("Shadow Infusion").StackCount == 5 && (HasSpell ("Enhanced Dark Transformation") || (HasDeath || HasUnholy)));
 		}
 
 		public virtual bool BloodTap ()
@@ -314,22 +314,19 @@ namespace ReBot
 			return Cast ("Empower Rune Weapon", () => Usable ("Empower Rune Weapon") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
-
-
-
-		public virtual bool SoulReaper ()
+		public virtual bool Outbreak ()
 		{
-			return Cast ("Soul Reaper", () => Usable ("Soul Reaper") && (HasUnholy || HasDeath));
+			return Cast ("Outbreak", () => Usable ("Outbreak") && (!HasGlyph(59332) || RunicPower >= 30) && Target.IsInLoS && Target.CombatRange <= 30);
 		}
 
-		public virtual bool SoulReaper ()
+		public virtual bool PlagueStrike ()
 		{
-			return Cast ("Soul Reaper", () => Usable ("Soul Reaper") && (HasUnholy || HasDeath));
+			return Cast ("Plague Strike", () => Usable ("Plague Strike") && (HasUnholy || HasDeath));
 		}
 
-		public virtual bool SoulReaper ()
+		public virtual bool FesteringStrike ()
 		{
-			return Cast ("Soul Reaper", () => Usable ("Soul Reaper") && (HasUnholy || HasDeath));
+			return Cast ("Festering Strike", () => Usable ("Festering Strike") && ((HasFrost && HasBlood) || (HasFrost && HasDeath) || (HasDeath && HasBlood) || Death == 2));
 		}
 
 		public virtual bool SoulReaper ()

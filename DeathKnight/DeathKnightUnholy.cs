@@ -182,34 +182,136 @@ namespace ReBot
 					return true;
 			}
 			//actions.single_target+=/unholy_blight,if=!talent.necrotic_plague.enabled&disease.min_remains<3
+			if (!HasSpell ("Necrotic Plague") && MinDisease (Target) < 3) {
+				if (UnholyBlight ())
+					return true;
+			}
 			//actions.single_target+=/unholy_blight,if=talent.necrotic_plague.enabled&dot.necrotic_plague.remains<1
+			if (HasSpell ("Necrotic Plague") && Target.AuraTimeRemaining("Necrotic Plague") < 1) {
+				if (UnholyBlight ())
+					return true;
+			}			
 			//actions.single_target+=/death_coil,if=runic_power>90
+			if (RunicPower > 90) {
+				if (DeathCoil ())
+					return true;
+			}
 			//actions.single_target+=/soul_reaper,if=(target.health.pct-3*(target.health.pct%target.time_to_die))<=45
+			if (Target.HealthFraction * 100 - 3 * (Target.HealthFraction * 100 / TimeToDie (Target)) <= 45) {
+				if (SoulReaper ())
+					return true;
+			}
 			//actions.single_target+=/blood_tap,if=((target.health.pct-3*(target.health.pct%target.time_to_die))<=45)&cooldown.soul_reaper.remains=0
+			if ((Target.HealthFraction * 100 - 3 * (Target.HealthFraction * 100 / TimeToDie (Target)) <= 45) && Cooldown ("Soul Reaper") == 0)
+				BloodTap ();
 			//actions.single_target+=/death_and_decay,if=(!talent.unholy_blight.enabled|!talent.necrotic_plague.enabled)&unholy=2
+			if ((!HasSpell ("Unholy Blight") || !HasSpell ("Necrotic Plague")) && Unholy == 2) {
+				if (DeathandDecay ())
+					return true;
+			}
 			//actions.single_target+=/defile,if=unholy=2
+			if (Unholy == 2) {
+				if (Defile ())
+					return true;
+			}
 			//actions.single_target+=/plague_strike,if=!disease.min_ticking&unholy=2
+			if (MinDisease (Target) == 0 && Unholy == 2) {
+				if (PlagueStrike ())
+					return true;
+			}
 			//actions.single_target+=/scourge_strike,if=unholy=2
+			if (Unholy == 2) {
+				if (ScourgeStrike ())
+					return true;
+			}
 			//actions.single_target+=/death_coil,if=runic_power>80
+			if (RunicPower > 80) {
+				if (DeathCoil ())
+					return true;
+			}
 			//actions.single_target+=/festering_strike,if=talent.necrotic_plague.enabled&talent.unholy_blight.enabled&dot.necrotic_plague.remains<cooldown.unholy_blight.remains%2
+			if (HasSpell ("Necrotic Plague") && HasSpell ("Unholy Blight") && Target.AuraTimeRemaining ("Necrotic Plague", true) < Cooldown ("Unholy Blight") / 2) {
+				if (FesteringStrike ())
+					return true;
+			}
 			//actions.single_target+=/festering_strike,if=blood=2&frost=2&(((Frost-death)>0)|((Blood-death)>0))
+			if (Blood == 2 && Frost == 2 && (((Frost - Death) > 0) || ((Blood - Death) > 0))) {
+				if (FesteringStrike ())
+					return true;
+			}
 			//actions.single_target+=/festering_strike,if=(blood=2|frost=2)&(((Frost-death)>0)&((Blood-death)>0))
+			if ((Blood == 2 || Frost == 2) && (((Frost - Death) > 0) && ((Blood - Death) > 0))) {
+				if (FesteringStrike ())
+					return true;
+			}
 			//actions.single_target+=/defile,if=blood=2|frost=2
+			if (Blood == 2 || Frost == 2) {
+				if (Defile ())
+					return true;
+			}
 			//actions.single_target+=/plague_strike,if=!disease.min_ticking&(blood=2|frost=2)
+			if (MinDisease (Target) == 0 && (Blood == 2 || Frost == 2)) {
+				if (PlagueStrike ())
+					return true;
+			}
 			//actions.single_target+=/scourge_strike,if=blood=2|frost=2
+			if (Blood == 2 || Frost == 2) {
+				if (ScourgeStrike ())
+					return true;
+			}
 			//actions.single_target+=/festering_strike,if=((Blood-death)>1)
+			if ((Blood - Death) > 1) {
+				if (FesteringStrike ())
+					return true;
+			}
 			//actions.single_target+=/blood_boil,if=((Blood-death)>1)
+			if ((Blood - Death) > 1) {
+				if (BloodBoil ())
+					return true;
+			}
 			//actions.single_target+=/festering_strike,if=((Frost-death)>1)
+			if ((Frost - Death) > 1) {
+				if (FesteringStrike ())
+					return true;
+			}
 			//actions.single_target+=/blood_tap,if=((target.health.pct-3*(target.health.pct%target.time_to_die))<=45)&cooldown.soul_reaper.remains=0
+			if ((Target.HealthFraction * 100 - 3 * (Target.HealthFraction * 100 / TimeToDie (Target)) <= 45) && Cooldown ("Soul Reaper") == 0)
+				BloodTap ();
 			//actions.single_target+=/summon_gargoyle
+			if (SummonGargoyle ())
+				return true;
 			//actions.single_target+=/death_and_decay,if=(!talent.unholy_blight.enabled|!talent.necrotic_plague.enabled)
+			if (!HasSpell ("Unholy Blight") || !HasSpell ("Necrotic Plague")) {
+				if (DeathandDecay ())
+					return true;
+			}
 			//actions.single_target+=/defile
+			if (Defile ())
+				return true;
 			//actions.single_target+=/blood_tap,if=talent.defile.enabled&cooldown.defile.remains=0
+			if (HasSpell ("Defile") && Cooldown ("Defile") == 0)
+				BloodTap ();
 			//actions.single_target+=/plague_strike,if=!disease.min_ticking
+			if (MinDisease (Target) == 0) {
+				if (PlagueStrike ())
+					return true;
+			}
 			//actions.single_target+=/dark_transformation
+			if (DarkTransformation ())
+				return true;
 			//actions.single_target+=/blood_tap,if=buff.blood_charge.stack>10&(buff.sudden_doom.react|(buff.dark_transformation.down&unholy<=1))
+			if (BloodCharge > 10 && (Me.HasAura ("Sudden Doom") || (!Me.HasAura ("Dark Transformation") && Unholy <= 1)))
+				BloodTap ();
 			//actions.single_target+=/death_coil,if=buff.sudden_doom.react|(buff.dark_transformation.down&unholy<=1)
+			if (Me.HasAura ("Sudden Doom") || (Me.HasAura ("Dark Transformation") && Unholy <= 1)) {
+				if (DeathCoil ())
+					return true;
+			}
 			//actions.single_target+=/scourge_strike,if=!((target.health.pct-3*(target.health.pct%target.time_to_die))<=45)|(Unholy>=2)
+			if (!((Target.HealthFraction * 100 - 3 * (Target.HealthFraction * 100 / TimeToDie (Target))) <= 45) || (Unholy >= 2)) {
+				if (ScourgeStrike ())
+					return true;
+			}
 			//actions.single_target+=/blood_tap
 			//actions.single_target+=/festering_strike,if=!((target.health.pct-3*(target.health.pct%target.time_to_die))<=45)|(((Frost-death)>0)&((Blood-death)>0))
 			//actions.single_target+=/death_coil
