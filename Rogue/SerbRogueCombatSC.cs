@@ -96,29 +96,14 @@ namespace ReBot
 			var targets = Adds;
 			targets.Add (Target);
 
-			if (Health < 0.55 || (Health < 0.4 && Me.Auras.Any (x => x.IsDebuff && x.DebuffType.Contains ("magic"))))
-				CloakofShadows ();
-			if (Health < 0.65)
-				CombatReadiness ();
-			if (Health < 0.4)
-				Evasion ();
-			if (Health < 0.45) {
-				if (Healthstone ())
-					return;
-			}
-
-			if ((!InRaid && !InInstance && Health < 0.9) || (!InRaid && Health < 0.3)) {
-				if (Recuperate ())
+			if (Health < 0.9) {
+				if (Heal ())
 					return;
 			}
 
 			if (Me.CanNotParticipateInCombat ())
 				Freedom ();
 
-			if (!Me.IsMoving && Health < 0.5) {
-				if (SmokeBomb ())
-					return;
-			}
 
 			if (!Me.HasAura ("Stealth")) {
 				Interrupt ();
@@ -134,43 +119,12 @@ namespace ReBot
 			if (HasGlobalCooldown () && GCD)
 				return;
 
+			if (CC ())
+				return;
+
 			if (HasAura ("Blade Flurry") && !InRaid && !InInstance && IncapacitatedInRange (8) && EnemyInRange (8) < 3)
 				CancelAura ("Blade Flurry");
-
-			if ((InArena || InBG) && Health < 0.7) {
-				if (Feint ())
-					return;
-			}
-
-			if (Usable ("Feint") && Health < 0.8 && (InRaid || InInstance)) {
-				var UseFeint = targets.Where (x => IsBoss (x) && x.CombatRange <= 30 && x.IsCasting && x.RemainingCastTime > Me.AuraTimeRemaining ("Feint")).DefaultIfEmpty (null).FirstOrDefault ();
-				if (UseFeint != null) {
-					if (Feint ())
-						return;
-				}
-			}
-
-			if ((InBG && InArena) && IsPlayer && Target.CanParticipateInCombat) {
-				if (CheapShot ())
-					return;
-			}
-
-			if (!InRaid && Usable ("Gouge") && EnemyInRange (6) == 2 && Multitarget) {
-				CycleTarget = Adds.Where (x => x.IsInCombatRangeAndLoS && x.CanParticipateInCombat && Target != x).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Gouge (CycleTarget))
-						return;
-				}
-			}
-
-			if (!InRaid && Usable ("Blind") && EnemyInRange (6) == 2 && Multitarget) {
-				CycleTarget = Adds.Where (x => x.IsInLoS && x.CombatRange <= 15 && x.CanParticipateInCombat && Target != x).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Blind (CycleTarget))
-						return;
-				}
-			}
-
+			
 			// actions=potion,name=draenic_agility,if=buff.bloodlust.react|target.time_to_die<40|(buff.adrenaline_rush.up&(trinket.proc.any.react|trinket.stacking_proc.any.react|buff.archmages_greater_incandescence_agi.react))
 			// actions+=/kick
 			// actions+=/preparation,if=!buff.vanish.up&cooldown.vanish.remains>30

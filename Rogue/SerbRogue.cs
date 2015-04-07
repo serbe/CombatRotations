@@ -161,8 +161,6 @@ namespace ReBot
 			}
 		}
 
-		// public bool TargettingMe { get { return Target.Target ==(UnitObject)Me; } }
-
 		public double Time {
 			get {
 				TimeSpan CombatTime = DateTime.Now.Subtract (StartBattle);
@@ -645,6 +643,93 @@ namespace ReBot
 		public virtual bool Dispatch ()
 		{
 			return Cast ("Dispatch", () => Usable ("Dispatch") && ((HasCost (30) && TargetHealth < 0.35) || Me.HasAura("Blindside")));
+		}
+
+		public virtual bool Heal()
+		{
+			var targets = Adds;
+			targets.Add (Target);
+
+			if ((!InRaid && !InInstance && Health < 0.9) || (!InRaid && Health < 0.3)) {
+				if (Recuperate ())
+					return true;
+			}
+			if (Health < 0.6 && Me.Auras.Any (x => x.IsDebuff && x.DebuffType.Contains ("magic")))
+				CloakofShadows ();
+			if (Health < 0.65)
+				CombatReadiness ();
+			if (Health < 0.4)
+				Evasion ();
+			if (Health < 0.45) {
+				if (Healthstone ())
+					return true;
+			}
+			if (!Me.IsMoving && Health < 0.5) {
+				if (SmokeBomb ())
+					return true;
+			}
+			if (Usable ("Feint")) {
+				if ((InArena || InBG) && Health < 0.7) {
+					if (Feint ())
+						return true;
+				}
+				if (Health < 0.8 && (InRaid || InInstance)) {
+					var UseFeint = targets.Where (x => IsBoss (x) && x.CombatRange <= 30 && x.IsCasting && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (UseFeint != null) {
+						if (Feint ())
+							return true;
+					}
+				}
+				if (IsBoss(Target) && Target.IsCasting && Target.RemainingCastTime > 0) {
+					if (Feint())
+						return true;
+				}
+			}
+
+			return false;
+		}
+
+		public virtual bool CC() {
+			if (Target.CanParticipateInCombat) {
+				if (CheapShot ())
+					return true;
+			}
+
+			if (InArena || InBG) {
+				if (Usable ("Gouge") && EnemyInRange (8) == 2 && Multitarget) {
+					CycleTarget = API.Players.Where (p => p.IsPlayer && p.IsEnemy && !p.IsDead && p.IsInCombatRangeAndLoS && p.CanParticipateInCombat && Target != p).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (Gouge (CycleTarget))
+							return true;
+					}
+				}
+
+				if (Usable ("Blind") && EnemyInRange (8) == 2 && Multitarget) {
+					CycleTarget = API.Players.Where (p => p.IsPlayer && p.IsEnemy && !p.IsDead && p.IsInLoS && p.CombatRange <= 15 && p.CanParticipateInCombat && Target != p).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (Blind (CycleTarget))
+							return true;
+					}
+				}
+			} else {
+				if (!InRaid && Usable ("Gouge") && EnemyInRange (8) == 2 && Multitarget) {
+					CycleTarget = Adds.Where (x => x.IsInCombatRangeAndLoS && x.CanParticipateInCombat && Target != x).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (Gouge (CycleTarget))
+							return true;
+					}
+				}
+
+				if (!InRaid && Usable ("Blind") && EnemyInRange (8) == 2 && Multitarget) {
+					CycleTarget = Adds.Where (x => x.IsInLoS && x.CombatRange <= 15 && x.CanParticipateInCombat && Target != x).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (Blind (CycleTarget))
+							return true;
+					}
+				}			
+			}
+
+			return false;
 		}
 	}
 }
