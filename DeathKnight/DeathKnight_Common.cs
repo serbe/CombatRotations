@@ -1,5 +1,6 @@
 ﻿using System;
 using ReBot.API;
+using Newtonsoft.Json;
 
 namespace ReBot
 {
@@ -40,7 +41,7 @@ namespace ReBot
 
 		public bool IsBoss (UnitObject o)
 		{
-			return(o.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || o.Level >= Me.Level + BossLevelIncrease;
+			return (o.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || o.Level >= Me.Level + BossLevelIncrease;
 		}
 
 		public bool IsPlayer {
@@ -153,26 +154,17 @@ namespace ReBot
 
 		public double FrostDiseaseRemaining (UnitObject o)
 		{
-			if (HasFrostDisease (o))
-				return o.AuraTimeRemaining ("Frost Fever", true);
-			else
-				return 0;
+			return HasFrostDisease (o) ? o.AuraTimeRemaining ("Frost Fever", true) : 0;
 		}
 
 		public double BloodDiseaseRemaining (UnitObject o)
 		{
-			if (HasBloodDisease (o))
-				return o.AuraTimeRemaining ("Blood Plague", true);
-			else
-				return 0;
+			return HasBloodDisease (o) ? o.AuraTimeRemaining ("Blood Plague", true) : 0;
 		}
 
 		public double MinDisease (UnitObject o)
 		{
-			if (FrostDiseaseRemaining (o) < BloodDiseaseRemaining (o))
-				return FrostDiseaseRemaining (o);
-			else
-				return BloodDiseaseRemaining (o);
+			return FrostDiseaseRemaining (o) < BloodDiseaseRemaining (o) ? FrostDiseaseRemaining (o) : BloodDiseaseRemaining (o);
 		}
 
 		public double Cooldown (string s)
@@ -208,9 +200,7 @@ namespace ReBot
 		public virtual bool Healthstone ()
 		{
 			// Analysis disable once CompareOfFloatsByEqualityOperator
-			if (API.HasItem (5512) && API.ItemCooldown (5512) == 0)
-				return API.UseItem (5512);
-			return false;
+			return API.HasItem (5512) && API.ItemCooldown (5512) == 0 && API.UseItem (5512);
 		}
 
 		public virtual bool CrystalOfInsanity ()
@@ -271,7 +261,7 @@ namespace ReBot
 
 		public virtual bool DarkTransformation ()
 		{
-			return Cast ("Dark Transformation", () => Usable ("Dark Transformation") && Me.HasAlivePet && Me.GetAura("Shadow Infusion").StackCount == 5 && (HasSpell ("Enhanced Dark Transformation") || (HasDeath || HasUnholy)));
+			return Cast ("Dark Transformation", () => Usable ("Dark Transformation") && Me.HasAlivePet && Me.GetAura ("Shadow Infusion").StackCount == 5 && (HasSpell ("Enhanced Dark Transformation") || (HasDeath || HasUnholy)));
 		}
 
 		public virtual bool BloodTap ()
@@ -316,7 +306,12 @@ namespace ReBot
 
 		public virtual bool Outbreak ()
 		{
-			return Cast ("Outbreak", () => Usable ("Outbreak") && (!HasGlyph(59332) || RunicPower >= 30) && Target.IsInLoS && Target.CombatRange <= 30);
+			return Cast ("Outbreak", () => Usable ("Outbreak") && (!HasGlyph (59332) || RunicPower >= 30) && Target.IsInLoS && Target.CombatRange <= 30);
+		}
+
+		public virtual bool Outbreak (UnitObject u)
+		{
+			return Cast ("Outbreak", u, () => Usable ("Outbreak") && (!HasGlyph (59332) || RunicPower >= 30) && u.IsInLoS && u.CombatRange <= 30);
 		}
 
 		public virtual bool PlagueStrike ()
@@ -329,32 +324,35 @@ namespace ReBot
 			return Cast ("Festering Strike", () => Usable ("Festering Strike") && ((HasFrost && HasBlood) || (HasFrost && HasDeath) || (HasDeath && HasBlood) || Death == 2));
 		}
 
-		public virtual bool SoulReaper ()
+		//		public virtual bool SoulReaper ()
+		//		{
+		//			return Cast ("Soul Reaper", () => Usable ("Soul Reaper") && (HasUnholy || HasDeath));
+		//		}
+		//
+		//		public virtual bool SoulReaper ()
+		//		{
+		//			return Cast ("Soul Reaper", () => Usable ("Soul Reaper") && (HasUnholy || HasDeath));
+		//		}
+		//
+		//		public virtual bool SoulReaper ()
+		//		{
+		//			return Cast ("Soul Reaper", () => Usable ("Soul Reaper") && (HasUnholy || HasDeath));
+		//		}
+		//
+		//		public virtual bool SoulReaper ()
+		//		{
+		//			return Cast ("Soul Reaper", () => Usable ("Soul Reaper") && (HasUnholy || HasDeath));
+		//		}
+		//
+		//		public virtual bool SoulReaper ()
+		//		{
+		//			return Cast ("Soul Reaper", () => Usable ("Soul Reaper") && (HasUnholy || HasDeath));
+		//		}
+
+		public virtual bool BreathofSindragosa ()
 		{
-			return Cast ("Soul Reaper", () => Usable ("Soul Reaper") && (HasUnholy || HasDeath));
+			return CastSelf ("Breath of Sindragosa", () => Usable ("Breath of Sindragosa") && RunicPower > 0 && (IsElite || IsPlayer) && Target.IsInLoS && Target.CombatRange <= 10);
 		}
-
-		public virtual bool SoulReaper ()
-		{
-			return Cast ("Soul Reaper", () => Usable ("Soul Reaper") && (HasUnholy || HasDeath));
-		}
-
-		public virtual bool SoulReaper ()
-		{
-			return Cast ("Soul Reaper", () => Usable ("Soul Reaper") && (HasUnholy || HasDeath));
-		}
-
-		public virtual bool SoulReaper ()
-		{
-			return Cast ("Soul Reaper", () => Usable ("Soul Reaper") && (HasUnholy || HasDeath));
-		}
-
-		public virtual bool SoulReaper ()
-		{
-			return Cast ("Soul Reaper", () => Usable ("Soul Reaper") && (HasUnholy || HasDeath));
-		}
-
-
 	}
 }
 

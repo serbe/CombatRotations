@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using ReBot.API;
 
 namespace ReBot
@@ -36,7 +38,7 @@ namespace ReBot
 			//actions+=/deaths_advance,if=movement.remains>2
 			//actions+=/run_action_list,name=bos,if=talent.breath_of_sindragosa.enabled
 			if (HasSpell ("Breath of Sindragosa")) {
-				if (BOS_action ())
+				if (Bos ())
 					return;
 			}
 			//actions+=/antimagic_shell,damage=100000
@@ -52,17 +54,17 @@ namespace ReBot
 			//actions+=/potion,name=draenic_strength,if=buff.dark_transformation.up&target.time_to_die<=60
 			//actions+=/run_action_list,name=aoe,if=(!talent.necrotic_plague.enabled&active_enemies>=2)|active_enemies>=4
 			if ((!HasSpell ("Necrotic Plague") && EnemyInRange (10) >= 2) || EnemyInRange (10) >= 4) {
-				if (AOE_action ())
+				if (Aoe ())
 					return;
 			}
 			//actions+=/run_action_list,name=single_target,if=(!talent.necrotic_plague.enabled&active_enemies<2)|active_enemies<4
 			if ((!HasSpell ("Necrotic Plague") && EnemyInRange (10) < 2) || EnemyInRange (10) < 4) {
-				if (Single_action ())
+				if (Single_target ())
 					return;
 			}
 		}
 
-		public bool BOS_action ()
+		public bool Bos ()
 		{
 			//actions.bos=antimagic_shell,damage=100000,if=(dot.breath_of_sindragosa.ticking&runic_power<25)|cooldown.breath_of_sindragosa.remains>40
 			if (Me.HealthFraction <= 0.75 && ((Me.HasAura ("Breath of Sindragosa") && RunicPower < 25) || Cooldown ("Breath of Sindragosa") > 40))
@@ -75,20 +77,20 @@ namespace ReBot
 			//actions.bos+=/use_item,slot=trinket2,if=dot.breath_of_sindragosa.ticking
 			//actions.bos+=/potion,name=draenic_strength,if=dot.breath_of_sindragosa.ticking
 			//actions.bos+=/run_action_list,name=bos_st
-			if (BOS_st_action ())
+			if (Bos_st ())
 				return true;
 
 			return false;
 		}
 
-		public bool AOE_action ()
+		public bool Aoe ()
 		{
 			//actions.aoe=unholy_blight
 			if (UnholyBlight ())
 				return true;
 			//actions.aoe+=/call_action_list,name=spread,if=!dot.blood_plague.ticking|!dot.frost_fever.ticking|(!dot.necrotic_plague.ticking&talent.necrotic_plague.enabled)
 			if (!Target.HasAura ("Blood Plague", true) || !Target.HasAura ("Frost Fever", true) || (!Target.HasAura ("Necrotic Plague", true) && HasSpell ("Necrotic Plague"))) {
-				if (Spread_action ())
+				if (Spread ())
 					return true;
 			}
 			//actions.aoe+=/defile
@@ -159,7 +161,7 @@ namespace ReBot
 			return false;
 		}
 
-		public bool Single_action ()
+		public bool Single_target ()
 		{
 			//actions.single_target=plague_leech,if=(cooldown.outbreak.remains<1)&((blood<1&frost<1)|(blood<1&unholy<1)|(frost<1&unholy<1))
 			if ((Cooldown ("Outbreak") < 1) && ((Blood < 1 && Frost < 1) || (Blood < 1 && Unholy < 1) || (Frost < 1 && Unholy < 1))) {
@@ -187,7 +189,7 @@ namespace ReBot
 					return true;
 			}
 			//actions.single_target+=/unholy_blight,if=talent.necrotic_plague.enabled&dot.necrotic_plague.remains<1
-			if (HasSpell ("Necrotic Plague") && Target.AuraTimeRemaining("Necrotic Plague") < 1) {
+			if (HasSpell ("Necrotic Plague") && Target.AuraTimeRemaining ("Necrotic Plague") < 1) {
 				if (UnholyBlight ())
 					return true;
 			}			
@@ -202,6 +204,7 @@ namespace ReBot
 					return true;
 			}
 			//actions.single_target+=/blood_tap,if=((target.health.pct-3*(target.health.pct%target.time_to_die))<=45)&cooldown.soul_reaper.remains=0
+			// Analysis disable once CompareOfFloatsByEqualityOperator
 			if ((Target.HealthFraction * 100 - 3 * (Target.HealthFraction * 100 / TimeToDie (Target)) <= 45) && Cooldown ("Soul Reaper") == 0)
 				BloodTap ();
 			//actions.single_target+=/death_and_decay,if=(!talent.unholy_blight.enabled|!talent.necrotic_plague.enabled)&unholy=2
@@ -215,6 +218,7 @@ namespace ReBot
 					return true;
 			}
 			//actions.single_target+=/plague_strike,if=!disease.min_ticking&unholy=2
+			// Analysis disable once CompareOfFloatsByEqualityOperator
 			if (MinDisease (Target) == 0 && Unholy == 2) {
 				if (PlagueStrike ())
 					return true;
@@ -250,6 +254,7 @@ namespace ReBot
 					return true;
 			}
 			//actions.single_target+=/plague_strike,if=!disease.min_ticking&(blood=2|frost=2)
+			// Analysis disable once CompareOfFloatsByEqualityOperator
 			if (MinDisease (Target) == 0 && (Blood == 2 || Frost == 2)) {
 				if (PlagueStrike ())
 					return true;
@@ -275,6 +280,7 @@ namespace ReBot
 					return true;
 			}
 			//actions.single_target+=/blood_tap,if=((target.health.pct-3*(target.health.pct%target.time_to_die))<=45)&cooldown.soul_reaper.remains=0
+			// Analysis disable once CompareOfFloatsByEqualityOperator
 			if ((Target.HealthFraction * 100 - 3 * (Target.HealthFraction * 100 / TimeToDie (Target)) <= 45) && Cooldown ("Soul Reaper") == 0)
 				BloodTap ();
 			//actions.single_target+=/summon_gargoyle
@@ -289,9 +295,11 @@ namespace ReBot
 			if (Defile ())
 				return true;
 			//actions.single_target+=/blood_tap,if=talent.defile.enabled&cooldown.defile.remains=0
+			// Analysis disable once CompareOfFloatsByEqualityOperator
 			if (HasSpell ("Defile") && Cooldown ("Defile") == 0)
 				BloodTap ();
 			//actions.single_target+=/plague_strike,if=!disease.min_ticking
+			// Analysis disable once CompareOfFloatsByEqualityOperator
 			if (MinDisease (Target) == 0) {
 				if (PlagueStrike ())
 					return true;
@@ -313,67 +321,253 @@ namespace ReBot
 					return true;
 			}
 			//actions.single_target+=/blood_tap
+			BloodTap ();
 			//actions.single_target+=/festering_strike,if=!((target.health.pct-3*(target.health.pct%target.time_to_die))<=45)|(((Frost-death)>0)&((Blood-death)>0))
+			if (!((Target.HealthFraction * 100 - 3 * (Target.HealthFraction * 100 / TimeToDie (Target))) <= 45) || (((Frost - Death) > 0) && ((Blood - Death) > 0))) {
+				if (FesteringStrike ())
+					return true;
+			}
 			//actions.single_target+=/death_coil
+			if (DeathCoil ())
+				return true;
 			//actions.single_target+=/plague_leech
+			if (PlagueLeech ())
+				return true;
 			//actions.single_target+=/scourge_strike,if=cooldown.empower_rune_weapon.remains=0
+			// Analysis disable once CompareOfFloatsByEqualityOperator
+			if (Cooldown ("Empower Rune Weapon") == 0) {
+				if (ScourgeStrike ())
+					return true;
+			}
 			//actions.single_target+=/festering_strike,if=cooldown.empower_rune_weapon.remains=0
+			// Analysis disable once CompareOfFloatsByEqualityOperator
+			if (Cooldown ("Empower Rune Weapon") == 0) {
+				if (FesteringStrike ())
+					return true;
+			}
 			//actions.single_target+=/blood_boil,if=cooldown.empower_rune_weapon.remains=0
+			// Analysis disable once CompareOfFloatsByEqualityOperator
+			if (Cooldown ("Empower Rune Weapon") == 0) {
+				if (BloodBoil ())
+					return true;
+			}
 			//actions.single_target+=/icy_touch,if=cooldown.empower_rune_weapon.remains=0
+			// Analysis disable once CompareOfFloatsByEqualityOperator
+			if (Cooldown ("Empower Rune Weapon") == 0) {
+				if (IcyTouch ())
+					return true;
+			}
 			//actions.single_target+=/empower_rune_weapon,if=blood<1&unholy<1&frost<1
+			if (Blood < 1 && Unholy < 1 && Frost < 1)
+				EmpowerRuneWeapon ();
 
 			return false;
 		}
 
-		public bool BOS_st_action ()
+		public bool Bos_st ()
 		{
+			var targets = Adds;
+			targets.Add (Target);
+
 			//actions.bos_st=plague_leech,if=((cooldown.outbreak.remains<1)|disease.min_remains<1)&((blood<1&frost<1)|(blood<1&unholy<1)|(frost<1&unholy<1))
+			if (((Cooldown ("Outbreak") < 1) || MinDisease (Target) < 1) && ((Blood < 1 && Frost < 1) || (Blood < 1 && Unholy < 1) || (Frost < 1 && Unholy < 1))) {
+				if (PlagueLeech ())
+					return true;
+			}
 			//actions.bos_st+=/soul_reaper,if=(target.health.pct-3*(target.health.pct%target.time_to_die))<=45
+			if (Target.HealthFraction * 100 - 3 * (Target.HealthFraction * 100 / TimeToDie (Target)) <= 45) {
+				if (SoulReaper ())
+					return true;
+			}
 			//actions.bos_st+=/blood_tap,if=((target.health.pct-3*(target.health.pct%target.time_to_die))<=45)&cooldown.soul_reaper.remains=0
+			// Analysis disable once CompareOfFloatsByEqualityOperator
+			if ((Target.HealthFraction * 100 - 3 * (Target.HealthFraction * 100 / TimeToDie (Target)) <= 45) && Cooldown ("Soul Reaper") == 0)
+				BloodTap ();
 			//actions.bos_st+=/breath_of_sindragosa,if=runic_power>75
+			if (RunicPower > 75) {
+				if (BreathofSindragosa ())
+					return true;
+			}
 			//actions.bos_st+=/run_action_list,name=bos_active,if=dot.breath_of_sindragosa.ticking
+			if (Me.HasAura ("Breath of Sindragosa")) {
+				if (Bos_active ())
+					return true;
+			}
 			//actions.bos_st+=/summon_gargoyle
+			if (SummonGargoyle ())
+				return true;
 			//actions.bos_st+=/unholy_blight,if=!(dot.blood_plague.ticking|dot.frost_fever.ticking)
+			if (!(Target.HasAura ("Blood Plague") || Target.HasAura ("Frost Fever"))) {
+				if (UnholyBlight ())
+					return true;
+			}
 			//actions.bos_st+=/outbreak,cycle_targets=1,if=!(dot.blood_plague.ticking|dot.frost_fever.ticking)
+			if (Usable ("Outbreak")) {
+				CycleTarget = targets.Where (x => !(x.HasAura ("Blood Plague") || x.HasAura ("Frost Fever"))).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (Outbreak (CycleTarget))
+						return true;
+				}
+			}
 			//actions.bos_st+=/plague_strike,if=!(dot.blood_plague.ticking|dot.frost_fever.ticking)
+			if (!(Target.HasAura ("Blood Plague") || Target.HasAura ("Frost Fever"))) {
+				if (PlagueStrike ())
+					return true;
+			}
 			//actions.bos_st+=/blood_boil,cycle_targets=1,if=!(dot.blood_plague.ticking|dot.frost_fever.ticking)
+			if (Usable ("Blood Boil")) {
+				CycleTarget = targets.Where (x => !(x.HasAura ("Blood Plague") || x.HasAura ("Frost Fever"))).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (BloodBoil ())
+						return true;
+				}
+			}
 			//actions.bos_st+=/death_and_decay,if=active_enemies>1&unholy>1
+			if (EnemyInRange (10) > 1 && Unholy > 1) {
+				if (DeathandDecay ())
+					return true;
+			}
 			//actions.bos_st+=/festering_strike,if=blood>1&frost>1
+			if (Blood > 1 && Frost > 1) {
+				if (FesteringStrike ())
+					return true;
+			}
 			//actions.bos_st+=/scourge_strike,if=((unholy>1|death>1)&active_enemies<=3)|(unholy>1&active_enemies>=4)
+			if (((Unholy > 1 || Death > 1) && EnemyInRange (10) <= 3) || (Unholy > 1 && EnemyInRange (10) >= 4)) {
+				if (ScourgeStrike ())
+					return true;
+			}
 			//actions.bos_st+=/death_and_decay,if=active_enemies>1
+			if (EnemyInRange (10) > 1) {
+				if (DeathandDecay ())
+					return true;
+			}
 			//actions.bos_st+=/blood_boil,if=active_enemies>=4&(blood=2|(frost=2&death=2))
+			if (EnemyInRange (10) >= 4 && (Blood == 2 || (Frost == 2 && Death == 2))) {
+				if (BloodBoil ())
+					return true;
+			}
 			//actions.bos_st+=/dark_transformation
+			if (DarkTransformation ())
+				return true;
 			//actions.bos_st+=/blood_tap,if=buff.blood_charge.stack>10
+			if (BloodCharge > 10)
+				BloodTap ();
 			//actions.bos_st+=/blood_boil,if=active_enemies>=4
+			if (EnemyInRange (10) >= 4) {
+				if (BloodBoil ())
+					return true;
+			}
 			//actions.bos_st+=/death_coil,if=(buff.sudden_doom.react|runic_power>80)&(buff.blood_charge.stack<=10)
+			if ((Me.HasAura ("Sudden Doom") || RunicPower > 80) && (BloodCharge <= 10)) {
+				if (DeathCoil ())
+					return true;
+			}
 			//actions.bos_st+=/scourge_strike,if=cooldown.breath_of_sindragosa.remains>6|runic_power<75
+			if (Cooldown ("Breath of Sindragosa") > 6 || RunicPower < 75) {
+				if (ScourgeStrike ())
+					return true;
+			}
 			//actions.bos_st+=/festering_strike,if=cooldown.breath_of_sindragosa.remains>6|runic_power<75
+			if (Cooldown ("Breath of Sindragosa") > 6 || RunicPower < 75) {
+				if (FesteringStrike ())
+					return true;
+			}
 			//actions.bos_st+=/death_coil,if=cooldown.breath_of_sindragosa.remains>20
+			if (Cooldown ("Breath of Sindragosa") > 20) {
+				if (DeathCoil ())
+					return true;
+			}
 			//actions.bos_st+=/plague_leech
+			if (PlagueLeech ())
+				return true;
 
 			return false;
 		}
 
-		public bool Spread_action ()
+		public bool Bos_active ()
+		{
+			var targets = Adds;
+			targets.Add (Target);
+
+			//actions.bos_active=plague_strike,if=!disease.ticking
+			// Analysis disable once CompareOfFloatsByEqualityOperator
+			if (MinDisease (Target) == 0) {
+				if (PlagueStrike ())
+					return true;
+			}
+			//actions.bos_active+=/blood_boil,cycle_targets=1,if=(active_enemies>=2&!(dot.blood_plague.ticking|dot.frost_fever.ticking))|active_enemies>=4&(runic_power<88&runic_power>30)
+			if (Usable ("Blood Boil")) {
+				CycleTarget = targets.Where (x => !(EnemyInRange (10) >= 2 && x.HasAura ("Blood Plague") || x.HasAura ("Frost Fever")) || EnemyInRange (10) >= 4 && x.IsInLoS && (RunicPower < 88 && RunicPower > 30)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (BloodBoil ())
+						return true;
+				}
+			}
+			//actions.bos_active+=/scourge_strike,if=active_enemies<=3&(runic_power<88&runic_power>30)
+			if (EnemyInRange (10) <= 3 && (RunicPower < 88 && RunicPower > 30)) {
+				if (ScourgeStrike ())
+					return true;
+			}
+
+			//actions.bos_active+=/festering_strike,if=runic_power<77
+			if (RunicPower < 77) {
+				if (FesteringStrike ())
+					return true;
+			}
+			//actions.bos_active+=/blood_boil,if=active_enemies>=4
+			if (EnemyInRange (10) >= 4) {
+				if (BloodBoil ())
+					return true;
+			}
+			//actions.bos_active+=/scourge_strike,if=active_enemies<=3
+			if (EnemyInRange (10) <= 3) {
+				if (ScourgeStrike ())
+					return true;
+			}
+			//actions.bos_active+=/blood_tap,if=buff.blood_charge.stack>=5
+			if (BloodCharge >= 5)
+				BloodTap ();
+			//actions.bos_active+=/arcane_torrent,if=runic_power<70
+			if (RunicPower < 70)
+				ArcaneTorrent ();
+			//actions.bos_active+=/plague_leech
+			if (PlagueLeech ())
+				return true;
+			//actions.bos_active+=/empower_rune_weapon,if=runic_power<60
+			if (RunicPower < 60)
+				EmpowerRuneWeapon ();
+			//actions.bos_active+=/death_coil,if=buff.sudden_doom.react
+			if (Me.HasAura ("Sudden Doom")) {
+				if (DeathCoil ())
+					return true;
+			}
+
+			return false;
+		}
+
+		public bool Spread ()
 		{
 			//actions.spread=blood_boil,cycle_targets=1,if=!disease.min_ticking
+			// Analysis disable once CompareOfFloatsByEqualityOperator
+			if (MinDisease (Target) == 0) {
+				if (BloodBoil ())
+					return true;
+			}
 			//actions.spread+=/outbreak,if=!disease.min_ticking
+			// Analysis disable once CompareOfFloatsByEqualityOperator
+			if (MinDisease (Target) == 0) {
+				if (Outbreak ())
+					return true;
+			}
 			//actions.spread+=/plague_strike,if=!disease.min_ticking
+			// Analysis disable once CompareOfFloatsByEqualityOperator
+			if (MinDisease (Target) == 0) {
+				if (PlagueStrike ())
+					return true;
+			}
 
 			return false;
 		}
 	}
 }
-
-
-//actions.bos_active=plague_strike,if=!disease.ticking
-//actions.bos_active+=/blood_boil,cycle_targets=1,if=(active_enemies>=2&!(dot.blood_plague.ticking|dot.frost_fever.ticking))|active_enemies>=4&(runic_power<88&runic_power>30)
-//actions.bos_active+=/scourge_strike,if=active_enemies<=3&(runic_power<88&runic_power>30)
-//actions.bos_active+=/festering_strike,if=runic_power<77
-//actions.bos_active+=/blood_boil,if=active_enemies>=4
-//actions.bos_active+=/scourge_strike,if=active_enemies<=3
-//actions.bos_active+=/blood_tap,if=buff.blood_charge.stack>=5
-//actions.bos_active+=/arcane_torrent,if=runic_power<70
-//actions.bos_active+=/plague_leech
-//actions.bos_active+=/empower_rune_weapon,if=runic_power<60
-//actions.bos_active+=/death_coil,if=buff.sudden_doom.react
