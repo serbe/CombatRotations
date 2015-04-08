@@ -626,5 +626,26 @@ namespace ReBot
 		{
 			return Cast ("Thrash", o, () => Usable ("Thrash") && ((IsCatForm() && HasEnergy (50))));
 		}
+
+		public bool Heal(){
+			if (Health < 0.45) {
+				if (Healthstone ())
+					return true;
+			}
+			if (Health <= 0.75 && !HasAura ("Cenarion Ward")) {
+				if (Rejuvenation ())
+					return true;
+			}
+			if (Health <= 0.8) {
+				if (CenarionWard ())
+					return true;
+			}
+			if (Health < 0.6) {
+				if (Barkskin ())
+					return true;
+			}
+
+			return false;
+		}
 	}
 }

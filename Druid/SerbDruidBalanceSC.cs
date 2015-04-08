@@ -71,26 +71,17 @@ namespace ReBot
 				StartBattle = DateTime.Now;
 			}
 
+			if (GCD && HasGlobalCooldown ())
+				return;
+
 			if (!Me.HasAura ("Bear Form")) {
 				if (MoonkinForm ())
 					return;
 			}
 
 			// Heal
-			if (Health < 0.45) {
-				if (Healthstone ())
-					return;
-			}
-			if (Health <= 0.75 && !HasAura ("Cenarion Ward")) {
-				if (Rejuvenation ())
-					return;
-			}
-			if (Health <= 0.8) {
-				if (CenarionWard ())
-					return;
-			}
-			if (Health < 0.6) {
-				if (Barkskin ())
+			if (Health < 0.9) {
+				if (Heal ())
 					return;
 			}
 
