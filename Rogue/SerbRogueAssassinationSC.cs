@@ -7,7 +7,7 @@ using ReBot.API;
 
 namespace ReBot
 {
-	[Rotation ("Serb Combat Rogue SC", "Serb", WoWClass.Rogue, Specialization.RogueAssassination, 5, 25)]
+	[Rotation ("Serb Assassination Rogue SC", "Serb", WoWClass.Rogue, Specialization.RogueAssassination, 5, 25)]
 
 	public class SerbRogueAssassinationSC : SerbRogue
 	{
@@ -90,28 +90,14 @@ namespace ReBot
 			var targets = Adds;
 			targets.Add (Target);
 
-			if (Health < 0.55 || (Health < 0.4 && Me.Auras.Any (x => x.IsDebuff && x.DebuffType.Contains ("magic"))))
-				CloakofShadows ();
-			if (Health < 0.65)
-				CombatReadiness ();
-			if (Health < 0.4)
-				Evasion ();
-			if (Health < 0.45)
-			if (Healthstone ())
-				return;
-
-			if ((!InRaid && !InInstance && Health < 0.9) || (!InRaid && Health < 0.3)) {
-				if (Recuperate ())
+			if (Health < 0.9) {
+				if (Heal ())
 					return;
 			}
 
 			if (Me.CanNotParticipateInCombat ())
 				Freedom ();
 
-			if (!Me.IsMoving && Health < 0.5) {
-				if (SmokeBomb ())
-					return;
-			}
 
 			if (!Me.HasAura ("Stealth")) {
 				Interrupt ();
@@ -127,39 +113,8 @@ namespace ReBot
 			if (HasGlobalCooldown () && GCD)
 				return;
 
-			if ((InArena || InBG) && Health < 0.7) {
-				if (Feint ())
-					return;
-			}
-
-			if (Usable ("Feint") && Health < 0.8 && (InRaid || InInstance)) {
-				var UseFeint = targets.Where (x => IsBoss (x) && x.CombatRange <= 30 && x.IsCasting && x.RemainingCastTime > Me.AuraTimeRemaining ("Feint")).DefaultIfEmpty (null).FirstOrDefault ();
-				if (UseFeint != null) {
-					if (Feint ())
-						return;
-				}
-			}
-
-			if ((InBG && InArena) && IsPlayer && Target.CanParticipateInCombat) {
-				if (CheapShot ())
-					return;
-			}
-
-			if (!InRaid && Usable ("Gouge") && EnemyInRange (6) == 2 && Multitarget) {
-				CycleTarget = Adds.Where (x => x.IsInCombatRangeAndLoS && x.CanParticipateInCombat && Target != x).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Gouge (CycleTarget))
-						return;
-				}
-			}
-
-			if (!InRaid && Usable ("Blind") && EnemyInRange (6) == 2 && Multitarget) {
-				CycleTarget = Adds.Where (x => x.IsInLoS && x.CombatRange <= 15 && x.CanParticipateInCombat && Target != x).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Blind (CycleTarget))
-						return;
-				}
-			}
+			if (CC ())
+				return;
 
 
 //			actions=potion,name=draenic_agility,if=buff.bloodlust.react|target.time_to_die<40|debuff.vendetta.up
@@ -171,16 +126,12 @@ namespace ReBot
 			}
 //			actions+=/use_item,slot=trinket2,if=active_enemies>1|(debuff.vendetta.up&active_enemies=1)
 //			actions+=/blood_fury
-			if (BloodFury ())
-				return;
+			BloodFury ();
 //			actions+=/berserking
-			if (Berserking ())
-				return;
+			Berserking ();
 //			actions+=/arcane_torrent,if=energy<60
-			if (Energy < 60) {
-				if (ArcaneTorrent ())
-					return;
-			}
+			if (Energy < 60)
+				ArcaneTorrent ();
 //			actions+=/vanish,if=time>10&!buff.stealth.up
 			if (Time > 10 && !Me.HasAura ("Stealth")) {
 				if (Vanish ())
