@@ -91,10 +91,24 @@ namespace ReBot
 		public bool Bos ()
 		{
 			//	actions.bos=blood_tap,if=buff.blood_charge.stack>=11
+			if (BloodCharge >= 11)
+				BloodTap ();
 			//	actions.bos+=/soul_reaper,if=target.health.pct-3*(target.health.pct%target.time_to_die)<35&runic_power>5
+			if (Target.HealthFraction * 100 - 3 * (Target.HealthFraction * 100 / TimeToDie (Target)) < 35 && RunicPower > 5) {
+				if (SoulReaper ())
+					return true;
+			}
 			//	actions.bos+=/blood_tap,if=buff.blood_charge.stack>=9&runic_power>80&(blood.frac>1.8|frost.frac>1.8|unholy.frac>1.8)
+			if (BloodCharge >= 9 && RunicPower > 80 && (BloodFrac > 1.8 || FrostFrac > 1.8 || UnholyFrac > 1.8))
+				BloodTap ();
 			//	actions.bos+=/death_coil,if=runic_power>80&(blood.frac>1.8|frost.frac>1.8|unholy.frac>1.8)
+			if (RunicPower > 80 && (BloodFrac > 1.8 || FrostFrac > 1.8 || UnholyFrac > 1.8)) {
+				if (DeathCoil ())
+					return true;
+			}
 			//	actions.bos+=/blood_tap,if=buff.blood_charge.stack>=9&runic_power>85&(buff.convulsive_shadows.remains>5|buff.convulsive_shadows.remains>2&buff.bloodlust.up)
+			if (BloodCharge >= 9 && RunicPower > 85 && (Me.AuraTimeRemaining ("Convulsive Shadows") > 5 || Me.AuraTimeRemaining ("Convulsive Shadows") > 2 && Me.HasAura ("Bloodlust")))
+				BloodTap ();
 			//	actions.bos+=/death_coil,if=runic_power>85&(buff.convulsive_shadows.remains>5|buff.convulsive_shadows.remains>2&buff.bloodlust.up)
 			//	actions.bos+=/outbreak,if=(!dot.blood_plague.ticking|!dot.frost_fever.ticking)&runic_power>21
 			//	actions.bos+=/chains_of_ice,if=!dot.frost_fever.ticking&glyph.icy_runes.enabled&runic_power<90
@@ -151,6 +165,7 @@ namespace ReBot
 		{
 			//	actions.last=antimagic_shell,if=runic_power<90
 			//	actions.last+=/blood_tap
+			BloodTap();
 			//	actions.last+=/soul_reaper,if=target.time_to_die>7
 			//	actions.last+=/death_coil,if=runic_power>80
 			//	actions.last+=/death_strike

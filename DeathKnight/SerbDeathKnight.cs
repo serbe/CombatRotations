@@ -128,6 +128,69 @@ namespace ReBot
 			}
 		}
 
+		public double BloodFrac {
+			get {
+				double startTime_1 = API.ExecuteLua<double>("start, duration, runeReady = GetRuneCooldown(1); return start");
+				double duration = API.ExecuteLua<double>("start, duration, runeReady = GetRuneCooldown(1); return duration");
+				bool runeReady_1 = API.ExecuteLua<bool>("start, duration, runeReady = GetRuneCooldown(1); return runeReady");
+				double startTime_2 = API.ExecuteLua<double>("start, duration, runeReady = GetRuneCooldown(2); return start");
+				bool runeReady_2 = API.ExecuteLua<bool>("start, duration, runeReady = GetRuneCooldown(2); return runeReady");
+				double currentTime = API.ExecuteLua<double>("return GetTime()");
+				double result;
+				if (!runeReady_1) {
+					result = (currentTime - startTime_1) / duration;
+				} else
+					result = 1;
+				if (!runeReady_2) {
+					result = result + (currentTime - startTime_1) / duration;
+				} else
+					result = result + 1;
+				return result;
+			}
+		}
+
+		public double FrostFrac {
+			get {
+				double startTime_1 = API.ExecuteLua<double>("start, duration, runeReady = GetRuneCooldown(3); return start");
+				double duration = API.ExecuteLua<double>("start, duration, runeReady = GetRuneCooldown(3); return duration");
+				bool runeReady_1 = API.ExecuteLua<bool>("start, duration, runeReady = GetRuneCooldown(3); return runeReady");
+				double startTime_2 = API.ExecuteLua<double>("start, duration, runeReady = GetRuneCooldown(4); return start");
+				bool runeReady_2 = API.ExecuteLua<bool>("start, duration, runeReady = GetRuneCooldown(4); return runeReady");
+				double currentTime = API.ExecuteLua<double>("return GetTime()");
+				double result;
+				if (!runeReady_1) {
+					result = (currentTime - startTime_1) / duration;
+				} else
+					result = 1;
+				if (!runeReady_2) {
+					result = result + (currentTime - startTime_1) / duration;
+				} else
+					result = result + 1;
+				return result;
+			}
+		}
+
+		public double UnholyFrac {
+			get {
+				double startTime_1 = API.ExecuteLua<double>("start, duration, runeReady = GetRuneCooldown(5); return start");
+				double duration = API.ExecuteLua<double>("start, duration, runeReady = GetRuneCooldown(5); return duration");
+				bool runeReady_1 = API.ExecuteLua<bool>("start, duration, runeReady = GetRuneCooldown(5); return runeReady");
+				double startTime_2 = API.ExecuteLua<double>("start, duration, runeReady = GetRuneCooldown(6); return start");
+				bool runeReady_2 = API.ExecuteLua<bool>("start, duration, runeReady = GetRuneCooldown(6); return runeReady");
+				double currentTime = API.ExecuteLua<double>("return GetTime()");
+				double result;
+				if (!runeReady_1) {
+					result = (currentTime - startTime_1) / duration;
+				} else
+					result = 1;
+				if (!runeReady_2) {
+					result = result + (currentTime - startTime_1) / duration;
+				} else
+					result = result + 1;
+				return result;
+			}
+		}
+
 		public int BloodCharge { 
 			get { 
 				return AuraStackCount ("Blood Charge");
