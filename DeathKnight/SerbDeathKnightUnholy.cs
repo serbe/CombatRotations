@@ -182,7 +182,7 @@ namespace ReBot
 			if (BloodCharge > 10)
 				BloodTap ();
 			//actions.aoe+=/death_coil,if=runic_power>90|buff.sudden_doom.react|(buff.dark_transformation.down&unholy<=1)
-			if (RunicPower > 90 || Me.HasAura ("Sudden Doom") || (!Me.HasAura ("Dark Transformation") && Unholy <= 1)) {
+			if (RunicPower > 90 || Me.HasAura ("Sudden Doom") || (!Me.Pet.HasAura("Dark Transformation") && Unholy <= 1)) {
 				if (DeathCoil ())
 					return true;
 			}
@@ -358,10 +358,10 @@ namespace ReBot
 			if (DarkTransformation ())
 				return true;
 			//actions.single_target+=/blood_tap,if=buff.blood_charge.stack>10&(buff.sudden_doom.react|(buff.dark_transformation.down&unholy<=1))
-			if (BloodCharge > 10 && (Me.HasAura ("Sudden Doom") || (!Me.HasAura ("Dark Transformation") && Unholy <= 1)))
+			if (BloodCharge > 10 && (Me.HasAura ("Sudden Doom") || (!Me.Pet.HasAura("Dark Transformation") && Unholy <= 1)))
 				BloodTap ();
 			//actions.single_target+=/death_coil,if=buff.sudden_doom.react|(buff.dark_transformation.down&unholy<=1)
-			if (Me.HasAura ("Sudden Doom") || (Me.HasAura ("Dark Transformation") && Unholy <= 1)) {
+			if (Me.HasAura ("Sudden Doom") || (Me.Pet.HasAura("Dark Transformation") && Unholy <= 1)) {
 				if (DeathCoil ())
 					return true;
 			}

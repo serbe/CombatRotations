@@ -268,7 +268,7 @@ namespace ReBot
 
 		public virtual bool DarkTransformation ()
 		{
-			return Cast ("Dark Transformation", () => Usable ("Dark Transformation") && Me.HasAlivePet && Me.GetAura ("Shadow Infusion").StackCount == 5 && (HasSpell ("Enhanced Dark Transformation") || (HasDeath || HasUnholy)));
+			return Cast ("Dark Transformation", () => Usable ("Dark Transformation") && !Me.Pet.HasAura("Dark Transformation") && Me.HasAlivePet && Me.GetAura ("Shadow Infusion").StackCount == 5 && (HasSpell ("Enhanced Dark Transformation") || (HasDeath || HasUnholy)));
 		}
 
 		public virtual bool BloodTap ()
