@@ -54,6 +54,8 @@
     <Compile Include="DeathKnight\SerbDeathKnightUnholy.cs" />
     <Compile Include="Hunter\SerbHunter.cs" />
     <Compile Include="Warlock\SerbWarlock.cs" />
+    <Compile Include="Shaman\SerbShaman.cs" />
+    <Compile Include="Shaman\SerbShamanEnhancementSC.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shaman\" />
