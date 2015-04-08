@@ -587,6 +587,9 @@ namespace ReBot
 			return Cast ("Chains of Ice", () => Usable ("Chains of Ice") && Target.IsInLoS && Target.CombatRange <= 30 && (HasFrost && HasDeath));
 		}
 
+		public bool RuneTap() {
+			return CastSelf ("Rune Tap", () => Usable ("Rune Tap") && (HasBlood || HasDeath));
+		}
 	}
 }
 
