@@ -160,6 +160,8 @@ namespace ReBot
 			//	actions.db+=/shadow_bolt
 			//	actions.db+=/hellfire,moving=1,interrupt=1
 			//	actions.db+=/life_tap
+			if (LifeTap ())
+				return true;
 
 			return false;
 		}

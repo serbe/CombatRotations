@@ -1,6 +1,7 @@
 ﻿using System;
 using ReBot.API;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace ReBot
 {
@@ -148,13 +149,13 @@ namespace ReBot
 			}
 		}
 
-//		public double TimeToRegen (double e)
-//		{ 
-//			if (e > Energy)
-//				return (e - Energy) / EnergyRegen;
-//			else
-//				return 0;
-//		}
+		//		public double TimeToRegen (double e)
+		//		{
+		//			if (e > Energy)
+		//				return (e - Energy) / EnergyRegen;
+		//			else
+		//				return 0;
+		//		}
 
 		public double TimeToStartBattle {
 			get {
@@ -162,15 +163,23 @@ namespace ReBot
 			}
 		}
 
+		//		public int EnemyInRange (int range)
+		//		{
+		//			int x = 0;
+		//			foreach (UnitObject mob in API.CollectUnits(range)) {
+		//				if ((mob.IsEnemy || Me.Target == mob) && !mob.IsDead) {
+		//					x++;
+		//				}
+		//			}
+		//			return x;
+		//		}
+
 		public int EnemyInRange (int range)
 		{
-			int x = 0;
-			foreach (UnitObject mob in API.CollectUnits(range)) {
-				if ((mob.IsEnemy || Me.Target == mob) && !mob.IsDead) {
-					x++;
-				}
-			}
-			return x;
+			var targets = Adds;
+			targets.Add (Target);
+
+			return targets.Where (t => t.CombatRange <= range).ToList ().Count;
 		}
 
 		public bool IncapacitatedInRange (int range)
@@ -200,31 +209,31 @@ namespace ReBot
 			return HasSpell (s) && Cooldown (s) == 0;
 		}
 
-//		public bool HasEnergy (double i)
-//		{
-//			if (IsCatForm () && Me.HasAura ("Berserk"))
-//				i = Math.Floor (i / 2);
-//			if (CatForm () && Me.HasAura ("Clearcasting"))
-//				i = 0;
-//			return Energy >= i;
-//		}
+		//		public bool HasEnergy (double i)
+		//		{
+		//			if (IsCatForm () && Me.HasAura ("Berserk"))
+		//				i = Math.Floor (i / 2);
+		//			if (CatForm () && Me.HasAura ("Clearcasting"))
+		//				i = 0;
+		//			return Energy >= i;
+		//		}
 
-//		public bool HasEnergyB (double i)
-//		{
-//			if (IsCatForm () && Me.HasAura ("Berserk"))
-//				i = Math.Floor (i / 2);
-//			return Energy >= i;
-//		}
+		//		public bool HasEnergyB (double i)
+		//		{
+		//			if (IsCatForm () && Me.HasAura ("Berserk"))
+		//				i = Math.Floor (i / 2);
+		//			return Energy >= i;
+		//		}
 
-//		public bool IsCatForm ()
-//		{
-//			return (HasAura ("Cat Form") || HasAura ("Claws of Shirvallah"));
-//		}
+		//		public bool IsCatForm ()
+		//		{
+		//			return (HasAura ("Cat Form") || HasAura ("Claws of Shirvallah"));
+		//		}
 
-//		public virtual bool CatForm ()
-//		{
-//			return CastSelf ("Cat Form", () => !Me.HasAura ("Claws of Shirvallah") && !Me.HasAura ("Cat Form"));
-//		}
+		//		public virtual bool CatForm ()
+		//		{
+		//			return CastSelf ("Cat Form", () => !Me.HasAura ("Claws of Shirvallah") && !Me.HasAura ("Cat Form"));
+		//		}
 
 		public double TimeToDie (UnitObject o)
 		{
@@ -235,11 +244,13 @@ namespace ReBot
 		{
 		}
 
-		public virtual bool DarkIntent() {
-			return CastSelf("Dark Intent", () => Usable("Dark Intent") && !Me.HasAura("Dark Intent") && !Me.HasAura("Mind Quickening") && !Me.HasAura("Swiftblade's Cunning") && !Me.HasAura("Windflurry") && !Me.HasAura("Arcane Brilliance"));
+		public virtual bool DarkIntent ()
+		{
+			return CastSelf ("Dark Intent", () => Usable ("Dark Intent") && !Me.HasAura ("Dark Intent") && !Me.HasAura ("Mind Quickening") && !Me.HasAura ("Swiftblade's Cunning") && !Me.HasAura ("Windflurry") && !Me.HasAura ("Arcane Brilliance"));
 		}
 
-		public virtual bool SummonPet() {
+		public virtual bool SummonPet ()
+		{
 //			if (Cast ("Felguard", () => !HasSpell ("Demonic Servitude") && (!HasSpell ("Grimoire of Supremacy") && (!HasSpell ("Grimoire of Service") || !Me.HasAura ("Grimoire of Service")))))
 //				return true;
 //			if (Cast ("Wrathguard", () => !HasSpell ("Demonic Servitude") && (HasSpell ("Grimoire of Supremacy") && (!HasSpell ("Grimoire of Service") || !Me.HasAura ("Grimoire of Service")))))
@@ -249,36 +260,38 @@ namespace ReBot
 
 		public virtual bool BloodFury ()
 		{
-			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
 		public virtual bool Berserking ()
 		{
-			return CastSelf ("Berserking", () => Usable ("Berserking") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+			return CastSelf ("Berserking", () => Usable ("Berserking") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
 		public virtual bool ArcaneTorrent ()
 		{
-			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
 		public virtual bool MannorothsFury ()
 		{
-			return CastSelf ("Mannoroth's Fury", () => Usable ("Mannoroth's Fury") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+			return CastSelf ("Mannoroth's Fury", () => Usable ("Mannoroth's Fury") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
-		public virtual bool DarkSoul() {
-			if (CastSelf("Dark Soul: Misery", () => Usable("Dark Soul: Misery") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2)))
+		public virtual bool DarkSoul ()
+		{
+			if (CastSelf ("Dark Soul: Misery", () => Usable ("Dark Soul: Misery") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2)))
 				return true; 
-			if (CastSelf("Dark Soul: Instability", () => Usable("Dark Soul: Instability") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2)))
+			if (CastSelf ("Dark Soul: Instability", () => Usable ("Dark Soul: Instability") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2)))
 				return true; 
-			if (CastSelf("Dark Soul: Knowledge", () => Usable("Dark Soul: Knowledge") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2)))
+			if (CastSelf ("Dark Soul: Knowledge", () => Usable ("Dark Soul: Knowledge") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2)))
 				return true; 
 			return false;
 		}
 
-		public virtual bool ImpSwarm() {
-			return Cast ("Imp Swarm", () => Usable ("Imp Swarm") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+		public virtual bool ImpSwarm ()
+		{
+			return Cast ("Imp Swarm", () => Usable ("Imp Swarm") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
 		public virtual bool Healthstone ()
@@ -303,6 +316,11 @@ namespace ReBot
 			if (API.HasItem (OraliusWhisperingCrystalID) && !Me.HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalID) == 0)
 				return API.UseItem (OraliusWhisperingCrystalID);
 			return false;
+		}
+
+		public bool LifeTap ()
+		{
+			return CastSelf ("Life Tap", () => Usable ("Life Tap") && Mana < 0.6);
 		}
 	}
 }

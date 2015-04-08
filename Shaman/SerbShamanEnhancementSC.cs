@@ -91,6 +91,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.single+=/windstrike,if=!talent.echo_of_the_elements.enabled|(talent.echo_of_the_elements.enabled&(charges=2|(action.windstrike.charges_fractional>1.75)|(charges=1&buff.ascendance.remains<1.5)))
+//			if (!HasSpell("Echo of the Elements") || (HasSpell("Echo of the Elements") && (SpellCharges("Windstrike") == 2 || (
 			//	actions.single+=/lightning_bolt,if=buff.maelstrom_weapon.react=5
 			if (Me.GetAura ("Maelstrom Weapon").StackCount == 5) {
 				if (LightningBolt ())
