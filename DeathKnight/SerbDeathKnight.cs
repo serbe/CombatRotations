@@ -57,15 +57,23 @@ namespace ReBot
 			}
 		}
 
+//		public int EnemyInRange (int range)
+//		{
+//			int x = 0;
+//			foreach (UnitObject mob in API.CollectUnits(range)) {
+//				if ((mob.IsEnemy || Me.Target == mob) && !mob.IsDead) {
+//					x++;
+//				}
+//			}
+//			return x;
+//		}
+
 		public int EnemyInRange (int range)
 		{
-			int x = 0;
-			foreach (UnitObject mob in API.CollectUnits(range)) {
-				if ((mob.IsEnemy || Me.Target == mob) && !mob.IsDead) {
-					x++;
-				}
-			}
-			return x;
+			var targets = Adds;
+			targets.Add (Target);
+
+			return targets.Where (t => t.CombatRange <= range).ToList ().Count;
 		}
 
 		public double Health {
@@ -127,6 +135,17 @@ namespace ReBot
 				return Me.Runes (RuneType.Death);
 			}
 		}
+
+//		public int BloodDeath {
+//			get {
+//				int n = 0;
+//				if (API.ExecuteLua<int> ("runeType = GetRuneType(1); return runeType") == 4)
+//					n = n + 1;
+//				if (API.ExecuteLua<int> ("runeType = GetRuneType(2); return runeType") == 4)
+//					n = n + 1;
+//				return n;
+//			}
+//		}
 
 		public double BloodFrac {
 			get {
@@ -562,6 +581,12 @@ namespace ReBot
 		public virtual bool BoneShield() {
 			return CastSelf ("Bone Shield", () => Usable ("Bone Shield"));
 		}
+
+		public virtual bool ChainsofIce ()
+		{
+			return Cast ("Chains of Ice", () => Usable ("Chains of Ice") && Target.IsInLoS && Target.CombatRange <= 30 && (HasFrost && HasDeath));
+		}
+
 	}
 }
 

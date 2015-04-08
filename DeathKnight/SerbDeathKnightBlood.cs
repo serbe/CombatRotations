@@ -86,7 +86,8 @@ namespace ReBot
 			if (!Me.HasAura ("Breath of Sindragosa") && Cooldown ("Breath of Sindragosa") >= 4) {
 				if (Cdbos ())
 					return;
-			}		}
+			}
+		}
 
 		public bool Bos ()
 		{
@@ -114,6 +115,10 @@ namespace ReBot
 			//	actions.bos+=/chains_of_ice,if=!dot.frost_fever.ticking&glyph.icy_runes.enabled&runic_power<90
 			//	actions.bos+=/plague_strike,if=!dot.blood_plague.ticking&runic_power>5
 			//	actions.bos+=/icy_touch,if=!dot.frost_fever.ticking&runic_power>5
+			if (!Target.HasAura ("Frost Fever", true) && RunicPower > 5) {
+				if (IcyTouch ())
+					return true;
+			}
 			//	actions.bos+=/death_strike,if=runic_power<16
 			//	actions.bos+=/blood_tap,if=runic_power<16
 			//	actions.bos+=/blood_boil,if=runic_power<16&runic_power>5&buff.crimson_scourge.down&(blood>=1&blood.death=0|blood=2&blood.death<2)
@@ -121,13 +126,25 @@ namespace ReBot
 			//	actions.bos+=/chains_of_ice,if=runic_power<16&glyph.icy_runes.enabled
 			//	actions.bos+=/blood_boil,if=runic_power<16&buff.crimson_scourge.down&(blood>=1&blood.death=0|blood=2&blood.death<2)
 			//	actions.bos+=/icy_touch,if=runic_power<16
+			if (RunicPower < 16) {
+				if (IcyTouch ())
+					return true;
+			}
 			//	actions.bos+=/plague_strike,if=runic_power<16
 			//	actions.bos+=/rune_tap,if=runic_power<16&blood>=1&blood.death=0&frost=0&unholy=0&buff.crimson_scourge.up
 			//	actions.bos+=/empower_rune_weapon,if=runic_power<16&blood=0&frost=0&unholy=0
 			//	actions.bos+=/death_strike,if=(blood.frac>1.8&blood.death>=1|frost.frac>1.8|unholy.frac>1.8|buff.blood_charge.stack>=11)
 			//	actions.bos+=/blood_tap,if=(blood.frac>1.8&blood.death>=1|frost.frac>1.8|unholy.frac>1.8)
 			//	actions.bos+=/blood_boil,if=(blood>=1&blood.death=0&target.health.pct-3*(target.health.pct%target.time_to_die)>35|blood=2&blood.death<2)&buff.crimson_scourge.down
+			if ((Blood >= 1 && Death == 0 && Target.HealthFraction * 100 - 3 * (Target.HealthFraction * 100 / TimeToDie (Target)) < 35 || Blood == 2 && Death < 2) && !Me.HasAura ("Crimson Scourge")) {
+				if (BloodBoil ())
+					return true;
+			}
 			//	actions.bos+=/antimagic_shell,if=runic_power<65
+			if (RunicPower < 65) {
+				if (AntimagicShell ())
+					return true;
+			}
 			//	actions.bos+=/plague_leech,if=runic_power<65
 			//	actions.bos+=/outbreak,if=!dot.blood_plague.ticking
 			//	actions.bos+=/outbreak,if=pet.dancing_rune_weapon.active&!pet.dancing_rune_weapon.dot.blood_plague.ticking
@@ -137,26 +154,50 @@ namespace ReBot
 			return false;
 		}
 
-		public bool Cdbos () {
+		public bool Cdbos ()
+		{
 			//	actions.cdbos=soul_reaper,if=target.health.pct-3*(target.health.pct%target.time_to_die)<=35
+			if (Target.HealthFraction * 100 - 3 * (Target.HealthFraction * 100 / TimeToDie (Target)) < 35) {
+				if (SoulReaper ())
+					return true;
+			}
 			//	actions.cdbos+=/blood_tap,if=buff.blood_charge.stack>=10
+			if (BloodCharge >= 10)
+				BloodTap ();
 			//	actions.cdbos+=/death_coil,if=runic_power>65
 			//	actions.cdbos+=/plague_strike,if=!dot.blood_plague.ticking&unholy=2
 			//	actions.cdbos+=/icy_touch,if=!dot.frost_fever.ticking&frost=2
+			if (!Target.HasAura ("Frost Fever", true) && Frost == 2) {
+				if (IcyTouch ())
+					return true;
+			}
 			//	actions.cdbos+=/death_strike,if=unholy=2|frost=2|blood=2&blood.death>=1
 			//	actions.cdbos+=/blood_boil,if=blood=2&blood.death<2
 			//	actions.cdbos+=/outbreak,if=!dot.blood_plague.ticking
 			//	actions.cdbos+=/plague_strike,if=!dot.blood_plague.ticking
 			//	actions.cdbos+=/icy_touch,if=!dot.frost_fever.ticking
+			if (!Target.HasAura ("Frost Fever", true)) {
+				if (IcyTouch ())
+					return true;
+			}
 			//	actions.cdbos+=/outbreak,if=pet.dancing_rune_weapon.active&!pet.dancing_rune_weapon.dot.blood_plague.ticking
 			//	actions.cdbos+=/blood_boil,if=((dot.frost_fever.remains<4&dot.frost_fever.ticking)|(dot.blood_plague.remains<4&dot.blood_plague.ticking))
 			//	actions.cdbos+=/death_and_decay,if=buff.crimson_scourge.up
 			//	actions.cdbos+=/blood_boil,if=buff.crimson_scourge.up
 			//	actions.cdbos+=/death_coil,if=runic_power>45
 			//	actions.cdbos+=/blood_tap
+			BloodTap ();
 			//	actions.cdbos+=/death_strike
+			if (DeathStrike ())
+				return true;
 			//	actions.cdbos+=/blood_boil,if=blood>=1&blood.death=0
+			if (Blood >= 1 && Death == 0) {
+				if (BloodBoil ())
+					return true;
+			}
 			//	actions.cdbos+=/death_coil
+			if (DeathCoil ())
+				return true;
 
 			return false;
 		}
@@ -164,19 +205,27 @@ namespace ReBot
 		public bool Last ()
 		{
 			//	actions.last=antimagic_shell,if=runic_power<90
+			if (RunicPower < 90) {
+				if (AntimagicShell ())
+					return true;
+			}
 			//	actions.last+=/blood_tap
-			BloodTap();
+			BloodTap ();
 			//	actions.last+=/soul_reaper,if=target.time_to_die>7
 			//	actions.last+=/death_coil,if=runic_power>80
 			//	actions.last+=/death_strike
+			if (DeathStrike ())
+				return true;
 			//	actions.last+=/blood_boil,if=blood=2|target.time_to_die<=7
 			//	actions.last+=/death_coil,if=runic_power>75|target.time_to_die<4|!dot.breath_of_sindragosa.ticking
 			//	actions.last+=/plague_strike,if=target.time_to_die<2|cooldown.empower_rune_weapon.remains<2
 			//	actions.last+=/icy_touch,if=target.time_to_die<2|cooldown.empower_rune_weapon.remains<2
 			//	actions.last+=/empower_rune_weapon,if=!blood&!unholy&!frost&runic_power<76|target.time_to_die<5
 			//	actions.last+=/plague_leech
+			if (PlagueLeech ())
+				return true;
 
-			return true;
+			return false;
 		}
 
 		public bool Nbos ()
@@ -187,14 +236,42 @@ namespace ReBot
 					return true;
 			}
 			//	actions.nbos+=/soul_reaper,if=target.health.pct-3*(target.health.pct%target.time_to_die)<=35
+			if (Target.HealthFraction * 100 - 3 * (Target.HealthFraction * 100 / TimeToDie (Target)) < 35) {
+				if (SoulReaper ())
+					return true;
+			}
 			//	actions.nbos+=/chains_of_ice,if=!dot.frost_fever.ticking&glyph.icy_runes.enabled
+			if (!Target.HasAura ("Frost Fever", true) && HasGlyph (110802)) {
+				if (ChainsofIce ())
+					return true;
+			}
 			//	actions.nbos+=/icy_touch,if=!dot.frost_fever.ticking
+			if (!Target.HasAura ("Frost Fever", true)) {
+				if (IcyTouch ())
+					return true;
+			}
 			//	actions.nbos+=/plague_strike,if=!dot.blood_plague.ticking
+			if (!Target.HasAura ("Blood Plague", true)) {
+				if (PlagueStrike ())
+					return true;
+			}
 			//	actions.nbos+=/death_strike,if=(blood.frac>1.8&blood.death>=1|frost.frac>1.8|unholy.frac>1.8)&runic_power<80
+			if ((BloodFrac > 1.8 && Death >= 1 || FrostFrac > 1.8 || UnholyFrac > 1.8) && RunicPower < 80) {
+				if (DeathStrike ())
+					return true;
+			}
 			//	actions.nbos+=/death_and_decay,if=buff.crimson_scourge.up
+			if (Me.HasAura ("Crimson Scourge")) {
+				if (DeathandDecay ())
+					return true;
+			}
 			//	actions.nbos+=/blood_boil,if=buff.crimson_scourge.up|(blood=2&runic_power<80&blood.death<2)
+			if (Me.HasAura ("Crimson Scourge") || (Blood == 2 && RunicPower < 80 && Death < 2)) {
+				if (BloodBoil ())
+					return true;
+			}
 
-			return true;
+			return false;
 		}
 	}
 }
