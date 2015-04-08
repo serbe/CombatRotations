@@ -86,8 +86,16 @@ namespace ReBot
 			if (HasSpell("Unleashed Fury") || HasSpell(144962)) {
 				if (UnleashElements()) return true;}
 			//	actions.single+=/elemental_blast,if=buff.maelstrom_weapon.react=5
+			if (Me.GetAura ("Maelstrom Weapon").StackCount == 5) {
+				if (ElementalBlast ())
+					return true;
+			}
 			//	actions.single+=/windstrike,if=!talent.echo_of_the_elements.enabled|(talent.echo_of_the_elements.enabled&(charges=2|(action.windstrike.charges_fractional>1.75)|(charges=1&buff.ascendance.remains<1.5)))
 			//	actions.single+=/lightning_bolt,if=buff.maelstrom_weapon.react=5
+			if (Me.GetAura ("Maelstrom Weapon").StackCount == 5) {
+				if (LightningBolt ())
+					return true;
+			}
 			//	actions.single+=/stormstrike,if=!talent.echo_of_the_elements.enabled|(talent.echo_of_the_elements.enabled&(charges=2|(action.stormstrike.charges_fractional>1.75)|target.time_to_die<6))
 			//	actions.single+=/lava_lash,if=!talent.echo_of_the_elements.enabled|(talent.echo_of_the_elements.enabled&(charges=2|(action.lava_lash.charges_fractional>1.8)|target.time_to_die<8))
 			//	actions.single+=/flame_shock,if=(talent.elemental_fusion.enabled&buff.elemental_fusion.stack=2&buff.unleash_flame.up&dot.flame_shock.remains<16)|(!talent.elemental_fusion.enabled&buff.unleash_flame.up&dot.flame_shock.remains<=9)|!ticking
@@ -108,8 +116,6 @@ namespace ReBot
 
 		public bool Aoe ()
 		{
-
-
 			//	actions.aoe=unleash_elements,if=active_enemies>=4&dot.flame_shock.ticking&(cooldown.shock.remains>cooldown.fire_nova.remains|cooldown.fire_nova.remains=0)
 			//	actions.aoe+=/fire_nova,if=active_dot.flame_shock>=3
 			//	actions.aoe+=/wait,sec=cooldown.fire_nova.remains,if=!talent.echo_of_the_elements.enabled&active_dot.flame_shock>=4&cooldown.fire_nova.remains<=action.fire_nova.gcd%2
