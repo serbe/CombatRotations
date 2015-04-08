@@ -212,15 +212,43 @@ namespace ReBot
 			//	actions.last+=/blood_tap
 			BloodTap ();
 			//	actions.last+=/soul_reaper,if=target.time_to_die>7
+			if (TimeToDie (Target) > 7) {
+				if (SoulReaper ())
+					return true;
+			}
 			//	actions.last+=/death_coil,if=runic_power>80
+			if (RunicPower > 80) {
+				if (DeathCoil ())
+					return true;
+			}
 			//	actions.last+=/death_strike
 			if (DeathStrike ())
 				return true;
 			//	actions.last+=/blood_boil,if=blood=2|target.time_to_die<=7
+			if (Blood == 2 || TimeToDie (Target) <= 7) {
+				if (BloodBoil ())
+					return true;
+			}
 			//	actions.last+=/death_coil,if=runic_power>75|target.time_to_die<4|!dot.breath_of_sindragosa.ticking
+			if (RunicPower > 75 || TimeToDie (Target) < 4 || !Me.HasAura ("Breath of Sindragosa")) {
+				if (DeathCoil ())
+					return true;
+			}
 			//	actions.last+=/plague_strike,if=target.time_to_die<2|cooldown.empower_rune_weapon.remains<2
+			if (TimeToDie (Target) < 2 || Cooldown ("Empower Rune Weapon") < 2) {
+				if (PlagueStrike ())
+					return true;
+			}
 			//	actions.last+=/icy_touch,if=target.time_to_die<2|cooldown.empower_rune_weapon.remains<2
+			if (TimeToDie (Target) < 2 || Cooldown ("Empower Rune Weapon") < 2) {
+				if (IcyTouch ())
+					return true;
+			}
 			//	actions.last+=/empower_rune_weapon,if=!blood&!unholy&!frost&runic_power<76|target.time_to_die<5
+			if (!HasBlood && !HasUnholy && !HasFrost && RunicPower < 76 || TimeToDie(Target) < 5) {
+				if (EmpowerRuneWeapon())
+					return true;
+			}
 			//	actions.last+=/plague_leech
 			if (PlagueLeech ())
 				return true;
