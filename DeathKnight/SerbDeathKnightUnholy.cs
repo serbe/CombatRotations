@@ -55,11 +55,12 @@ namespace ReBot
 				return;
 
 			if (HasSpell ("Anti-Magic Zone") && Cooldown ("Anti-Magic Zone") == 0 && !HasGlobalCooldown ()) {
-				var AntiMagicZoneTarget = targets.Where (u => u.IsCasting && u.Target == (UnitObject)Me && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+				var AntiMagicZoneTarget = targets.Where (u => u.IsCasting && u.Target == Me && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CastOnTerrain ("Anti-Magic Zone", Me.Position, () => Health <= 0.5 && !Me.HasAura ("Anti-Magic Shell") && AntiMagicZoneTarget != null))
 					return;
 			}
 
+			// Analysis disable once CompareOfFloatsByEqualityOperator
 			if (HasSpell ("Anti-Magic Shell") && Cooldown ("Anti-Magic Shell") == 0 && !HasGlobalCooldown ()) {
 				var AntiMagicShellTarget = targets.Where (u => u.IsCasting && u.Target == (UnitObject)Me && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CastSelf ("Anti-Magic Shell", () => AntiMagicShellTarget != null && Health <= 0.8))
@@ -73,11 +74,6 @@ namespace ReBot
 
 			// if (CastSelf("Dark Simulacrum", () => Target.IsPlayer && Target.IsCasting && Me.GetPower(WoWPowerType.RunicPower) >= 20)) return;
 			// if (CastSelf("Dark Simulacrum", () => Target.HpGreaterThanOrElite(0.2) && Target.IsCasting && Me.GetPower(WoWPowerType.RunicPower) >= 20)) return;
-
-			if (Health < 0.45) {
-				if (Healthstone ())
-					return;
-			}
 
 			if (Me.HasAlivePet) {
 				Me.PetAssist ();

@@ -399,6 +399,11 @@ namespace ReBot
 
 		public virtual bool Heal ()
 		{
+			if (Health < 0.45) {
+				if (Healthstone ())
+					return true;
+			}
+
 			if (Health <= 0.6) {
 				if (DeathSiphon ())
 					return true;
@@ -491,9 +496,9 @@ namespace ReBot
 			return CastSelf ("Death Pact", () => Usable ("Death Pact"));
 		}
 
-		//		public virtual bool VampiricBlood() {
-		//			return CastSelf ("Vampiric Blood", () => Usable ("Vampiric Blood"));
-		//		}
+		public virtual bool BoneShield() {
+			return CastSelf ("Bone Shield", () => Usable ("Bone Shield"));
+		}
 	}
 }
 
