@@ -9,6 +9,8 @@ namespace ReBot
 	{
 		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
 		public int TTD = 10;
+		[JsonProperty ("Use GCD")]
+		public bool GCD = true;
 
 		public UnitObject CycleTarget;
 		public Int32 OraliusWhisperingCrystalID = 118922;
@@ -579,7 +581,7 @@ namespace ReBot
 		}
 
 		public virtual bool BoneShield() {
-			return CastSelf ("Bone Shield", () => Usable ("Bone Shield"));
+			return CastSelf ("Bone Shield", () => Usable ("Bone Shield") && !Me.HasAura("Bone Shield"));
 		}
 
 		public virtual bool ChainsofIce ()

@@ -38,6 +38,9 @@ namespace ReBot
 				if (Heal ())
 					return;}
 
+			if (GCD && HasGlobalCooldown ())
+				return;
+
 			if (CastOnTerrain ("Desecrated Ground", Target.Position, () => HasSpell ("Desecrated Ground") && Me.MovementSpeed < 1))
 				return;
 

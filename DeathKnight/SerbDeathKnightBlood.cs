@@ -31,6 +31,15 @@ namespace ReBot
 
 		public override void Combat ()
 		{
+			if (Interrupt ())
+				return;
+
+			if (Cast ("Remorseless Winter", () => HasSpell ("Remorseless Winter") && (EnemyInRange (8) >= 2 || (IsPlayer && Target.CombatRange < 8))))
+				return;
+
+			if (GCD && HasGlobalCooldown ())
+				return;
+
 			//	actions=auto_attack
 			//	actions+=/blood_fury,if=target.time_to_die>120|buff.draenic_armor_potion.remains<=buff.blood_fury.duration
 			if (TimeToDie (Target) > 120)
