@@ -1,5 +1,4 @@
-﻿using System;
-using ReBot.API;
+﻿using ReBot.API;
 
 namespace ReBot
 {
@@ -83,8 +82,10 @@ namespace ReBot
 					return true;
 			}
 			//	actions.single+=/unleash_elements,if=(talent.unleashed_fury.enabled|set_bonus.tier16_2pc_melee=1)
-			if (HasSpell("Unleashed Fury") || HasSpell(144962)) {
-				if (UnleashElements()) return true;}
+			if (HasSpell ("Unleashed Fury") || HasSpell (144962)) {
+				if (UnleashElements ())
+					return true;
+			}
 			//	actions.single+=/elemental_blast,if=buff.maelstrom_weapon.react=5
 			if (Me.GetAura ("Maelstrom Weapon").StackCount == 5) {
 				if (ElementalBlast ())

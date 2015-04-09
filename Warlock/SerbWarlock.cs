@@ -1,7 +1,7 @@
 ﻿using System;
-using ReBot.API;
-using Newtonsoft.Json;
 using System.Linq;
+using Newtonsoft.Json;
+using ReBot.API;
 
 namespace ReBot
 {

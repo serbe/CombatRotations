@@ -1,5 +1,4 @@
-﻿using System;
-using ReBot.API;
+﻿using ReBot.API;
 using System.Linq;
 
 namespace ReBot
@@ -104,21 +103,24 @@ namespace ReBot
 			return CastSelf ("Fire Elemental Totem", () => Usable ("Fire Elemental Totem") && (IsBoss (Target) || IsPlayer || EnemyInRange (10) > 5) && Target.IsInCombatRangeAndLoS);
 		}
 
-		public bool SearingTotem()
+		public bool SearingTotem ()
 		{
 			return CastSelf ("Searing Totem", () => Usable ("Searing Totem") && Target.CombatRange <= 25);
 		}
 
-		public bool UnleashElements() {
+		public bool UnleashElements ()
+		{
 			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && Target.IsInLoS && Target.CombatRange <= 40);
 		}
 
-		public bool ElementalBlast() {
-			return Cast ("Elemental Blast", () => Usable ("Elemental Blast") && Target.IsInLoS && Target.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura("Ancestral Swiftness")));
+		public bool ElementalBlast ()
+		{
+			return Cast ("Elemental Blast", () => Usable ("Elemental Blast") && Target.IsInLoS && Target.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura ("Ancestral Swiftness")));
 		}
 
-		public bool LightningBolt() {
-			return Cast ("Lightning Bolt", () => Usable ("Lightning Bolt") && Target.IsInLoS && Target.CombatRange <= 30 && (!Me.IsMoving || Me.HasAura("Ancestral Swiftness")));
+		public bool LightningBolt ()
+		{
+			return Cast ("Lightning Bolt", () => Usable ("Lightning Bolt") && Target.IsInLoS && Target.CombatRange <= 30 && (!Me.IsMoving || Me.HasAura ("Ancestral Swiftness")));
 		}
 	}
 }
