@@ -85,7 +85,7 @@ namespace ReBot
 		public bool PowerWordFortitude (UnitObject u = null)
 		{
 			u = u ?? Me;
-			return Cast ("Power Word: Fortitude", u, () => Usable ("Power Word: Fortitude") && u.IsInLoS && u.CombatRange <= 40);
+			return Cast ("Power Word: Fortitude", u, () => Usable ("Power Word: Fortitude") && u.AuraTimeRemaining ("Power Word: Fortitude") < 300 && u.IsInLoS && u.CombatRange <= 40);
 		}
 
 		public bool DraenicIntellect ()
