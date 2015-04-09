@@ -1,6 +1,6 @@
-﻿using System;
-using ReBot.API;
+﻿using ReBot.API;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace ReBot
 {
@@ -10,6 +10,12 @@ namespace ReBot
 	{
 		[JsonProperty ("Use GCD")]
 		public bool GCD = true;
+		[JsonProperty ("Auto target")]
+		public bool AutoTarget;
+		[JsonProperty ("Heal party %/100")]
+		public double PartyPr = 0.8;
+		[JsonProperty ("Heal tank %/100")]
+		public double TankPr = 0.9;
 
 		public SerbPriestDisciplineSC ()
 		{
@@ -46,8 +52,51 @@ namespace ReBot
 			if (GCD && HasGlobalCooldown ())
 				return;
 			
-			if (Target == null && Tank != null) {
-				Me.SetTarget (Tank);
+			if (GroupMembers.Count > 0) {
+
+				HealTarget = HealGroups.DefaultIfEmpty (null).FirstOrDefault ();
+
+				if (Target == null && Tank != null) {
+					if (Me.Focus == null)
+						Me.SetFocus (Tank);
+					Me.SetTarget (Tank);
+				}
+
+				if (Tank != null && Tank.HealthFraction <= 0.3) {
+					if (FlashHeal (Tank))
+						return;
+				}
+
+				if (HealTarget != null) {
+					if (Target == null) {
+						Me.SetTarget (HealTarget);
+					}
+
+					if (Tank != null && Tank != HealTarget && Tank.HealthFraction < TankPr && Tank.HealthFraction < HealTarget.HealthFraction) {
+						if (Healing (Tank))
+							return;
+					}
+
+					if (HealTarget.HealthFraction < PartyPr) {
+						if (Healing (HealTarget))
+							return;
+					}
+				}
+			}
+
+			if (Target == null && AutoTarget) {
+				CycleTarget = API.CollectUnits (40).Where (u => u.IsEnemy && !u.IsDead && u.IsInLoS && u.IsAttackable).OrderByDescending (u => u.CombatRange).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null)
+					Me.SetTarget (CycleTarget);
+			}
+
+			if (Target == null)
+				Me.SetTarget (Me);
+
+
+			if (Me.HealthFraction < 0.6) {
+				if (Healing (Me))
+					return;
 			}
 
 			if (Target.IsEnemy) {
@@ -127,6 +176,8 @@ namespace ReBot
 
 		public bool Healing (UnitObject u)
 		{
+			if (Me.HasAura ("Evangelism"))
+				Archangel ();
 			//	actions=mana_potion,if=mana.pct<=75
 			//	actions+=/blood_fury
 			BloodFury ();
@@ -188,123 +239,34 @@ namespace ReBot
 	}
 }
 
-//		//------------Tank bizz
-//		public bool Tank1Healing()
-//		{
-//			List<PlayerObject> members = Group.GetGroupMemberObjects();
-//			List<PlayerObject> GrpHeal1 = members.FindAll(x => x.HealthFraction <= 0.85 && x.IsInCombatRangeAndLoS && !x.IsDead);
-//			List<PlayerObject> Tanks = members.FindAll(x => x.IsTank);
-//			PlayerObject Tank1 = Tanks.FirstOrDefault();
-//			if (Tank1 != null)
-//			{
-//				if (Tank1.HealthFraction < 0.9)
-//				{
-//					return true;
-//				}
-//			}
-//			return false;
-//		}
-//		//------------Tank bizz end
-//
-//		//------------Combat Start----------
-//		public override bool OutOfCombat()
-//		{
-//			if (Me.IsMounted || Me.HasAura("Drink"))
-//			{
-//				DebugWrite("Paused while");
-//				return false;
-//			}
-//			else
-//			{
-//
-//				// if (CastSelf("Power Word: Fortitude", () => !HasAura("Power Word: Fortitude"))) return true;
-//
-//				//-----------------Angelic Feather Talent start
-//				if (Angelic_Feather == true && Use_AngelicFeather == true)
-//				{
-//					AngelicFeather();
-//				}
-//				//------------------Angelic Feather talent end
-//
-//
-//				if (CurrentBotName == "Combat")
-//				{
-//					List<PlayerObject> members = Group.GetGroupMemberObjects();
-//					if (members.Count > 0 && !Me.IsMoving)
-//					{
-//						PlayerObject deadPlayer = members.FirstOrDefault(x => x.IsDead && x.DistanceSquared < 10 * 10);
-//						if (Cast("Mass Resurrection", () => deadPlayer != null, deadPlayer)) return true;
-//					}
-//
-//				}
-
-//				List<PlayerObject> groupmembers = Group.GetGroupMemberObjects();
-//				List<PlayerObject> Tanks = groupmembers.FindAll(x => x.IsTank && x.IsInCombatRangeAndLoS);
-//				PlayerObject Tank1 = Tanks.FirstOrDefault();
-//
-//				if (Tank1 != null && Tank1.InCombat && Me.Target != null)
-//				{
-//					if (CastPreventDouble("Power Word: Shield", () => !Tank1.HasAura("Weakened Soul") && Tank1.IsInCombatRangeAndLoS && !Tank1.IsDead, Tank1, 1000)) return true;
-//				}
-//				if (Me.Target != null && Me.HealthFraction <= 0.7 || Tank1 != null && Me.Target != null)
-//				{
-//					Healer();
-//					return true;
-//				}
-//				Cast("Shadow Word: Pain", ()=> Me.HealthFraction > 0.7 && Me.Target != null && Me.Target.IsEnemy && !Me.Target.IsDead);
-//				return false;
-//
-//			}
-//		}
-//
-//
 //		public override void Combat()
 //		{
-//
-//
-//
 //			if (!Target.IsEnemy || (Me.InCombat && Me.IsTargetingMeOrPets == true) || (CombatRole.Equals(CombatRole.DPS) && Me.Target == Me) || Me.Target.DisplayId == 49312)
 //			{
 //				Healer();
-//
 //			}
 //			else
 //			{
 //				DPS();
-//
 //			}
 //			//Dummy zapping
 //			if (Target.DisplayId == 28048 || Target.DisplayId == 27510)
 //			{
 //				DPS();
 //			}
-//
-//
 //		}
 //
 //		void Healer()
 //		{
-//
-//			//*Global cooldown check
-//			if (HasGlobalCooldown())
-//			{
-//				return;
-//			}
-//			// Popping Archangel if possible
-//			CastSelf("Archangel", () => HasAura("Evangelism"));
-//
 //			// setting group
-//
 //			List<PlayerObject> members = Group.GetGroupMemberObjects();
 //			int membercount = members.Count + 1;
 //
 //			if (membercount > 0)
 //			{
-//
 //				// Finding Tank
 //				List<PlayerObject> Tanks = members.FindAll(x => x.IsTank && x.IsInCombatRange && !x.IsDead);
 //				PlayerObject Tank1 = Tanks.FirstOrDefault();
-//
 //
 //				// Group Healing
 //				if (Halo_talent == true && Use_Halo == true)

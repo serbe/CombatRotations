@@ -13,6 +13,8 @@ namespace ReBot
 
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
+		public UnitObject HealTarget;
+		public UnitObject CycleTarget;
 
 		public SerbPriest ()
 		{
@@ -49,6 +51,12 @@ namespace ReBot
 		public PlayerObject Tank {
 			get {
 				return GroupMembers.Where (x => x.IsTank && x.IsInCombatRangeAndLoS && !x.IsDead).OrderByDescending (x => x.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
+			}
+		}
+
+		public IOrderedEnumerable<PlayerObject> HealGroups {
+			get {
+				return GroupMembers.Where (x => !x.IsDead && x.HealthFraction <= 0.9 && x.IsInCombatRangeAndLoS).OrderByDescending (x => x.HealthFraction);
 			}
 		}
 
@@ -162,12 +170,11 @@ namespace ReBot
 			u = u ?? Me;
 			return Cast ("Levitate", u, () => Usable ("Mindbender") && !HasAura ("Levitate") && u.IsInLoS && u.CombatRange <= 40);
 		}
-		
-		//		public bool Mindbender (UnitObject u = null)
-		//		{
-		//			u = u ?? Target;
-		//			return Cast ("Mindbender", u, () => Usable ("Mindbender") && u.IsInLoS && u.CombatRange <= 40);
-		//		}
+
+		public bool Archangel ()
+		{
+			return CastSelf ("Archangel", () => Usable ("Archangel"));
+		}
 
 	}
 }
