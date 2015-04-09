@@ -105,21 +105,21 @@ namespace ReBot
 			return Cast ("Smite", u, () => Usable ("Smite") && u.IsInLoS && (u.CombatRange <= 30 || (HasGlyph (119853) && u.CombatRange <= 40)) && !Me.IsMoving);
 		}
 
-		//		public bool Mindbender (UnitObject u = Target)
-		//		{
-		//			return Cast ("Mindbender", u, () => Usable ("Mindbender") && u.IsInLoS && u.CombatRange <= 40);
-		//		}
-		//
-		//		public bool Mindbender (UnitObject u = Target)
-		//		{
-		//			return Cast ("Mindbender", u, () => Usable ("Mindbender") && u.IsInLoS && u.CombatRange <= 40);
-		//		}
-		//
-		//		public bool Mindbender (UnitObject u = Target)
-		//		{
-		//			return Cast ("Mindbender", u, () => Usable ("Mindbender") && u.IsInLoS && u.CombatRange <= 40);
-		//		}
-		//
+		public bool PowerWordShield (UnitObject u = Target)
+		{
+			return Cast ("Power Word: Shield", u, () => Usable ("Power Word: Shield") && u.IsInLoS && u.CombatRange <= 40);
+		}
+
+		public bool FlashHeal (UnitObject u = Target)
+		{
+			return Cast ("Flash Heal", u, () => Usable ("Flash Heal") && u.IsInLoS && u.CombatRange <= 40 && (Me.HasAura ("Surge of Light") || !Me.IsMoving));
+		}
+
+		public bool Heal (UnitObject u = Target)
+		{
+			return Cast ("Heal", u, () => Usable ("Heal") && u.IsInLoS && u.CombatRange <= 40);
+		}
+		
 		//		public bool Mindbender (UnitObject u = Target)
 		//		{
 		//			return Cast ("Mindbender", u, () => Usable ("Mindbender") && u.IsInLoS && u.CombatRange <= 40);
