@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using ReBot.API;
 
-namespace ReBot
+namespace ReBot.DeathKnight
 {
 	[Rotation ("Serb Unholy DeathKnight SC", "Serb", WoWClass.DeathKnight, Specialization.DeathknightUnholy, 5, 25)]
 
-	public class SerbDeathKnightUnholySC : DeathKnight
+	public class SerbDeathKnightUnholySc : DeathKnight
 	{
-		public SerbDeathKnightUnholySC ()
-		{
-		}
-
-		public override bool OutOfCombat ()
+	    public override bool OutOfCombat ()
 		{
 			//	actions.precombat=flask,type=greater_draenic_strength_flask
 			//	actions.precombat+=/food,type=salty_squid_roll
@@ -36,9 +30,10 @@ namespace ReBot
 		{
 			if (Health < 0.9) {
 				if (Heal ())
-					return;}
+					return;
+			}
 
-			if (GCD && HasGlobalCooldown ())
+			if (Gcd && HasGlobalCooldown ())
 				return;
 
 			if (CastOnTerrain ("Desecrated Ground", Target.Position, () => HasSpell ("Desecrated Ground") && Me.MovementSpeed < 1))
@@ -58,15 +53,15 @@ namespace ReBot
 				return;
 
 			if (HasSpell ("Anti-Magic Zone") && Cooldown ("Anti-Magic Zone") == 0 && !HasGlobalCooldown ()) {
-				var AntiMagicZoneTarget = targets.Where (u => u.IsCasting && u.Target == Me && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CastOnTerrain ("Anti-Magic Zone", Me.Position, () => Health <= 0.5 && !Me.HasAura ("Anti-Magic Shell") && AntiMagicZoneTarget != null))
+				var antiMagicZoneTarget = targets.Where (u => u.IsCasting && u.Target == Me && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CastOnTerrain ("Anti-Magic Zone", Me.Position, () => Health <= 0.5 && !Me.HasAura ("Anti-Magic Shell") && antiMagicZoneTarget != null))
 					return;
 			}
 
 			// Analysis disable once CompareOfFloatsByEqualityOperator
 			if (HasSpell ("Anti-Magic Shell") && Cooldown ("Anti-Magic Shell") == 0 && !HasGlobalCooldown ()) {
-				var AntiMagicShellTarget = targets.Where (u => u.IsCasting && u.Target == (UnitObject)Me && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CastSelf ("Anti-Magic Shell", () => AntiMagicShellTarget != null && Health <= 0.8))
+				var antiMagicShellTarget = targets.Where (u => u.IsCasting && u.Target == Me && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CastSelf ("Anti-Magic Shell", () => antiMagicShellTarget != null && Health <= 0.8))
 					return;
 			}
 
@@ -108,7 +103,7 @@ namespace ReBot
 			}
 			//actions+=/run_action_list,name=single_target,if=(!talent.necrotic_plague.enabled&active_enemies<2)|active_enemies<4
 			if ((!HasSpell ("Necrotic Plague") && EnemyInRange (10) < 2) || EnemyInRange (10) < 4) {
-				if (Single_target ())
+				if (SingleTarget ())
 					return;
 			}
 		}
@@ -126,7 +121,7 @@ namespace ReBot
 			//actions.bos+=/use_item,slot=trinket2,if=dot.breath_of_sindragosa.ticking
 			//actions.bos+=/potion,name=draenic_strength,if=dot.breath_of_sindragosa.ticking
 			//actions.bos+=/run_action_list,name=bos_st
-			if (Bos_st ())
+			if (BosSt ())
 				return true;
 
 			return false;
@@ -181,7 +176,7 @@ namespace ReBot
 			if (BloodCharge > 10)
 				BloodTap ();
 			//actions.aoe+=/death_coil,if=runic_power>90|buff.sudden_doom.react|(buff.dark_transformation.down&unholy<=1)
-			if (RunicPower > 90 || Me.HasAura ("Sudden Doom") || (!Me.Pet.HasAura("Dark Transformation") && Unholy <= 1)) {
+			if (RunicPower > 90 || Me.HasAura ("Sudden Doom") || (!Me.Pet.HasAura ("Dark Transformation") && Unholy <= 1)) {
 				if (DeathCoil ())
 					return true;
 			}
@@ -210,7 +205,7 @@ namespace ReBot
 			return false;
 		}
 
-		public bool Single_target ()
+		public bool SingleTarget ()
 		{
 			//actions.single_target=plague_leech,if=(cooldown.outbreak.remains<1)&((blood<1&frost<1)|(blood<1&unholy<1)|(frost<1&unholy<1))
 			if ((Cooldown ("Outbreak") < 1) && ((Blood < 1 && Frost < 1) || (Blood < 1 && Unholy < 1) || (Frost < 1 && Unholy < 1))) {
@@ -357,10 +352,10 @@ namespace ReBot
 			if (DarkTransformation ())
 				return true;
 			//actions.single_target+=/blood_tap,if=buff.blood_charge.stack>10&(buff.sudden_doom.react|(buff.dark_transformation.down&unholy<=1))
-			if (BloodCharge > 10 && (Me.HasAura ("Sudden Doom") || (!Me.Pet.HasAura("Dark Transformation") && Unholy <= 1)))
+			if (BloodCharge > 10 && (Me.HasAura ("Sudden Doom") || (!Me.Pet.HasAura ("Dark Transformation") && Unholy <= 1)))
 				BloodTap ();
 			//actions.single_target+=/death_coil,if=buff.sudden_doom.react|(buff.dark_transformation.down&unholy<=1)
-			if (Me.HasAura ("Sudden Doom") || (Me.Pet.HasAura("Dark Transformation") && Unholy <= 1)) {
+			if (Me.HasAura ("Sudden Doom") || (Me.Pet.HasAura ("Dark Transformation") && Unholy <= 1)) {
 				if (DeathCoil ())
 					return true;
 			}
@@ -413,7 +408,7 @@ namespace ReBot
 			return false;
 		}
 
-		public bool Bos_st ()
+		public bool BosSt ()
 		{
 			var targets = Adds;
 			targets.Add (Target);
@@ -439,7 +434,7 @@ namespace ReBot
 			}
 			//actions.bos_st+=/run_action_list,name=bos_active,if=dot.breath_of_sindragosa.ticking
 			if (Me.HasAura ("Breath of Sindragosa")) {
-				if (Bos_active ())
+				if (BosActive ())
 					return true;
 			}
 			//actions.bos_st+=/summon_gargoyle
@@ -534,7 +529,7 @@ namespace ReBot
 			return false;
 		}
 
-		public bool Bos_active ()
+		public bool BosActive ()
 		{
 			var targets = Adds;
 			targets.Add (Target);

@@ -3,20 +3,20 @@ using System.Linq;
 using Newtonsoft.Json;
 using ReBot.API;
 
-namespace ReBot
+namespace ReBot.Warlock
 {
 	public abstract class SerbWarlock : CombatRotation
 	{
 		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
-		public int TTD = 10;
+		public int Ttd = 10;
 		//		[JsonProperty ("Run to enemy")]
 		//		public bool Run;
 		[JsonProperty ("Use multitarget")]
 		public bool Multitarget = true;
 		[JsonProperty ("AOE")]
-		public bool AOE = true;
+		public bool Aoe = true;
 		[JsonProperty ("Use GCD")]
-		public bool GCD = true;
+		public bool Gcd = true;
 
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
@@ -24,8 +24,8 @@ namespace ReBot
 		public DateTime StartSleepTime;
 		public bool InCombat;
 		public UnitObject CycleTarget;
-		public Int32 OraliusWhisperingCrystalID = 118922;
-		public Int32 CrystalOfInsanityID = 86569;
+		public Int32 OraliusWhisperingCrystalId = 118922;
+		public Int32 CrystalOfInsanityId = 86569;
 
 		public bool IsSolo {
 			get {
@@ -51,7 +51,7 @@ namespace ReBot
 			}
 		}
 
-		public bool InBG {
+		public bool InBg {
 			get {
 				return API.MapInfo.Type == MapType.PvP;
 			}
@@ -137,15 +137,15 @@ namespace ReBot
 
 		public double Time {
 			get {
-				TimeSpan CombatTime = DateTime.Now.Subtract (StartBattle);
-				return CombatTime.TotalSeconds;
+				TimeSpan combatTime = DateTime.Now.Subtract (StartBattle);
+				return combatTime.TotalSeconds;
 			}
 		}
 
 		public double SleepTime {
 			get {
-				TimeSpan CurrentSleepTime = DateTime.Now.Subtract (StartSleepTime);
-				return CurrentSleepTime.TotalSeconds;
+				TimeSpan currentSleepTime = DateTime.Now.Subtract (StartSleepTime);
+				return currentSleepTime.TotalSeconds;
 			}
 		}
 
@@ -237,14 +237,11 @@ namespace ReBot
 
 		public double TimeToDie (UnitObject o)
 		{
-			return o.Health / TTD;
+		    if (o != null) return o.Health / Ttd;
+		    return 0;
 		}
 
-		public SerbWarlock ()
-		{
-		}
-
-		public virtual bool DarkIntent ()
+	    public virtual bool DarkIntent ()
 		{
 			return CastSelf ("Dark Intent", () => Usable ("Dark Intent") && !Me.HasAura ("Dark Intent") && !Me.HasAura ("Mind Quickening") && !Me.HasAura ("Swiftblade's Cunning") && !Me.HasAura ("Windflurry") && !Me.HasAura ("Arcane Brilliance"));
 		}
@@ -305,16 +302,16 @@ namespace ReBot
 		public virtual bool CrystalOfInsanity ()
 		{
 			// Analysis disable once CompareOfFloatsByEqualityOperator
-			if (!InArena && API.HasItem (CrystalOfInsanityID) && !Me.HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityID) == 0)
-				return API.UseItem (CrystalOfInsanityID);
+			if (!InArena && API.HasItem (CrystalOfInsanityId) && !Me.HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityId) == 0)
+				return API.UseItem (CrystalOfInsanityId);
 			return false;
 		}
 
 		public virtual bool OraliusWhisperingCrystal ()
 		{
 			// Analysis disable once CompareOfFloatsByEqualityOperator
-			if (API.HasItem (OraliusWhisperingCrystalID) && !Me.HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalID) == 0)
-				return API.UseItem (OraliusWhisperingCrystalID);
+			if (API.HasItem (OraliusWhisperingCrystalId) && !Me.HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalId) == 0)
+				return API.UseItem (OraliusWhisperingCrystalId);
 			return false;
 		}
 

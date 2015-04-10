@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using ReBot.API;
 
-namespace ReBot
+namespace ReBot.Rogue
 {
 
 	public enum PoisonMaindHand
@@ -25,7 +24,7 @@ namespace ReBot
 	{
 
 		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
-		public int TTD = 10;
+		public int Ttd = 10;
 		[JsonProperty ("Use range attack")]
 		public bool UseRangedAttack;
 		[JsonProperty ("Run to enemy")]
@@ -33,11 +32,11 @@ namespace ReBot
 		[JsonProperty ("Use multitarget")]
 		public bool Multitarget = true;
 		[JsonProperty ("AOE")]
-		public bool AOE = true;
+		public bool Aoe = true;
 		[JsonProperty ("Use Burst Of Speed in no combat")]
 		public bool UseBurstOfSpeed = true;
 		[JsonProperty ("Use GCD")]
-		public bool GCD = true;
+		public bool Gcd = true;
 
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
@@ -46,8 +45,8 @@ namespace ReBot
 		public bool InCombat;
 		public UnitObject CycleTarget;
 		public String RangedAttack = "Throw";
-		public Int32 OraliusWhisperingCrystalID = 118922;
-		public Int32 CrystalOfInsanityID = 86569;
+		public Int32 OraliusWhisperingCrystalId = 118922;
+		public Int32 CrystalOfInsanityId = 86569;
 
 		public bool IsSolo {
 			get {
@@ -84,7 +83,7 @@ namespace ReBot
 			}
 		}
 
-		public bool InBG {
+		public bool InBg {
 			get {
 				return API.MapInfo.Type == MapType.PvP;
 			}
@@ -124,16 +123,14 @@ namespace ReBot
 		{
 			if (o.HasAura ("Enrage") || o.HasAura ("Berserker Rage") || o.HasAura ("Demonic Enrage") || o.HasAura ("Aspect of Thekal") || o.HasAura ("Charge Rage") || o.HasAura ("Electric Spur") || o.HasAura ("Cornered and Enraged!") || o.HasAura ("Draconic Rage") || o.HasAura ("Brood Rage") || o.HasAura ("Determination") || o.HasAura ("Charged Fists") || o.HasAura ("Beatdown") || o.HasAura ("Consuming Bite") || o.HasAura ("Delirious") || o.HasAura ("Angry") || o.HasAura ("Blood Rage") || o.HasAura ("Berserking Howl") || o.HasAura ("Bloody Rage") || o.HasAura ("Brewrific") || o.HasAura ("Desperate Rage") || o.HasAura ("Blood Crazed") || o.HasAura ("Combat Momentum") || o.HasAura ("Dire Rage") || o.HasAura ("Dominate Slave") || o.HasAura ("Blackrock Rabies") || o.HasAura ("Burning Rage") || o.HasAura ("Bloodletting Howl"))
 				return true;
-			else
-				return false;
+			return false;
 		}
 
 		public bool IsNotForDamage (UnitObject o)
 		{
 			if (o.HasAura ("Fear") || o.HasAura ("Polymorph") || o.HasAura ("Gouge") || o.HasAura ("Paralysis") || o.HasAura ("Blind") || o.HasAura ("Hex"))
 				return true;
-			else
-				return false;
+			return false;
 		}
 
 		public int Energy {
@@ -163,15 +160,15 @@ namespace ReBot
 
 		public double Time {
 			get {
-				TimeSpan CombatTime = DateTime.Now.Subtract (StartBattle);
-				return CombatTime.TotalSeconds;
+				TimeSpan combatTime = DateTime.Now.Subtract (StartBattle);
+				return combatTime.TotalSeconds;
 			}
 		}
 
 		public double SleepTime {
 			get {
-				TimeSpan CurrentSleepTime = DateTime.Now.Subtract (StartSleepTime);
-				return CurrentSleepTime.TotalSeconds;
+				TimeSpan currentSleepTime = DateTime.Now.Subtract (StartSleepTime);
+				return currentSleepTime.TotalSeconds;
 			}
 		}
 
@@ -179,8 +176,7 @@ namespace ReBot
 		{ 
 			if (e > Energy)
 				return (e - Energy) / EnergyRegen;
-			else
-				return 0;
+			return 0;
 		}
 
 		public double TimeToStartBattle {
@@ -235,12 +231,12 @@ namespace ReBot
 
 		public int AmbushCost {
 			get {
-				int Cost = 60;
+				int cost = 60;
 				if (HasSpell ("Shadow Focus"))
-					Cost = 15;
+					cost = 15;
 				if (HasSpell ("Shadow Dance") && Me.HasAura ("Shadow Dance"))
-					Cost = 40;
-				return Cost;
+					cost = 40;
+				return cost;
 			}
 		}
 
@@ -260,14 +256,11 @@ namespace ReBot
 
 		public double TimeToDie (UnitObject o)
 		{
-			return o.Health / TTD;
+		    if (o != null) return o.Health / Ttd;
+		    return 0;
 		}
 
-		public SerbRogue ()
-		{
-		}
-
-		public virtual bool Interrupt ()
+	    public virtual bool Interrupt ()
 		{
 			var targets = Adds;
 			targets.Add (Target);
@@ -292,7 +285,7 @@ namespace ReBot
 				if (DeadlyThrow (Target))
 					return true;
 			}
-			if (Usable ("Gouge") && (InArena || InBG) && Multitarget) {
+			if (Usable ("Gouge") && (InArena || InBg) && Multitarget) {
 				CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && x.IsCasting && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CycleTarget != null)
 				if (Gouge (CycleTarget))
@@ -334,14 +327,14 @@ namespace ReBot
 			return false;
 		}
 
-		public virtual bool MainHandPoison (PoisonMaindHand MH)
+		public virtual bool MainHandPoison (PoisonMaindHand mH)
 		{
-			return HasSpell ((int)MH) && CastSelfPreventDouble ((int)MH, () => !Me.HasAura ((int)MH) || Me.AuraTimeRemaining ((int)MH) < 300);
+			return HasSpell ((int)mH) && CastSelfPreventDouble ((int)mH, () => !Me.HasAura ((int)mH) || Me.AuraTimeRemaining ((int)mH) < 300);
 		}
 
-		public virtual bool OffHandPoison (PoisonOffHand OH)
+		public virtual bool OffHandPoison (PoisonOffHand oH)
 		{
-			return HasSpell ((int)OH) && CastSelfPreventDouble ((int)OH, () => !Me.HasAura ((int)OH) || Me.AuraTimeRemaining ((int)OH) < 300);
+			return HasSpell ((int)oH) && CastSelfPreventDouble ((int)oH, () => !Me.HasAura ((int)oH) || Me.AuraTimeRemaining ((int)oH) < 300);
 		}
 
 		public virtual bool Stealth ()
@@ -386,17 +379,17 @@ namespace ReBot
 
 		public virtual bool BloodFury ()
 		{
-			return CastSelf ("BloodFury", () => Usable ("Blood Fury") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+			return CastSelf ("BloodFury", () => Usable ("Blood Fury") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
 		public virtual bool Berserking ()
 		{
-			return CastSelf ("Berserking", () => Usable ("Berserking") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+			return CastSelf ("Berserking", () => Usable ("Berserking") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
 		public virtual bool ArcaneTorrent ()
 		{
-			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
 		public virtual bool BladeFlurry ()
@@ -406,7 +399,7 @@ namespace ReBot
 
 		public virtual bool ShadowReflection ()
 		{
-			return Cast ("Shadow Reflection", () => Usable ("Shadow Reflection") && Target.CombatRange <= 20 && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+			return Cast ("Shadow Reflection", () => Usable ("Shadow Reflection") && Target.CombatRange <= 20 && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
 		public virtual bool Vanish ()
@@ -426,12 +419,12 @@ namespace ReBot
 
 		public virtual bool AdrenalineRush ()
 		{
-			return CastSelf ("Adrenaline Rush", () => Usable ("Adrenaline Rush") && (IsPlayer || IsElite || EnemyInRange(10) > 2) && Target.IsInCombatRangeAndLoS);
+			return CastSelf ("Adrenaline Rush", () => Usable ("Adrenaline Rush") && (IsPlayer || IsElite || EnemyInRange (10) > 2) && Target.IsInCombatRangeAndLoS);
 		}
 
 		public virtual bool KillingSpree ()
 		{
-			return Cast ("Killing Spree", () => Usable ("Killing Spree") && (IsPlayer || IsElite || EnemyInRange(10) > 2) && Target.CombatRange <= 10);
+			return Cast ("Killing Spree", () => Usable ("Killing Spree") && (IsPlayer || IsElite || EnemyInRange (10) > 2) && Target.CombatRange <= 10);
 		}
 
 		public virtual bool RevealingStrike ()
@@ -485,16 +478,16 @@ namespace ReBot
 		public virtual bool CrystalOfInsanity ()
 		{
 			// Analysis disable once CompareOfFloatsByEqualityOperator
-			if (!InArena && API.HasItem (CrystalOfInsanityID) && !HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityID) == 0)
-				return (API.UseItem (CrystalOfInsanityID));
+			if (!InArena && API.HasItem (CrystalOfInsanityId) && !HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityId) == 0)
+				return (API.UseItem (CrystalOfInsanityId));
 			return false;
 		}
 
 		public virtual bool OraliusWhisperingCrystal ()
 		{
 			// Analysis disable once CompareOfFloatsByEqualityOperator
-			if (API.HasItem (OraliusWhisperingCrystalID) && !HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalID) == 0)
-				return API.UseItem (OraliusWhisperingCrystalID);
+			if (API.HasItem (OraliusWhisperingCrystalId) && !HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalId) == 0)
+				return API.UseItem (OraliusWhisperingCrystalId);
 			return false;
 		}
 
@@ -637,15 +630,15 @@ namespace ReBot
 
 		public virtual bool Dispatch (UnitObject o)
 		{
-			return Cast ("Dispatch", o, () => Usable ("Dispatch") && ((HasCost (30) && TargetHealth < 0.35) || Me.HasAura("Blindside")));
+			return Cast ("Dispatch", o, () => Usable ("Dispatch") && ((HasCost (30) && TargetHealth < 0.35) || Me.HasAura ("Blindside")));
 		}
 
 		public virtual bool Dispatch ()
 		{
-			return Cast ("Dispatch", () => Usable ("Dispatch") && ((HasCost (30) && TargetHealth < 0.35) || Me.HasAura("Blindside")));
+			return Cast ("Dispatch", () => Usable ("Dispatch") && ((HasCost (30) && TargetHealth < 0.35) || Me.HasAura ("Blindside")));
 		}
 
-		public virtual bool Heal()
+		public virtual bool Heal ()
 		{
 			var targets = Adds;
 			targets.Add (Target);
@@ -669,19 +662,19 @@ namespace ReBot
 					return true;
 			}
 			if (Usable ("Feint")) {
-				if ((InArena || InBG) && Health < 0.7) {
+				if ((InArena || InBg) && Health < 0.7) {
 					if (Feint ())
 						return true;
 				}
 				if (Health < 0.8 && (InRaid || InInstance)) {
-					var UseFeint = targets.Where (x => IsBoss (x) && x.CombatRange <= 30 && x.IsCasting && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (UseFeint != null) {
+					var useFeint = targets.Where (x => IsBoss (x) && x.CombatRange <= 30 && x.IsCasting && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (useFeint != null) {
 						if (Feint ())
 							return true;
 					}
 				}
-				if (IsBoss(Target) && Target.IsCasting && Target.RemainingCastTime > 0) {
-					if (Feint())
+				if (IsBoss (Target) && Target.IsCasting && Target.RemainingCastTime > 0) {
+					if (Feint ())
 						return true;
 				}
 			}
@@ -689,13 +682,14 @@ namespace ReBot
 			return false;
 		}
 
-		public virtual bool CC() {
+		public virtual bool Cc ()
+		{
 			if (Target.CanParticipateInCombat) {
 				if (CheapShot ())
 					return true;
 			}
 
-			if (InArena || InBG) {
+			if (InArena || InBg) {
 				if (Usable ("Gouge") && EnemyInRange (8) == 2 && Multitarget) {
 					CycleTarget = API.Players.Where (p => p.IsPlayer && p.IsEnemy && !p.IsDead && p.IsInCombatRangeAndLoS && p.CanParticipateInCombat && Target != p).DefaultIfEmpty (null).FirstOrDefault ();
 					if (CycleTarget != null) {

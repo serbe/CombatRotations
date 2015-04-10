@@ -1,15 +1,14 @@
-﻿using ReBot.API;
-using Newtonsoft.Json;
-using System.Linq;
+﻿using Newtonsoft.Json;
+using ReBot.API;
 
-namespace ReBot
+namespace ReBot.Priest
 {
 	[Rotation ("Serb Priest Discipline SC", "ReBot", WoWClass.Priest, Specialization.PriestDiscipline, 40, 25)]
 
-	public class SerbPriestDisciplineSC : SerbPriest
+	public class SerbPriestDisciplineSc : SerbPriest
 	{
 		[JsonProperty ("Use GCD")]
-		public bool GCD = true;
+		public bool Gcd = true;
 		[JsonProperty ("Auto target")]
 		public bool UseAutoTarget;
 		[JsonProperty ("Heal party %/100")]
@@ -17,12 +16,12 @@ namespace ReBot
 		[JsonProperty ("Heal tank %/100")]
 		public double TankPr = 0.9;
 
-		public SerbPriestDisciplineSC ()
+		public SerbPriestDisciplineSc ()
 		{
-			GroupBuffs = new string[] {
+			GroupBuffs = new [] {
 				"Power Word: Fortitude"
 			};
-			PullSpells = new string[] {
+			PullSpells = new [] {
 				"Smite",
 			};
 		}
@@ -49,7 +48,7 @@ namespace ReBot
 
 		public override void Combat ()
 		{
-			if (GCD && HasGlobalCooldown ())
+			if (Gcd && HasGlobalCooldown ())
 				return;
 
 			if (Target == null && UseAutoTarget)
@@ -84,23 +83,34 @@ namespace ReBot
 				}
 			}
 
-			if (Target == null)
-				Me.SetTarget (Me);
+            if (Me.HealthFraction < 0.5)
+            {
+                if (Healing(Me))
+                    return;
+            }
 
-			if (Me.HealthFraction < 0.5) {
-				if (Healing (Me))
-					return;
-			}
+		    if (Target == null)
+		    {
+                Me.SetTarget(Me);
+            }
 
-			if (Target.IsFriendly) {
-				if (Healing (Target))
-					return;
-			}
+		    if (Target != null)
+		    {
+                if (Target.IsFriendly)
+                {
+                    if (Healing(Target))
+                        return;
+                }
 
-			if (Target.IsEnemy) {
-				if (Damage (Target))
-					return;
-			}
+                if (Target.IsEnemy)
+                {
+                    if (Damage(Target))
+                        return;
+                }
+		    }
+
+		    if (Me.HealthFraction < 0.3)
+		        FlashHeal(Me);
 		}
 
 		public bool Damage (UnitObject u)

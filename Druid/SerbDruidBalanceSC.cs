@@ -1,16 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using ReBot.API;
 
-namespace ReBot
+namespace ReBot.Druid
 {
 	[Rotation ("Serb Balance Druid SC", "Serb", WoWClass.Druid, Specialization.DruidBalance, 40)]
 
-	public class SerbDruidBalanceSC : SerbDruid
+	public class SerbDruidBalanceSc : SerbDruid
 	{
 
-		public SerbDruidBalanceSC ()
+		public SerbDruidBalanceSc ()
 		{
 			GroupBuffs = new [] {
 				"Mark of the Wild"
@@ -71,7 +70,7 @@ namespace ReBot
 				StartBattle = DateTime.Now;
 			}
 
-			if (GCD && HasGlobalCooldown ())
+			if (Gcd && HasGlobalCooldown ())
 				return;
 
 			if (!Me.HasAura ("Bear Form")) {

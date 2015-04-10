@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using ReBot.API;
 
-namespace ReBot
+namespace ReBot.Druid
 {
 	public abstract class SerbDruid : CombatRotation
 	{
@@ -13,15 +12,15 @@ namespace ReBot
 		[JsonProperty ("Use StarFall")]
 		public bool UseStarFall;
 		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
-		public int TTD = 10;
+		public int Ttd = 10;
 		[JsonProperty ("Run to enemy")]
 		public bool Run;
 		[JsonProperty ("Use multitarget")]
 		public bool Multitarget = true;
 		[JsonProperty ("AOE")]
-		public bool AOE = true;
+		public bool Aoe = true;
 		[JsonProperty ("Use GCD")]
-		public bool GCD = true;
+		public bool Gcd = true;
 
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
@@ -29,8 +28,8 @@ namespace ReBot
 		public DateTime StartSleepTime;
 		public bool InCombat;
 		public UnitObject CycleTarget;
-		public Int32 OraliusWhisperingCrystalID = 118922;
-		public Int32 CrystalOfInsanityID = 86569;
+		public Int32 OraliusWhisperingCrystalId = 118922;
+		public Int32 CrystalOfInsanityId = 86569;
 
 		public bool IsSolo {
 			get {
@@ -65,7 +64,7 @@ namespace ReBot
 			}
 		}
 
-		public bool InBG {
+		public bool InBg {
 			get {
 				return API.MapInfo.Type == MapType.PvP;
 			}
@@ -105,16 +104,14 @@ namespace ReBot
 		{
 			if (o.HasAura ("Enrage") || o.HasAura ("Berserker Rage") || o.HasAura ("Demonic Enrage") || o.HasAura ("Aspect of Thekal") || o.HasAura ("Charge Rage") || o.HasAura ("Electric Spur") || o.HasAura ("Cornered and Enraged!") || o.HasAura ("Draconic Rage") || o.HasAura ("Brood Rage") || o.HasAura ("Determination") || o.HasAura ("Charged Fists") || o.HasAura ("Beatdown") || o.HasAura ("Consuming Bite") || o.HasAura ("Delirious") || o.HasAura ("Angry") || o.HasAura ("Blood Rage") || o.HasAura ("Berserking Howl") || o.HasAura ("Bloody Rage") || o.HasAura ("Brewrific") || o.HasAura ("Desperate Rage") || o.HasAura ("Blood Crazed") || o.HasAura ("Combat Momentum") || o.HasAura ("Dire Rage") || o.HasAura ("Dominate Slave") || o.HasAura ("Blackrock Rabies") || o.HasAura ("Burning Rage") || o.HasAura ("Bloodletting Howl"))
 				return true;
-			else
-				return false;
+			return false;
 		}
 
 		public bool IsNotForDamage (UnitObject o)
 		{
 			if (o.HasAura ("Fear") || o.HasAura ("Polymorph") || o.HasAura ("Gouge") || o.HasAura ("Paralysis") || o.HasAura ("Blind") || o.HasAura ("Hex"))
 				return true;
-			else
-				return false;
+			return false;
 		}
 
 		public string Direction {
@@ -154,15 +151,15 @@ namespace ReBot
 
 		public double Time {
 			get {
-				TimeSpan CombatTime = DateTime.Now.Subtract (StartBattle);
-				return CombatTime.TotalSeconds;
+				TimeSpan combatTime = DateTime.Now.Subtract (StartBattle);
+				return combatTime.TotalSeconds;
 			}
 		}
 
 		public double SleepTime {
 			get {
-				TimeSpan CurrentSleepTime = DateTime.Now.Subtract (StartSleepTime);
-				return CurrentSleepTime.TotalSeconds;
+				TimeSpan currentSleepTime = DateTime.Now.Subtract (StartSleepTime);
+				return currentSleepTime.TotalSeconds;
 			}
 		}
 
@@ -170,8 +167,7 @@ namespace ReBot
 		{ 
 			if (e > Energy)
 				return (e - Energy) / EnergyRegen;
-			else
-				return 0;
+			return 0;
 		}
 
 		public double TimeToStartBattle {
@@ -182,24 +178,13 @@ namespace ReBot
 
 		public int EnemyInRange (int range)
 		{
-			int x = 0;
-			foreach (UnitObject mob in API.CollectUnits(range)) {
-				if ((mob.IsEnemy || Me.Target == mob) && !mob.IsDead) {
-					x++;
-				}
-			}
-			return x;
+		    return API.CollectUnits(range).Count(mob => (mob.IsEnemy || Me.Target == mob) && !mob.IsDead);
 		}
 
-		public bool IncapacitatedInRange (int range)
+	    public bool IncapacitatedInRange (int range)
 		{
-			int x = 0;
-			foreach (UnitObject mob in API.CollectUnits(range)) {
-				if ((mob.IsEnemy || Me.Target == mob) && !mob.IsDead && IsNotForDamage (mob)) {
-					x++;
-				}
-			}
-			return x > 0;
+			int x = API.CollectUnits(range).Count(mob => (mob.IsEnemy || Me.Target == mob) && !mob.IsDead && IsNotForDamage(mob));
+	        return x > 0;
 		}
 
 		public double Cooldown (string s)
@@ -246,33 +231,31 @@ namespace ReBot
 
 		public double TimeToDie (UnitObject o)
 		{
-			return o.Health / TTD;
+		    if (o != null) return o.Health / Ttd;
+		    return 0;
 		}
 
-		public double EclipseChange {
+	    public double EclipseChange {
 			get {
-				double TimeToChange = 20;
+				double timeToChange = 20;
 				if (Direction == "sun") {
 					if (Eclipse > 0 && Eclipse <= 100)
-						TimeToChange = 10 + (100 - Eclipse) / 10;
+						timeToChange = 10 + (100 - Eclipse) / 10;
 					if (Eclipse > -100 && Eclipse < 0)
-						TimeToChange = (0 - Eclipse) / 10;
+						timeToChange = (0 - Eclipse) / 10;
 				} 
 				if (Direction == "moon") {
 					if (Eclipse > 0 && Eclipse < 100)
-						TimeToChange = Eclipse / 10;
+						timeToChange = Eclipse / 10;
 					if (Eclipse >= -100 && Eclipse < 0)
-						TimeToChange = 10 + (100 + Eclipse) / 10;
+						timeToChange = 10 + (100 + Eclipse) / 10;
 				}
 				if (Eclipse == 0)
-					TimeToChange = 20;
-				return TimeToChange;
+					timeToChange = 20;
+				return timeToChange;
 			}
 		}
 
-		public SerbDruid ()
-		{
-		}
 
 		public virtual bool Interrupt ()
 		{
@@ -369,12 +352,12 @@ namespace ReBot
 
 		public virtual bool Rejuvenation ()
 		{
-			return CastSelf ("Rejuvenation", () => Usable ("Rejuvenation") && !Me.HasAura("Rejuvenation"));
+			return CastSelf ("Rejuvenation", () => Usable ("Rejuvenation") && !Me.HasAura ("Rejuvenation"));
 		}
 
 		public virtual bool Rejuvenation (UnitObject o)
 		{
-			return Cast ("Rejuvenation", o, () => Usable ("Rejuvenation") && !o.HasAura("Rejuvenation") && o.IsInLoS && o.CombatRange <= 40);
+			return Cast ("Rejuvenation", o, () => Usable ("Rejuvenation") && !o.HasAura ("Rejuvenation") && o.IsInLoS && o.CombatRange <= 40);
 		}
 
 		public virtual bool HealingTouch ()
@@ -453,17 +436,17 @@ namespace ReBot
 
 		public virtual bool BloodFury ()
 		{
-			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
 		public virtual bool Berserking ()
 		{
-			return CastSelf ("Berserking", () => Usable ("Berserking") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+			return CastSelf ("Berserking", () => Usable ("Berserking") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
 		public virtual bool ArcaneTorrent ()
 		{
-			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
 		public virtual bool ForceofNature ()
@@ -473,12 +456,12 @@ namespace ReBot
 
 		public virtual bool Starsurge ()
 		{
-			return Cast ("Starsurge", () => Usable ("Starsurge") && Target.IsInLoS && Target.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura("Empowered Moonkin") || HasSpell("Enhanced Starsurge")));
+			return Cast ("Starsurge", () => Usable ("Starsurge") && Target.IsInLoS && Target.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura ("Empowered Moonkin") || HasSpell ("Enhanced Starsurge")));
 		}
 
 		public virtual bool IncarnationChosenofElune ()
 		{
-			return CastSelf ("Incarnation: Chosen of Elune", () => Usable ("Incarnation: Chosen of Elune") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+			return CastSelf ("Incarnation: Chosen of Elune", () => Usable ("Incarnation: Chosen of Elune") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
 		public virtual bool Sunfire ()
@@ -493,12 +476,12 @@ namespace ReBot
 
 		public virtual bool StellarFlare ()
 		{
-			return Cast ("Stellar Flare", () => Usable ("Stellar Flare") && Target.IsInLoS && Target.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura("Empowered Moonkin")));
+			return Cast ("Stellar Flare", () => Usable ("Stellar Flare") && Target.IsInLoS && Target.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura ("Empowered Moonkin")));
 		}
 
 		public virtual bool StellarFlare (UnitObject o)
 		{
-			return Cast ("Stellar Flare", o, () => Usable ("Stellar Flare") && o.IsInLoS && o.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura("Empowered Moonkin")));
+			return Cast ("Stellar Flare", o, () => Usable ("Stellar Flare") && o.IsInLoS && o.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura ("Empowered Moonkin")));
 		}
 
 		public virtual bool Moonfire ()
@@ -513,12 +496,12 @@ namespace ReBot
 
 		public virtual bool Wrath ()
 		{
-			return Cast ("Wrath", () => Usable ("Wrath") && Target.IsInLoS && Target.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura("Empowered Moonkin")));
+			return Cast ("Wrath", () => Usable ("Wrath") && Target.IsInLoS && Target.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura ("Empowered Moonkin")));
 		}
 
 		public virtual bool Starfire ()
 		{
-			return Cast ("Starfire", () => Usable ("Starfire") && Target.IsInLoS && Target.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura("Elune's Wrath") || Me.HasAura("Empowered Moonkin")));
+			return Cast ("Starfire", () => Usable ("Starfire") && Target.IsInLoS && Target.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura ("Elune's Wrath") || Me.HasAura ("Empowered Moonkin")));
 		}
 
 		public virtual bool Maim (UnitObject o)
@@ -528,7 +511,7 @@ namespace ReBot
 
 		public virtual bool Berserk ()
 		{
-			return CastSelf ("Berserk", () => Usable ("Berserk") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+			return CastSelf ("Berserk", () => Usable ("Berserk") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
 		public virtual bool TigersFury ()
@@ -538,7 +521,7 @@ namespace ReBot
 
 		public virtual bool IncarnationKingoftheJungle ()
 		{
-			return CastSelf ("Incarnation: King of the Jungle", () => Usable ("Incarnation: King of the Jungle") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+			return CastSelf ("Incarnation: King of the Jungle", () => Usable ("Incarnation: King of the Jungle") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
 		public virtual bool Shadowmeld ()
@@ -557,22 +540,22 @@ namespace ReBot
 		public virtual bool CrystalOfInsanity ()
 		{
 			// Analysis disable once CompareOfFloatsByEqualityOperator
-			if (!InArena && API.HasItem (CrystalOfInsanityID) && !Me.HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityID) == 0)
-				return API.UseItem (CrystalOfInsanityID);
+			if (!InArena && API.HasItem (CrystalOfInsanityId) && !Me.HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityId) == 0)
+				return API.UseItem (CrystalOfInsanityId);
 			return false;
 		}
 
 		public virtual bool OraliusWhisperingCrystal ()
 		{
 			// Analysis disable once CompareOfFloatsByEqualityOperator
-			if (API.HasItem (OraliusWhisperingCrystalID) && !Me.HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalID) == 0)
-				return API.UseItem (OraliusWhisperingCrystalID);
+			if (API.HasItem (OraliusWhisperingCrystalId) && !Me.HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalId) == 0)
+				return API.UseItem (OraliusWhisperingCrystalId);
 			return false;
 		}
 
 		public virtual bool CelestialAlignment ()
 		{
-			return CastSelf ("Celestial Alignment", () => Usable ("Celestial Alignment") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+			return CastSelf ("Celestial Alignment", () => Usable ("Celestial Alignment") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
 		public virtual bool Rake ()
@@ -600,17 +583,20 @@ namespace ReBot
 			return Cast ("Rip", o, () => Usable ("Rip") && HasEnergy (30) && ComboPoints > 0);
 		}
 
-		 public virtual bool Freedom() {
+		public virtual bool Freedom ()
+		{
 			return WilloftheForsaken () || EveryManforHimself ();
-		 }
+		}
 
-		 public virtual bool WilloftheForsaken() {
-		 	return CastSelf("Will of the Forsaken", () => Usable("Will of the Forsaken"));
-		 }
+		public virtual bool WilloftheForsaken ()
+		{
+			return CastSelf ("Will of the Forsaken", () => Usable ("Will of the Forsaken"));
+		}
 
-		 public virtual bool EveryManforHimself() {
-		 	return CastSelf("Every Man for Himself", () => Usable("Every Man for Himself"));
-		 }
+		public virtual bool EveryManforHimself ()
+		{
+			return CastSelf ("Every Man for Himself", () => Usable ("Every Man for Himself"));
+		}
 
 		public virtual bool Swipe ()
 		{
@@ -624,10 +610,11 @@ namespace ReBot
 
 		public virtual bool Thrash (UnitObject o)
 		{
-			return Cast ("Thrash", o, () => Usable ("Thrash") && ((IsCatForm() && HasEnergy (50))));
+			return Cast ("Thrash", o, () => Usable ("Thrash") && ((IsCatForm () && HasEnergy (50))));
 		}
 
-		public bool Heal(){
+		public bool Heal ()
+		{
 			if (Health < 0.45) {
 				if (Healthstone ())
 					return true;

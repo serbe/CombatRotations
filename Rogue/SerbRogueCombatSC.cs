@@ -1,24 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using ReBot.API;
 
-namespace ReBot
+namespace ReBot.Rogue
 {
 	[Rotation ("Serb Combat Rogue SC", "Serb", WoWClass.Rogue, Specialization.RogueCombat, 5, 25)]
 
-	public class SerbRogueCombatSC : SerbRogue
+	public class SerbRogueCombatSc : SerbRogue
 	{
 
 		[JsonProperty ("MainHand Poison"), JsonConverter (typeof(StringEnumConverter))]
-		public PoisonMaindHand MH = PoisonMaindHand.InstantPoison;
+		public PoisonMaindHand Mh = PoisonMaindHand.InstantPoison;
 		[JsonProperty ("OffHand Poison"), JsonConverter (typeof(StringEnumConverter))]
-		public PoisonOffHand OH = PoisonOffHand.CripplingPoison;
+		public PoisonOffHand Oh = PoisonOffHand.CripplingPoison;
 
 
-		public SerbRogueCombatSC ()
+		public SerbRogueCombatSc ()
 		{
 			RangedAttack = HasSpell ("Shuriken Toss") ? "Shuriken Toss" : "Throw";
 		}
@@ -28,9 +27,9 @@ namespace ReBot
 			// actions.precombat=flask,type=greater_draenic_agility_flask
 			// actions.precombat+=/food,type=buttered_sturgeon
 			// actions.precombat+=/apply_poison,lethal=deadly
-			if (MainHandPoison (MH))
+			if (MainHandPoison (Mh))
 				return true;
-			if (OffHandPoison (OH))
+			if (OffHandPoison (Oh))
 				return true;
 			// # Snapshot raid buffed stats before combat begins and pre-potting is done.
 			// actions.precombat+=/snapshot_stats
@@ -116,10 +115,10 @@ namespace ReBot
 			if (InRaid && InInstance)
 				TricksoftheTrade ();
 
-			if (HasGlobalCooldown () && GCD)
+			if (HasGlobalCooldown () && Gcd)
 				return;
 
-			if (CC ())
+			if (Cc ())
 				return;
 
 			if (HasAura ("Blade Flurry") && !InRaid && !InInstance && IncapacitatedInRange (8) && EnemyInRange (8) < 3)
@@ -208,8 +207,7 @@ namespace ReBot
 					return;
 			}
 
-			if (Cast (RangedAttack, () => Energy >= 40 && !Me.IsMoving && !HasAura ("Stealth") && Target.IsInLoS && Target.CombatRange > 10 && Target.CombatRange <= 30 && UseRangedAttack))
-				return;
+			Cast (RangedAttack, () => Energy >= 40 && !Me.IsMoving && !HasAura ("Stealth") && Target.IsInLoS && Target.CombatRange > 10 && Target.CombatRange <= 30 && UseRangedAttack);
 		}
 
 		public bool ActionAdrenalineRush ()

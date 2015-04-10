@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
-using ReBot.API;
 using Newtonsoft.Json.Converters;
+using ReBot.API;
 
-namespace ReBot
+namespace ReBot.Hunter
 {
 	[Rotation ("Serb Hunter Beastmastery SC", "Serb", WoWClass.Hunter, Specialization.HunterBeastMastery, 40, 40)]
 
-	public class SerbHunterBeastmasterSC : SerbHunter
+	public class SerbHunterBeastmasterSc : SerbHunter
 	{
 		[JsonProperty ("Use Pet"), JsonConverter (typeof(StringEnumConverter))]							
 		public UsePet Pet = UsePet.UsePet;
@@ -18,13 +17,13 @@ namespace ReBot
 		[JsonProperty ("Exotic Munitions"), JsonConverter (typeof(StringEnumConverter))]							
 		public ExoticMunitionsType Exo = ExoticMunitionsType.NoExoticMunitions;
 		[JsonProperty ("Use Misdirection")]
-		public bool UseMD = true;
+		public bool UseMd = true;
 		[JsonProperty ("Use fire trap")]
-		public bool FireTrap = false;
+		public bool FireTrap;
 		[JsonProperty ("Use ice trap")]
-		public bool IceTrap = false;
+		public bool IceTrap;
 
-		public SerbHunterBeastmasterSC ()
+		public SerbHunterBeastmasterSc ()
 		{
 			PullSpells = new[] {
 				"Concussive Shot",
@@ -104,7 +103,7 @@ namespace ReBot
 					return;
 			}
 
-			if (!InArena && !InBG && Me.HasAlivePet && UseMD) {
+			if (!InArena && !InBg && Me.HasAlivePet && UseMd) {
 				if (Misdirection ())
 					return;
 			}
@@ -132,7 +131,7 @@ namespace ReBot
 				// 	var IceTarget = new Vector3((Target.Position.X + Me.Position.X) / 2, (Target.Position.Y + Me.Position.Y) / 2, (Target.Position.Z + Me.Position.Z) / 2);
 				// 	if (CastOnTerrain("Ice Trap", IceTarget, () => Cooldown("Ice Trap") == 0)) return;
 				// }
-				if ((InArena || InBG) && Usable ("Freezing Trap") && EnemyWithTarget (Target, 15) == 0) {
+				if ((InArena || InBg) && Usable ("Freezing Trap") && EnemyWithTarget (Target, 15) == 0) {
 					CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && x.IsPlayer && x != Target && x.CanParticipateInCombat).DefaultIfEmpty (null).FirstOrDefault ();
 					if (CycleTarget != null) {
 						if (FreezingTrap (CycleTarget))

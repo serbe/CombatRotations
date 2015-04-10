@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using ReBot.API;
 
-namespace ReBot
+namespace ReBot.Druid
 {
 	[Rotation ("Serb Feral Druid SC", "Serb", WoWClass.Druid, Specialization.DruidFeral, 5, 25)]
 
-	public class SerbDruidFeralSC : SerbDruid
+	public class SerbDruidFeralSc : SerbDruid
 	{
 
 		[JsonProperty ("PvP Healing")]
@@ -21,7 +20,7 @@ namespace ReBot
 		public double Sleep;
 		public string Skill;
 
-		public 	SerbDruidFeralSC ()
+		public 	SerbDruidFeralSc ()
 		{
 			GroupBuffs = new[] {
 				"Mark of the Wild"

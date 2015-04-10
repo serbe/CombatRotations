@@ -1,23 +1,19 @@
-﻿using System;
-using ReBot.API;
-using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
+using ReBot.API;
 
-namespace ReBot
+namespace ReBot.Priest
 {
 	public abstract class SerbPriest : CombatRotation
 	{
 		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
-		public int TTD = 10;
+		public int Ttd = 10;
 
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
 		public UnitObject CycleTarget;
 
-		public SerbPriest ()
-		{
-		}
 
 		public bool InArena {
 			get {
@@ -25,7 +21,7 @@ namespace ReBot
 			}
 		}
 
-		public bool InBG {
+		public bool InBg {
 			get {
 				return API.MapInfo.Type == MapType.PvP;
 			}
@@ -68,17 +64,18 @@ namespace ReBot
 
 		public double TimeToDie (UnitObject u = null)
 		{
-			u = u ?? Target;
-			return u.Health / TTD;
+		    u = u ?? Target;
+		    if (u != null) return u.Health / Ttd;
+		    return 0;
 		}
 
-		public bool IsBoss (UnitObject u = null)
+	    public bool IsBoss (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return(u.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || u.Level >= Me.Level + BossLevelIncrease;
 		}
 
-		public List<PlayerObject> GroupMembers {
+		public virtual List<PlayerObject> GroupMembers {
 			get {
 				return Group.GetGroupMemberObjects ();
 			}

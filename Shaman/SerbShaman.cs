@@ -1,18 +1,14 @@
-﻿using ReBot.API;
-using System.Linq;
+﻿using System.Linq;
+using ReBot.API;
 
-namespace ReBot
+namespace ReBot.Shaman
 {
 	public abstract class SerbShaman : CombatRotation
 	{
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
 
-		public SerbShaman ()
-		{
-		}
-
-		public bool IsBoss (UnitObject o)
+	    public bool IsBoss (UnitObject o)
 		{
 			return(o.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || o.Level >= Me.Level + BossLevelIncrease;
 		}

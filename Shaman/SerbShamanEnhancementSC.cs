@@ -1,14 +1,14 @@
 ﻿using ReBot.API;
 
-namespace ReBot
+namespace ReBot.Shaman
 {
 	[Rotation ("Serb Shaman Enhancement SC", "ReBot", WoWClass.Shaman, Specialization.ShamanEnhancement, 5, 25)]
 
-	public class SerbShamanEnhancementSC : SerbShaman
+	public class SerbShamanEnhancementSc : SerbShaman
 	{
-		public SerbShamanEnhancementSC ()
+		public SerbShamanEnhancementSc ()
 		{
-			PullSpells = new string[] {
+			PullSpells = new[] {
 				"Lightning Bolt"
 			};
 		}

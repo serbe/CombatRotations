@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace ReBot
+namespace ReBot.Warlock
 {
-	public class SerbWarlockDemonologySC : SerbWarlock
+	public class SerbWarlockDemonologySc : SerbWarlock
 	{
-		public SerbWarlockDemonologySC ()
+		public SerbWarlockDemonologySc ()
 		{
 			GroupBuffs = new[] {
 				"Dark Intent",
@@ -127,7 +127,7 @@ namespace ReBot
 			//actions+=/shadow_bolt
 			//actions+=/hellfire,moving=1,interrupt=1
 			//actions+=/life_tap
-
+            InCombat = true;
 		}
 
 		public bool DB_Action ()

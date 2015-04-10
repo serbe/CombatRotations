@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
+using Geometry;
 using Newtonsoft.Json;
 using ReBot.API;
-using Geometry;
 
-namespace ReBot
+namespace ReBot.Hunter
 {
 	public abstract class SerbHunter : CombatRotation
 	{
@@ -40,17 +40,17 @@ namespace ReBot
 		}
 
 		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
-		public int TTD = 10;
+		public int Ttd = 10;
 		[JsonProperty ("Run to enemy")]
 		public bool Run;
 		[JsonProperty ("Use multitarget")]
 		public bool Multitarget = true;
 		[JsonProperty ("AOE")]
-		public bool AOE = true;
+		public bool Aoe = true;
 		[JsonProperty ("Use Burst Of Speed in no combat")]
 		public bool UseBurstOfSpeed = true;
 		[JsonProperty ("Use GCD")]
-		public bool GCD = true;
+		public bool Gcd = true;
 
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
@@ -59,8 +59,8 @@ namespace ReBot
 		public bool InCombat;
 		public UnitObject CycleTarget;
 		public String RangedAttack = "Throw";
-		public Int32 OraliusWhisperingCrystalID = 118922;
-		public Int32 CrystalOfInsanityID = 86569;
+		public Int32 OraliusWhisperingCrystalId = 118922;
+		public Int32 CrystalOfInsanityId = 86569;
 		public int FocusMax = 100;
 
 		public bool IsSolo {
@@ -98,7 +98,7 @@ namespace ReBot
 			}
 		}
 
-		public bool InBG {
+		public bool InBg {
 			get {
 				return API.MapInfo.Type == MapType.PvP;
 			}
@@ -138,8 +138,7 @@ namespace ReBot
 		{
 			if (o.HasAura ("Enrage") || o.HasAura ("Berserker Rage") || o.HasAura ("Demonic Enrage") || o.HasAura ("Aspect of Thekal") || o.HasAura ("Charge Rage") || o.HasAura ("Electric Spur") || o.HasAura ("Cornered and Enraged!") || o.HasAura ("Draconic Rage") || o.HasAura ("Brood Rage") || o.HasAura ("Determination") || o.HasAura ("Charged Fists") || o.HasAura ("Beatdown") || o.HasAura ("Consuming Bite") || o.HasAura ("Delirious") || o.HasAura ("Angry") || o.HasAura ("Blood Rage") || o.HasAura ("Berserking Howl") || o.HasAura ("Bloody Rage") || o.HasAura ("Brewrific") || o.HasAura ("Desperate Rage") || o.HasAura ("Blood Crazed") || o.HasAura ("Combat Momentum") || o.HasAura ("Dire Rage") || o.HasAura ("Dominate Slave") || o.HasAura ("Blackrock Rabies") || o.HasAura ("Burning Rage") || o.HasAura ("Bloodletting Howl"))
 				return true;
-			else
-				return false;
+			return false;
 		}
 
 		public bool IsDispeling (UnitObject o)
@@ -157,8 +156,7 @@ namespace ReBot
 		{
 			if (o.HasAura ("Fear") || o.HasAura ("Polymorph") || o.HasAura ("Gouge") || o.HasAura ("Paralysis") || o.HasAura ("Blind") || o.HasAura ("Hex"))
 				return true;
-			else
-				return false;
+			return false;
 		}
 
 		public int Focus {
@@ -184,15 +182,15 @@ namespace ReBot
 
 		public double Time {
 			get {
-				TimeSpan CombatTime = DateTime.Now.Subtract (StartBattle);
-				return CombatTime.TotalSeconds;
+				TimeSpan combatTime = DateTime.Now.Subtract (StartBattle);
+				return combatTime.TotalSeconds;
 			}
 		}
 
 		public double SleepTime {
 			get {
-				TimeSpan CurrentSleepTime = DateTime.Now.Subtract (StartSleepTime);
-				return CurrentSleepTime.TotalSeconds;
+				TimeSpan currentSleepTime = DateTime.Now.Subtract (StartSleepTime);
+				return currentSleepTime.TotalSeconds;
 			}
 		}
 
@@ -277,7 +275,7 @@ namespace ReBot
 		}
 
 		// Multi-Shot and Aimed Shot
-		public bool HasAMFocus (double i)
+		public bool HasAmFocus (double i)
 		{
 			if (Me.HasAura ("Multi-Shot"))
 				i = i - 20;
@@ -300,14 +298,12 @@ namespace ReBot
 
 		public double TimeToDie (UnitObject o)
 		{
-			return o.Health / TTD;
+		    if (o != null) return o.Health / Ttd;
+		    return 0;
 		}
 
-		public SerbHunter ()
-		{
-		}
 
-		public virtual bool ExoticMunitions (ExoticMunitionsType e)
+	    public virtual bool ExoticMunitions (ExoticMunitionsType e)
 		{
 			if (e == ExoticMunitionsType.PoisonedAmmo) {
 				return CastSelfPreventDouble ("Poisoned Ammo", () => Usable ("Poisoned Ammo") && !Me.HasAura ("Poisoned Ammo"));
@@ -376,16 +372,16 @@ namespace ReBot
 		public virtual bool CrystalOfInsanity ()
 		{
 			// Analysis disable once CompareOfFloatsByEqualityOperator
-			if (!InArena && API.HasItem (CrystalOfInsanityID) && !HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityID) == 0)
-				return (API.UseItem (CrystalOfInsanityID));
+			if (!InArena && API.HasItem (CrystalOfInsanityId) && !HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityId) == 0)
+				return (API.UseItem (CrystalOfInsanityId));
 			return false;
 		}
 
 		public virtual bool OraliusWhisperingCrystal ()
 		{
 			// Analysis disable once CompareOfFloatsByEqualityOperator
-			if (API.HasItem (OraliusWhisperingCrystalID) && !HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalID) == 0)
-				return API.UseItem (OraliusWhisperingCrystalID);
+			if (API.HasItem (OraliusWhisperingCrystalId) && !HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalId) == 0)
+				return API.UseItem (OraliusWhisperingCrystalId);
 			return false;
 		}
 
@@ -418,17 +414,18 @@ namespace ReBot
 			return CastSelf ("Trap Launcher", () => Usable ("Trap Launcher"));
 		}
 
-		public virtual bool ConcussiveShot()
+		public virtual bool ConcussiveShot ()
 		{
 			return Cast ("Concussive Shot", () => Usable ("Concussive Shot") && !Target.HasAura ("Concussive Shot"));
 		}
 
-		public virtual bool Interrupt() {
+		public virtual bool Interrupt ()
+		{
 			var targets = Adds;
-			targets.Add(Target);
+			targets.Add (Target);
 
-			if (Usable("Counter Shot")) {
-				CycleTarget = targets.Where(x => x.IsInCombatRangeAndLoS && x.IsCastingAndInterruptible() && x.RemainingCastTime > 0).DefaultIfEmpty(null).FirstOrDefault();
+			if (Usable ("Counter Shot")) {
+				CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CycleTarget != null) {
 					if (CounterShot (CycleTarget))
 						return true;
@@ -438,16 +435,18 @@ namespace ReBot
 			return false;
 		}
 
-		public virtual bool CounterShot(UnitObject u) {
+		public virtual bool CounterShot (UnitObject u)
+		{
 			return Cast ("Counter Shot", u, () => Usable ("Counter Shot") && u.IsInLoS && u.CombatRange <= 40);
 		}
 
-		public virtual bool Tranquilizing() {
+		public virtual bool Tranquilizing ()
+		{
 			var targets = Adds;
 			targets.Add (Target);
 
 			if (Usable ("Tranquilizing Shot")) {
-				if (InArena || InBG) {
+				if (InArena || InBg) {
 					CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && x.IsPlayer && x.Auras.Any (a => a.IsStealable)).DefaultIfEmpty (null).FirstOrDefault ();
 					if (CycleTarget != null) {
 						if (TranquilizingShot (CycleTarget))
@@ -464,148 +463,175 @@ namespace ReBot
 			return false;
 		}
 
-		public virtual bool TranquilizingShot(UnitObject u) {
+		public virtual bool TranquilizingShot (UnitObject u)
+		{
 			return Cast ("Tranquilizing Shot", u, () => Usable ("Tranquilizing Shot") && (HasGlyph (119384) || HasFocus (50)) && u.IsInLoS && u.CombatRange <= 40);
 		}
 
-		public virtual bool BindingShot(UnitObject u) {
+		public virtual bool BindingShot (UnitObject u)
+		{
 			return CastOnTerrain ("Binding Shot", u.Position, () => Usable ("Binding Shot") && u.IsInLoS && u.CombatRange <= 30);
 		}
 
-		public virtual bool FreezingTrap(UnitObject u) {
+		public virtual bool FreezingTrap (UnitObject u)
+		{
 			return CastOnTerrain ("Freezing Trap", u.Position, () => Usable ("Freezing Trap") && u.IsInLoS && u.CombatRange <= 40);
 		}
 
-		public virtual bool Freedom() {
-			return WilloftheForsaken () || EveryManforHimself () || MastersCall();
+		public virtual bool Freedom ()
+		{
+			return WilloftheForsaken () || EveryManforHimself () || MastersCall ();
 		}
 
-		public virtual bool WilloftheForsaken() {
-			return CastSelf("Will of the Forsaken", () => Usable("Will of the Forsaken"));
+		public virtual bool WilloftheForsaken ()
+		{
+			return CastSelf ("Will of the Forsaken", () => Usable ("Will of the Forsaken"));
 		}
 
-		public virtual bool EveryManforHimself() {
-			return CastSelf("Every Man for Himself", () => Usable("Every Man for Himself"));
+		public virtual bool EveryManforHimself ()
+		{
+			return CastSelf ("Every Man for Himself", () => Usable ("Every Man for Himself"));
 		}
 
-		public virtual bool MastersCall() {
+		public virtual bool MastersCall ()
+		{
 			return CastSelf ("Master's Call", () => Usable ("Master's Call") && Me.HasAlivePet && Me.Pet.CombatRange <= 40);
 		}
 
-		public virtual bool LastStand() {
+		public virtual bool LastStand ()
+		{
 			return CastSelf ("Last Stand", () => Usable ("Last Stand") && Me.HasAlivePet);
 		}
 
-		public virtual bool RoarofSacrifice() {
+		public virtual bool RoarofSacrifice ()
+		{
 			return CastSelf ("Roar of Sacrifice", () => Usable ("Roar of Sacrifice") && Me.HasAlivePet && Me.Pet.CombatRange <= 40);
 		}
 
-		public virtual bool Exhilaration() {
+		public virtual bool Exhilaration ()
+		{
 			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
 		}
 
-		public virtual bool Deterrence() {
+		public virtual bool Deterrence ()
+		{
 			return Cast ("Deterrence", () => Usable ("Deterrence"));
 		}
 
-		public virtual bool FeignDeath() {
-			return Cast ("Feign Death", () => Usable ("Feign Death") && !Me.HasAura("Feign Death"));
+		public virtual bool FeignDeath ()
+		{
+			return Cast ("Feign Death", () => Usable ("Feign Death") && !Me.HasAura ("Feign Death"));
 		}
 
 		public virtual bool BloodFury ()
 		{
-			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
 		public virtual bool Berserking ()
 		{
-			return CastSelf ("Berserking", () => Usable ("Berserking") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+			return CastSelf ("Berserking", () => Usable ("Berserking") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
 		public virtual bool ArcaneTorrent ()
 		{
-			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
-		public virtual bool Stampede() {
-			return Cast ("Stampede", () => Usable ("Stampede") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange(10) > 2));
+		public virtual bool Stampede ()
+		{
+			return Cast ("Stampede", () => Usable ("Stampede") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
-		public virtual bool DireBeast() {
+		public virtual bool DireBeast ()
+		{
 			return Cast ("Dire Beast", () => Usable ("Dire Beast"));
 		}
 
-		public virtual bool FocusFire() {
+		public virtual bool FocusFire ()
+		{
 			return Cast ("Focus Fire", () => Usable ("Focus Fire"));
 		}
 
-		public virtual bool BestialWrath() {
+		public virtual bool BestialWrath ()
+		{
 			return Cast ("Bestial Wrath", () => Usable ("Bestial Wrath"));
 		}
 
-		public virtual bool MultiShot() {
-			return Cast ("MultiShot", () => Usable ("MultiShot") && HasAMFocus(40) && Target.IsInLoS && Target.CombatRange <= 40);
+		public virtual bool MultiShot ()
+		{
+			return Cast ("MultiShot", () => Usable ("MultiShot") && HasAmFocus (40) && Target.IsInLoS && Target.CombatRange <= 40);
 		}
 
-		public virtual bool Barrage() {
+		public virtual bool Barrage ()
+		{
 			return Cast ("Barrage", () => Usable ("Barrage") && Focus >= 60 && Target.IsInLoS && Target.CombatRange <= 40);
 		}
 
-		public virtual bool ExplosiveTrap(UnitObject u) {
+		public virtual bool ExplosiveTrap (UnitObject u)
+		{
 			return CastOnTerrain ("Explosive Trap", u.Position, () => Usable ("Explosive Trap") && u.IsInLoS && u.CombatRange <= 40);
 		}
 
-		public virtual bool KillCommand() {
-			return Cast ("Kill Command", () => Usable ("Kill Command") && Me.HasAlivePet && HasFocus(40));
-		}
-	
-		public virtual bool AMurderofCrows() {
-			return Cast ("A Murder of Crows", () => Usable ("A Murder of Crows") && Focus >= 30 && Target.IsInLoS && Target.CombatRange <= 40);
-		}
-	
-		public virtual bool KillShot() {
-			return Cast ("Kill Shot", () => Usable ("Kill Shot") && (Target.HealthFraction < 0.20 || (HasSpell("Enhanced Kill Shot") && Target.HealthFraction < 0.35)) && Target.IsInLoS && Target.CombatRange <= 40);
+		public virtual bool KillCommand ()
+		{
+			return Cast ("Kill Command", () => Usable ("Kill Command") && Me.HasAlivePet && HasFocus (40));
 		}
 
-		public virtual bool FocusingShot() {
+		public virtual bool AMurderofCrows ()
+		{
+			return Cast ("A Murder of Crows", () => Usable ("A Murder of Crows") && Focus >= 30 && Target.IsInLoS && Target.CombatRange <= 40);
+		}
+
+		public virtual bool KillShot ()
+		{
+			return Cast ("Kill Shot", () => Usable ("Kill Shot") && (Target.HealthFraction < 0.20 || (HasSpell ("Enhanced Kill Shot") && Target.HealthFraction < 0.35)) && Target.IsInLoS && Target.CombatRange <= 40);
+		}
+
+		public virtual bool FocusingShot ()
+		{
 			return Cast ("Focusing Shot", () => Usable ("Focusing Shot") && !Me.IsMoving && Target.IsInLoS && Target.CombatRange <= 40);
 		}
 
-		public virtual bool CobraShot() {
+		public virtual bool CobraShot ()
+		{
 			return Cast ("Cobra Shot", () => Usable ("Cobra Shot") && Target.IsInLoS && Target.CombatRange <= 40);
 		}
 
-		public virtual bool GlaiveToss() {
+		public virtual bool GlaiveToss ()
+		{
 			return Cast ("Glaive Toss", () => Usable ("Glaive Toss") && Focus >= 15 && Target.IsInLoS && Target.CombatRange <= 40);
 		}
 
-		public virtual bool Powershot() {
+		public virtual bool Powershot ()
+		{
 			return Cast ("Powershot", () => Usable ("Powershot") && Focus >= 15 && Target.IsInLoS && Target.CombatRange <= 40);
 		}
 
-		public virtual bool ArcaneShot() {
-			return Cast ("Arcane Shot", () => Usable ("Arcane Shot") && HasArcaneFocus(30) && Target.IsInLoS && Target.CombatRange <= 40);
+		public virtual bool ArcaneShot ()
+		{
+			return Cast ("Arcane Shot", () => Usable ("Arcane Shot") && HasArcaneFocus (30) && Target.IsInLoS && Target.CombatRange <= 40);
 		}
 
-//		public virtual bool Exhilaration() {
-//			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
-//		}
-//
-//		public virtual bool Exhilaration() {
-//			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
-//		}
-//
-//		public virtual bool Exhilaration() {
-//			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
-//		}
-//
-//		public virtual bool Exhilaration() {
-//			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
-//		}
-//
-//		public virtual bool Exhilaration() {
-//			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
-//		}
+		//		public virtual bool Exhilaration() {
+		//			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+		//		}
+		//
+		//		public virtual bool Exhilaration() {
+		//			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+		//		}
+		//
+		//		public virtual bool Exhilaration() {
+		//			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+		//		}
+		//
+		//		public virtual bool Exhilaration() {
+		//			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+		//		}
+		//
+		//		public virtual bool Exhilaration() {
+		//			return Cast ("Exhilaration", () => Usable ("Exhilaration"));
+		//		}
 	}
 }
 
