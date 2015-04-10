@@ -13,11 +13,29 @@ namespace ReBot
 
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
-		public UnitObject HealTarget;
 		public UnitObject CycleTarget;
 
 		public SerbPriest ()
 		{
+		}
+
+		public void AutoTarget ()
+		{
+			CycleTarget = API.CollectUnits (40).Where (u => u.IsEnemy && !u.IsDead && u.IsInLoS && u.IsAttackable).OrderByDescending (u => u.CombatRange).DefaultIfEmpty (null).FirstOrDefault ();
+			if (CycleTarget != null)
+				Me.SetTarget (CycleTarget);
+		}
+
+		public void SetTarget ()
+		{
+			if (Tank != null) {
+				if (Me.Focus == null)
+					Me.SetFocus (Tank);
+				Me.SetTarget (Tank);
+			}
+			if (Target == null && HealTarget != null) {
+				Me.SetTarget (HealTarget);
+			}
 		}
 
 		public bool Usable (string s)
@@ -57,6 +75,12 @@ namespace ReBot
 		public IOrderedEnumerable<PlayerObject> HealGroups {
 			get {
 				return GroupMembers.Where (x => !x.IsDead && x.HealthFraction <= 0.9 && x.IsInCombatRangeAndLoS).OrderByDescending (x => x.HealthFraction);
+			}
+		}
+
+		public UnitObject HealTarget {
+			get {
+				return HealGroups.DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 

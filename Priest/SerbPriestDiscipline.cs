@@ -11,7 +11,7 @@ namespace ReBot
 		[JsonProperty ("Use GCD")]
 		public bool GCD = true;
 		[JsonProperty ("Auto target")]
-		public bool AutoTarget;
+		public bool UseAutoTarget;
 		[JsonProperty ("Heal party %/100")]
 		public double PartyPr = 0.8;
 		[JsonProperty ("Heal tank %/100")]
@@ -51,27 +51,20 @@ namespace ReBot
 		{
 			if (GCD && HasGlobalCooldown ())
 				return;
-			
+
+			if (Target == null && UseAutoTarget)
+				AutoTarget ();
+
 			if (GroupMembers.Count > 0) {
-
-				HealTarget = HealGroups.DefaultIfEmpty (null).FirstOrDefault ();
-
-				if (Target == null && Tank != null) {
-					if (Me.Focus == null)
-						Me.SetFocus (Tank);
-					Me.SetTarget (Tank);
-				}
-
+				if (Target == null)
+					SetTarget ();
+			
 				if (Tank != null && Tank.HealthFraction <= 0.3) {
 					if (FlashHeal (Tank))
 						return;
 				}
 
 				if (HealTarget != null) {
-					if (Target == null) {
-						Me.SetTarget (HealTarget);
-					}
-
 					if (Tank != null && Tank != HealTarget && Tank.HealthFraction < TankPr && Tank.HealthFraction < HealTarget.HealthFraction) {
 						if (Healing (Tank))
 							return;
@@ -84,28 +77,21 @@ namespace ReBot
 				}
 			}
 
-			if (Target == null && AutoTarget) {
-				CycleTarget = API.CollectUnits (40).Where (u => u.IsEnemy && !u.IsDead && u.IsInLoS && u.IsAttackable).OrderByDescending (u => u.CombatRange).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null)
-					Me.SetTarget (CycleTarget);
-			}
-
 			if (Target == null)
 				Me.SetTarget (Me);
 
-
-			if (Me.HealthFraction < 0.6) {
+			if (Me.HealthFraction < 0.5) {
 				if (Healing (Me))
-					return;
-			}
-
-			if (Target.IsEnemy) {
-				if (Damage (Target))
 					return;
 			}
 
 			if (Target.IsFriendly) {
 				if (Healing (Target))
+					return;
+			}
+
+			if (Target.IsEnemy) {
+				if (Damage (Target))
 					return;
 			}
 		}
@@ -186,13 +172,10 @@ namespace ReBot
 			//	actions+=/arcane_torrent
 			ArcaneTorrent ();
 			//	actions+=/power_infusion,if=talent.power_infusion.enabled
-			if (HasSpell ("Power Infusion"))
-				PowerInfusion ();
+			PowerInfusion ();
 			//	actions+=/power_word_solace,if=talent.power_word_solace.enabled
-			if (HasSpell ("Power Word: Solace")) {
-				if (PowerWordSolace (u))
-					return true;
-			}
+			if (PowerWordSolace (u))
+				return true;
 			//	actions+=/mindbender,if=talent.mindbender.enabled&mana.pct<80
 			if (HasSpell ("Mindbender") && Me.ManaFraction < 0.8) {
 				if (Mindbender (u))
@@ -232,6 +215,8 @@ namespace ReBot
 				return true;
 			//	actions+=/heal
 			if (Heal (u))
+				return true;
+			if (FlashHeal (u))
 				return true;
 
 			return false;
