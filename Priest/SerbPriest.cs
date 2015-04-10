@@ -19,6 +19,24 @@ namespace ReBot
 		{
 		}
 
+		public bool InArena {
+			get {
+				return API.MapInfo.Type == MapType.Arena;
+			}
+		}
+
+		public bool InBG {
+			get {
+				return API.MapInfo.Type == MapType.PvP;
+			}
+		}
+
+		public bool InInstance {
+			get {
+				return API.MapInfo.Type == MapType.Instance;
+			}
+		}
+
 		public void AutoTarget ()
 		{
 			CycleTarget = API.CollectUnits (40).Where (u => u.IsEnemy && !u.IsDead && u.IsInLoS && u.IsAttackable).OrderByDescending (u => u.CombatRange).DefaultIfEmpty (null).FirstOrDefault ();
@@ -162,7 +180,7 @@ namespace ReBot
 		public bool PowerWordShield (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Power Word: Shield", u, () => Usable ("Power Word: Shield") && u.IsInLoS && u.CombatRange <= 40);
+			return Cast ("Power Word: Shield", u, () => Usable ("Power Word: Shield") && !u.HasAura ("Power Word: Shield") && u.IsInLoS && u.CombatRange <= 40);
 		}
 
 		public bool FlashHeal (UnitObject u = null)
@@ -200,6 +218,15 @@ namespace ReBot
 			return CastSelf ("Archangel", () => Usable ("Archangel"));
 		}
 
+		public bool SetShieldAll ()
+		{
+			CycleTarget = GroupMembers.Where (m => !m.IsDead && m.IsInCombatRangeAndLoS && !m.HasAura ("Power Word: Shield")).DefaultIfEmpty (null).FirstOrDefault ();
+			if (CycleTarget != null) {
+				if (PowerWordShield (CycleTarget))
+					return true;
+			}
+			return false;
+		}
 	}
 }
 

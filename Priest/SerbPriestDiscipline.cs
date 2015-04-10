@@ -55,6 +55,13 @@ namespace ReBot
 			if (Target == null && UseAutoTarget)
 				AutoTarget ();
 
+			if (InArena) {
+				if (SetShieldAll ())
+					return;
+			}
+
+			PowerWordShield (Me);
+
 			if (GroupMembers.Count > 0) {
 				if (Target == null)
 					SetTarget ();
