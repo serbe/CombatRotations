@@ -64,12 +64,13 @@ namespace ReBot.Priest
 
 		public double TimeToDie (UnitObject u = null)
 		{
-		    u = u ?? Target;
-		    if (u != null) return u.Health / Ttd;
-		    return 0;
+			u = u ?? Target;
+			if (u != null)
+				return u.Health / Ttd;
+			return 0;
 		}
 
-	    public bool IsBoss (UnitObject u = null)
+		public bool IsBoss (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return(u.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || u.Level >= Me.Level + BossLevelIncrease;
@@ -177,7 +178,7 @@ namespace ReBot.Priest
 		public bool PowerWordShield (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Power Word: Shield", u, () => Usable ("Power Word: Shield") && !u.HasAura ("Power Word: Shield") && u.IsInLoS && u.CombatRange <= 40);
+			return Cast ("Power Word: Shield", u, () => Usable ("Power Word: Shield") && !u.HasAura ("Power Word: Shield") && !u.HasAura ("Weakened Soul") && u.IsInLoS && u.CombatRange <= 40);
 		}
 
 		public bool FlashHeal (UnitObject u = null)

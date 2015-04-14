@@ -11,8 +11,8 @@ namespace ReBot.Priest
 		public bool Gcd = true;
 		[JsonProperty ("Auto target")]
 		public bool UseAutoTarget;
-		[JsonProperty ("Heal party %/100")]
-		public double PartyPr = 0.8;
+		[JsonProperty ("Heal %/100")]
+		public double HealPr = 0.8;
 		[JsonProperty ("Heal tank %/100")]
 		public double TankPr = 0.9;
 
@@ -76,41 +76,36 @@ namespace ReBot.Priest
 							return;
 					}
 
-					if (HealTarget.HealthFraction < PartyPr) {
+					if (HealTarget.HealthFraction < HealPr) {
 						if (Healing (HealTarget))
 							return;
 					}
 				}
 			}
 
-            if (Me.HealthFraction < 0.5)
-            {
-                if (Healing(Me))
-                    return;
-            }
+			if (Me.HealthFraction < 0.5) {
+				if (Healing (Me))
+					return;
+			}
 
-		    if (Target == null)
-		    {
-                Me.SetTarget(Me);
-            }
+			if (Target == null) {
+				Me.SetTarget (Me);
+			}
 
-		    if (Target != null)
-		    {
-                if (Target.IsFriendly)
-                {
-                    if (Healing(Target))
-                        return;
-                }
+			if (Target != null) {
+				if (Target.IsFriendly && Target.HealthFraction < HealPr) {
+					if (Healing (Target))
+						return;
+				}
 
-                if (Target.IsEnemy)
-                {
-                    if (Damage(Target))
-                        return;
-                }
-		    }
+				if (Target.IsEnemy) {
+					if (Damage (Target))
+						return;
+				}
+			}
 
-		    if (Me.HealthFraction < 0.3)
-		        FlashHeal(Me);
+			if (Me.HealthFraction < 0.3)
+				FlashHeal (Me);
 		}
 
 		public bool Damage (UnitObject u)
@@ -219,17 +214,17 @@ namespace ReBot.Priest
 				if (FlashHeal (u))
 					return true;
 			}
-			//	actions+=/heal,if=buff.power_infusion.up|mana.pct>20
-			if (Me.HasAura ("Power Infusion") || Me.ManaFraction > 0.2) {
-				if (Heal (u))
-					return true;
-			}
 			//	actions+=/prayer_of_mending
 			if (PrayerofMending (u))
 				return true;
 			//	actions+=/clarity_of_will
 			if (ClarityofWill (u))
 				return true;
+			//	actions+=/heal,if=buff.power_infusion.up|mana.pct>20
+			if (Me.HasAura ("Power Infusion") || Me.ManaFraction > 0.2) {
+				if (Heal (u))
+					return true;
+			}
 			//	actions+=/heal
 			if (Heal (u))
 				return true;
