@@ -10,7 +10,9 @@ namespace ReBot.Priest
 		[JsonProperty ("Use GCD")]
 		public bool Gcd = true;
 		[JsonProperty ("Auto target")]
-		public bool UseAutoTarget;
+		public bool UseAutoTarget = true;
+		[JsonProperty ("Fight in instance")]
+		public bool FightInInstance = true;
 		[JsonProperty ("Heal %/100")]
 		public double HealPr = 0.8;
 		[JsonProperty ("Heal tank %/100")]
@@ -51,7 +53,7 @@ namespace ReBot.Priest
 			if (Gcd && HasGlobalCooldown ())
 				return;
 
-			if (Target == null && UseAutoTarget)
+			if (!InRaid && !InBg && !InArena && ((FightInInstance && InInstance) || !InInstance) && (Target == null || !Target.IsEnemy) && UseAutoTarget)
 				AutoTarget ();
 
 			if (InArena) {
@@ -102,10 +104,10 @@ namespace ReBot.Priest
 					if (Damage (Target))
 						return;
 				}
-			}
 
-			if (Me.HealthFraction < 0.3)
-				FlashHeal (Me);
+				if (Me.HealthFraction < 0.3)
+					FlashHeal (Me);
+			}
 		}
 
 		public bool Damage (UnitObject u)

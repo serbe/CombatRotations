@@ -15,6 +15,12 @@ namespace ReBot.Priest
 		public UnitObject CycleTarget;
 
 
+		public bool InRaid {
+			get {
+				return API.MapInfo.Type == MapType.Raid;
+			}
+		}
+
 		public bool InArena {
 			get {
 				return API.MapInfo.Type == MapType.Arena;
