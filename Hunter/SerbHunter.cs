@@ -61,24 +61,13 @@ namespace ReBot.Hunter
 		public String RangedAttack = "Throw";
 		public Int32 OraliusWhisperingCrystalId = 118922;
 		public Int32 CrystalOfInsanityId = 86569;
-		public int FocusMax = 100;
+
 
 		public bool IsSolo {
 			get {
 				return Group.GetNumGroupMembers () != 1;
 			}
 		}
-
-		//		public int EnergyMax {
-		//			get {
-		//				int energy = 100;
-		//				if (HasSpell ("Venom Rush"))
-		//					energy = energy + 15;
-		//				if (HasGlyph (159634))
-		//					energy = energy + 20;
-		//				return energy;
-		//			}
-		//		}
 
 		public bool InRaid {
 			get {
@@ -162,6 +151,15 @@ namespace ReBot.Hunter
 		public int Focus {
 			get {
 				return Me.GetPower (WoWPowerType.Focus);
+			}
+		}
+
+		public int FocusMax {
+			get {
+				int fm = 100;
+				if (HasSpell ("Kindred Spirits"))
+					fm = fm + 20;
+				return fm;
 			}
 		}
 
@@ -298,12 +296,13 @@ namespace ReBot.Hunter
 
 		public double TimeToDie (UnitObject o)
 		{
-		    if (o != null) return o.Health / Ttd;
-		    return 0;
+			if (o != null)
+				return o.Health / Ttd;
+			return 0;
 		}
 
 
-	    public virtual bool ExoticMunitions (ExoticMunitionsType e)
+		public virtual bool ExoticMunitions (ExoticMunitionsType e)
 		{
 			if (e == ExoticMunitionsType.PoisonedAmmo) {
 				return CastSelfPreventDouble ("Poisoned Ammo", () => Usable ("Poisoned Ammo") && !Me.HasAura ("Poisoned Ammo"));
@@ -360,6 +359,19 @@ namespace ReBot.Hunter
 			return false;
 		}
 
+		public bool MeIsBusy ()
+		{
+			if (Me.HasAura ("Feign Death"))
+				return true; 
+			if (Me.IsChanneling)
+				return true;
+			if (Me.IsCasting)
+				return true;
+			if (Me.HasAura ("Drink"))
+				return true;
+
+			return false;
+		}
 
 		public virtual bool Healthstone ()
 		{
@@ -475,7 +487,7 @@ namespace ReBot.Hunter
 
 		public virtual bool FreezingTrap (UnitObject u)
 		{
-			return CastOnTerrain ("Freezing Trap", u.Position, () => Usable ("Freezing Trap") && u.IsInLoS && u.CombatRange <= 40);
+			return CastOnTerrain ("Freezing Trap", u.PositionPredicted, () => Usable ("Freezing Trap") && Me.HasAura ("Trap Launcher") && u.IsInLoS && u.CombatRange <= 40);
 		}
 
 		public virtual bool Freedom ()

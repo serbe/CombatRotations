@@ -98,6 +98,12 @@ namespace ReBot.Hunter
 				CancelAura ("Aspect of the Cheetah");
 			}
 
+			if (MeIsBusy ())
+				return;
+
+			if (Interrupt ())
+				return;
+
 			if (!Me.HasAura ("Trap Launcher")) {
 				if (TrapLauncher ())
 					return;
@@ -112,9 +118,6 @@ namespace ReBot.Hunter
 				if (ConcussiveShot ())
 					return;
 			}
-
-			if (Interrupt ())
-				return;
 
 			if (Tranquilizing ())
 				return;
