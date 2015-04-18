@@ -25,6 +25,12 @@ namespace ReBot.Druid
 			GroupBuffs = new[] {
 				"Mark of the Wild"
 			};
+			PullSpells = new[] {
+				"Rake",
+				"Shred",
+				"Faerie Swarm",
+				"Faerie Fire"
+			};
 		}
 
 
@@ -99,20 +105,8 @@ namespace ReBot.Druid
 				}				
 			}
 
-			if (Health <= 0.9 && !Me.HasAura ("Rejuvenation", true) && !Me.HasAura ("Cenarion Ward", true)) {
-				if (Rejuvenation ())
-					return;
-			}
-			if (Health <= 0.8) {
-				if (CenarionWard ())
-					return;
-			}
-			if (Me.HasAura ("Predatory Swiftness") && Health < 0.8 && !Me.HasAura ("Cenarion Ward", true)) {
-				if (HealingTouch ())
-					return;
-			}
-			if (Health < 0.45) {
-				if (Healthstone ())
+			if (Health < 0.9) {
+				if (Heal ())
 					return;
 			}
 
@@ -139,7 +133,7 @@ namespace ReBot.Druid
 			if (HasGlobalCooldown () && Gcd)
 				return;
 			
-			if (Me.HasAura ("Claws of Shirvallah") || Me.HasAura ("Cat Form")) {
+			if (IsCatForm ()) {
 				//	actions+=/wild_charge
 				//	actions+=/displacer_beast,if=movement.distance>10
 				//	actions+=/dash,if=movement.distance&buff.displacer_beast.down&buff.wild_charge_movement.down
@@ -156,7 +150,7 @@ namespace ReBot.Druid
 						return;
 				}
 				//	actions+=/berserk,sync=tigers_fury,if=buff.king_of_the_jungle.up|!talent.incarnation.enabled
-				if (Me.HasAura ("Tiger's Fury") && (Me.HasAura ("Incarnation: King of the Jungle") || !HasSpell ("Incarnation: King of the Jungle"))) {
+				if (Me.HasAura ("Tiger's Fury") && (!HasSpell ("Incarnation: King of the Jungle") || Me.HasAura ("Incarnation: King of the Jungle"))) {
 					if (Berserk ())
 						return;
 				}
@@ -178,17 +172,15 @@ namespace ReBot.Druid
 						return;
 				}
 				//	actions+=/tigers_fury,if=(!buff.omen_of_clarity.react&energy.max-energy>=60)|energy.max-energy>=80
-				if ((!Me.HasAura ("Clearcasting") && EnergyMax - Energy >= 60) || EnergyMax - Energy >= 80) {
-					if (TigersFury ())
-						return;
-				}
+				if ((!Me.HasAura ("Clearcasting") && EnergyMax - Energy >= 60) || EnergyMax - Energy >= 80)
+					TigersFury ();
 				//	actions+=/incarnation,if=cooldown.berserk.remains<10&energy.time_to_max>1
 				if (Cooldown ("Berserk") < 10 && EnergyTimeToMax > 1) {
 					if (IncarnationKingoftheJungle ())
 						return;
 				}
 				//	actions+=/shadowmeld,if=dot.rake.remains<4.5&energy>=35&dot.rake.pmultiplier<2&(buff.bloodtalons.up|!talent.bloodtalons.enabled)&(!talent.incarnation.enabled|cooldown.incarnation.remains>15)&!buff.king_of_the_jungle.up
-				if (Target.AuraTimeRemaining ("Rake", true) < 4.5 && Energy >= 35 && (Me.HasAura ("Bloodtalons") || !HasSpell ("Bloodtalons")) && (!HasSpell ("Incarnation: King of the Jungle") || Cooldown ("Incarnation: King of the Jungle") > 15) && !Me.HasAura ("King of the Jungle")) {
+				if (Target.AuraTimeRemaining ("Rake", true) < 4.5 && Energy >= 35 && (Me.HasAura ("Bloodtalons") || !HasSpell ("Bloodtalons")) && (!HasSpell ("Incarnation: King of the Jungle") || Cooldown ("Incarnation: King of the Jungle") > 15) && !Me.HasAura ("Incarnation: King of the Jungle")) {
 					if (Shadowmeld ())
 						return;
 				}
@@ -305,7 +297,7 @@ namespace ReBot.Druid
 					return true;
 			}
 			//	actions.finisher+=/ferocious_bite,max_energy=1,if=(energy.time_to_max<=1|buff.berserk.up|cooldown.tigers_fury.remains<3)
-			if (Usable ("Ferocious Bite") && Energy >= 50 && (EnergyTimeToMax <= 1 || Me.HasAura ("Berserk") || SpellCooldown ("Tiger's Fury") < 3)) {
+			if (Usable ("Ferocious Bite") && Energy >= 50 && (EnergyTimeToMax <= 1 || Me.HasAura ("Berserk") || Cooldown ("Tiger's Fury") < 3)) {
 				if (FerociousBite ())
 					return true;
 			}

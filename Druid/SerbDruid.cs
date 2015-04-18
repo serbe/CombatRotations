@@ -126,7 +126,11 @@ namespace ReBot.Druid
 			}
 		}
 
-		public int Energy { get { return Me.GetPower (WoWPowerType.Energy); } }
+		public int Energy {
+			get {
+				return Me.GetPower (WoWPowerType.Energy);
+			}
+		}
 
 		public int ComboPoints {
 			get {
@@ -141,7 +145,6 @@ namespace ReBot.Druid
 			}
 		}
 
-		// public bool TargettingMe { get { return Target.Target ==(UnitObject)Me; } }
 		public double EnergyTimeToMax {
 			get {
 				return EnergyMax - Energy / EnergyRegen;
@@ -176,15 +179,41 @@ namespace ReBot.Druid
 			}
 		}
 
+		//		public int EnemyInRange (int range)
+		//		{
+		//			var targets = Adds;
+		//			targets.Add (Target);
+		//			return targets.Count (mob => mob.CombatRange <= range);
+		//		}
+
+		//		public bool IncapacitatedInRange (int range)
+		//		{
+		//			var targets = Adds;
+		//			targets.Add (Target);
+		//			int x = targets.Count (mob => mob.CombatRange <= range && IsNotForDamage (mob));
+		//			return x > 0;
+		//		}
+
 		public int EnemyInRange (int range)
 		{
-		    return API.CollectUnits(range).Count(mob => (mob.IsEnemy || Me.Target == mob) && !mob.IsDead);
+			int x = 0;
+			foreach (UnitObject mob in API.CollectUnits(range)) {
+				if ((mob.IsEnemy || Me.Target == mob) && !mob.IsDead && mob.IsAttackable) {
+					x++;
+				}
+			}
+			return x;
 		}
 
-	    public bool IncapacitatedInRange (int range)
+		public bool IncapacitatedInRange (int range)
 		{
-			int x = API.CollectUnits(range).Count(mob => (mob.IsEnemy || Me.Target == mob) && !mob.IsDead && IsNotForDamage(mob));
-	        return x > 0;
+			int x = 0;
+			foreach (UnitObject mob in API.CollectUnits(range)) {
+				if ((mob.IsEnemy || Me.Target == mob) && !mob.IsDead && mob.IsAttackable && IsNotForDamage (mob)) {
+					x++;
+				}
+			}
+			return x > 0;
 		}
 
 		public double Cooldown (string s)
@@ -231,11 +260,12 @@ namespace ReBot.Druid
 
 		public double TimeToDie (UnitObject o)
 		{
-		    if (o != null) return o.Health / Ttd;
-		    return 0;
+			if (o != null)
+				return o.Health / Ttd;
+			return 0;
 		}
 
-	    public double EclipseChange {
+		public double EclipseChange {
 			get {
 				double timeToChange = 20;
 				if (Direction == "sun") {
@@ -271,7 +301,7 @@ namespace ReBot.Druid
 					}
 				} else {
 					if (Target.IsCastingAndInterruptible () && Target.IsInLoS && Target.CombatRange <= 5 && Target.RemainingCastTime > 0) {
-						if (MightyBash (Target))
+						if (MightyBash ())
 							return true;
 					}
 				}
@@ -285,7 +315,7 @@ namespace ReBot.Druid
 					} 
 				} else {
 					if (Target.IsCastingAndInterruptible () && Target.IsInLoS && Target.CombatRange <= 40 && Target.RemainingCastTime > 0) {
-						if (SolarBeam (Target))
+						if (SolarBeam ())
 							return true;
 					}
 				}
@@ -299,7 +329,7 @@ namespace ReBot.Druid
 					} 
 				} else {
 					if (Target.IsCastingAndInterruptible () && Target.IsInLoS && Target.CombatRange <= 13 && Target.RemainingCastTime > 0) {
-						if (SkullBash (Target))
+						if (SkullBash ())
 							return true;
 					}
 				}
@@ -313,7 +343,7 @@ namespace ReBot.Druid
 					} 
 				} else {
 					if (Target.IsInLoS && Target.CombatRange >= 8 && Target.CombatRange <= 25 && Target.IsCasting && !IsBoss (Target) && Target.RemainingCastTime > 0) {
-						if (WildCharge (Target))
+						if (WildCharge ())
 							return true;
 					}
 				}
@@ -327,7 +357,7 @@ namespace ReBot.Druid
 					} 
 				} else {
 					if (Target.IsInLoS && Target.CombatRange <= 5 && Target.IsCasting && !IsBoss (Target) && Target.RemainingCastTime > 0) {
-						if (Maim (Target))
+						if (Maim ())
 							return true;
 					}
 				}
@@ -335,14 +365,16 @@ namespace ReBot.Druid
 			return false;
 		}
 
-		public virtual bool MightyBash (UnitObject o)
+		public virtual bool MightyBash (UnitObject u = null)
 		{
-			return Cast ("Mighty Bash", o, () => Usable ("Mighty Bash"));
+			u = u ?? Target;
+			return Cast ("Mighty Bash", () => Usable ("Mighty Bash") && u.IsInLoS, u);
 		}
 
-		public virtual bool SolarBeam (UnitObject o)
+		public virtual bool SolarBeam (UnitObject u = null)
 		{
-			return Cast ("Solar Beam", o, () => Usable ("Solar Beam") && o.IsInLoS && o.CombatRange <= 40);
+			u = u ?? Target;
+			return Cast ("Solar Beam", () => Usable ("Solar Beam") && u.IsInLoS && u.CombatRange <= 40, u);
 		}
 
 		public virtual bool MarkoftheWild ()
@@ -350,29 +382,22 @@ namespace ReBot.Druid
 			return CastSelf ("Mark of the Wild", () => Usable ("Mark of the Wild") && Me.AuraTimeRemaining ("Mark of the Wild") < 300 && Me.AuraTimeRemaining ("Blessing of Kings") < 300);
 		}
 
-		public virtual bool Rejuvenation ()
+		public virtual bool Rejuvenation (UnitObject u = null)
 		{
-			return CastSelf ("Rejuvenation", () => Usable ("Rejuvenation") && !Me.HasAura ("Rejuvenation"));
+			u = u ?? Me;
+			return Cast ("Rejuvenation", () => Usable ("Rejuvenation") && !u.HasAura ("Rejuvenation", true) && u.IsInLoS && u.CombatRange <= 40, u);
 		}
 
-		public virtual bool Rejuvenation (UnitObject o)
+		public virtual bool HealingTouch (UnitObject u = null)
 		{
-			return Cast ("Rejuvenation", o, () => Usable ("Rejuvenation") && !o.HasAura ("Rejuvenation") && o.IsInLoS && o.CombatRange <= 40);
+			u = u ?? Me;
+			return Cast ("Healing Touch", () => Usable ("Healing Touch") && u.IsInLoS && u.CombatRange <= 40, u);
 		}
 
-		public virtual bool HealingTouch ()
+		public virtual bool RemoveCorruption (UnitObject u = null)
 		{
-			return CastSelf ("Healing Touch", () => Usable ("Healing Touch"));
-		}
-
-		public virtual bool HealingTouch (UnitObject o)
-		{
-			return Cast ("Healing Touch", o, () => Usable ("Healing Touch") && o.IsInLoS && o.CombatRange <= 40);
-		}
-
-		public virtual bool RemoveCorruption ()
-		{
-			return CastSelf ("Remove Corruption", () => Usable ("Remove Corruption"));
+			u = u ?? Me;
+			return Cast ("Remove Corruption", () => Usable ("Remove Corruption") && u.IsInLoS && u.CombatRange <= 40, u);
 		}
 
 		// public virtual bool UnEnrage() {
@@ -389,19 +414,16 @@ namespace ReBot.Druid
 		// 	return false;
 		// }
 
-		public virtual bool FerociousBite (UnitObject o)
+		public virtual bool FerociousBite (UnitObject u = null)
 		{
-			return Cast ("Ferocious Bite", o, () => Usable ("Ferocious Bite") && HasEnergy (25) && ComboPoints > 0);
+			u = u ?? Target;
+			return Cast ("Ferocious Bite", () => Usable ("Ferocious Bite") && HasEnergy (25) && ComboPoints > 0 && u.IsInCombatRangeAndLoS, u);
 		}
 
-		public virtual bool FerociousBite ()
+		public virtual bool CenarionWard (UnitObject u = null)
 		{
-			return Cast ("Ferocious Bite", () => Usable ("Ferocious Bite") && HasEnergy (25) && ComboPoints > 0);
-		}
-
-		public virtual bool CenarionWard ()
-		{
-			return CastSelf ("Cenarion Ward", () => Usable ("Cenarion Ward") && !Me.HasAura ("Cenarion Ward"));
+			u = u ?? Target;
+			return Cast ("Cenarion Ward", () => Usable ("Cenarion Ward") && !u.HasAura ("Cenarion Ward") && u.IsInLoS && u.CombatRange <= 40);
 		}
 
 		public virtual bool Barkskin ()
@@ -414,19 +436,22 @@ namespace ReBot.Druid
 			return CastSelf ("Moonkin Form", () => Usable ("Moonkin Form") && !Me.HasAura ("Moonkin Form"));
 		}
 
-		public virtual bool FaerieSwarm (UnitObject o)
+		public virtual bool FaerieSwarm (UnitObject u = null)
 		{
-			return Cast ("Faerie Swarm", o, () => HasEnergy (30) && o.CombatRange < 35 && o.IsInLoS);
+			u = u ?? Target;
+			return Cast ("Faerie Swarm", () => HasEnergy (30) && u.CombatRange < 35 && u.IsInLoS, u);
 		}
 
-		public virtual bool SkullBash (UnitObject o)
+		public virtual bool SkullBash (UnitObject u = null)
 		{
-			return Cast ("Skull Bash", o, () => Usable ("Skull Bash") && o.CombatRange < 13 && o.IsInLoS);
+			u = u ?? Target;
+			return Cast ("Skull Bash", () => Usable ("Skull Bash") && u.CombatRange < 13 && u.IsInLoS, u);
 		}
 
-		public virtual bool WildCharge (UnitObject o)
+		public virtual bool WildCharge (UnitObject u = null)
 		{
-			return Cast ("Wild Charge", o, () => Usable ("Wild Charge") && o.IsInLoS);
+			u = u ?? Target;
+			return Cast ("Wild Charge", () => Usable ("Wild Charge") && u.IsInLoS, u);
 		}
 
 		public virtual bool Starfall ()
@@ -464,34 +489,22 @@ namespace ReBot.Druid
 			return CastSelf ("Incarnation: Chosen of Elune", () => Usable ("Incarnation: Chosen of Elune") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
-		public virtual bool Sunfire ()
+		public virtual bool Sunfire (UnitObject u = null)
 		{
-			return Cast ("Sunfire", () => Usable ("Sunfire") && Eclipse > 0 && Target.IsInLoS && Target.CombatRange <= 40);
+			u = u ?? Target;
+			return Cast ("Sunfire", () => Usable ("Sunfire") && Eclipse > 0 && u.IsInLoS && u.CombatRange <= 40, u);
 		}
 
-		public virtual bool Sunfire (UnitObject o)
+		public virtual bool StellarFlare (UnitObject u = null)
 		{
-			return Cast ("Sunfire", o, () => Usable ("Sunfire") && Eclipse > 0 && Target.IsInLoS && Target.CombatRange <= 40);
+			u = u ?? Target;
+			return Cast ("Stellar Flare", () => Usable ("Stellar Flare") && u.IsInLoS && u.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura ("Empowered Moonkin")), u);
 		}
 
-		public virtual bool StellarFlare ()
+		public virtual bool Moonfire (UnitObject u = null)
 		{
-			return Cast ("Stellar Flare", () => Usable ("Stellar Flare") && Target.IsInLoS && Target.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura ("Empowered Moonkin")));
-		}
-
-		public virtual bool StellarFlare (UnitObject o)
-		{
-			return Cast ("Stellar Flare", o, () => Usable ("Stellar Flare") && o.IsInLoS && o.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura ("Empowered Moonkin")));
-		}
-
-		public virtual bool Moonfire ()
-		{
-			return Cast ("Moonfire", () => Usable ("Moonfire") && Target.IsInLoS && Target.CombatRange <= 40);
-		}
-
-		public virtual bool Moonfire (UnitObject o)
-		{
-			return Cast ("Moonfire", o, () => Usable ("Moonfire") && o.IsInLoS && o.CombatRange <= 40);
+			u = u ?? Target;
+			return Cast ("Moonfire", () => Usable ("Moonfire") && u.IsInLoS && u.CombatRange <= 40, u);
 		}
 
 		public virtual bool Wrath ()
@@ -504,9 +517,10 @@ namespace ReBot.Druid
 			return Cast ("Starfire", () => Usable ("Starfire") && Target.IsInLoS && Target.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura ("Elune's Wrath") || Me.HasAura ("Empowered Moonkin")));
 		}
 
-		public virtual bool Maim (UnitObject o)
+		public virtual bool Maim (UnitObject u = null)
 		{
-			return Cast ("Maim", o, () => Usable ("Maim") && HasEnergy (35) && ComboPoints > 0);
+			u = u ?? Target;
+			return Cast ("Maim", () => Usable ("Maim") && HasEnergy (35) && ComboPoints > 0, u);
 		}
 
 		public virtual bool Berserk ()
@@ -514,12 +528,13 @@ namespace ReBot.Druid
 			return CastSelf ("Berserk", () => Usable ("Berserk") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
-		public virtual bool TigersFury ()
+		public bool TigersFury (UnitObject u = null)
 		{
-			return CastSelf ("Tiger's Fury", () => Usable ("Tiger's Fury") && Target.IsInCombatRangeAndLoS);
+			u = u ?? Target;
+			return CastSelf ("Tiger's Fury", () => Usable ("Tiger's Fury") && u.IsInLoS && u.CombatRange <= 10);
 		}
 
-		public virtual bool IncarnationKingoftheJungle ()
+		public bool IncarnationKingoftheJungle ()
 		{
 			return CastSelf ("Incarnation: King of the Jungle", () => Usable ("Incarnation: King of the Jungle") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
@@ -558,14 +573,10 @@ namespace ReBot.Druid
 			return CastSelf ("Celestial Alignment", () => Usable ("Celestial Alignment") && Target.IsInCombatRangeAndLoS && (IsElite || IsPlayer || EnemyInRange (10) > 2));
 		}
 
-		public virtual bool Rake ()
+		public virtual bool Rake (UnitObject u = null)
 		{
-			return Cast ("Rake", () => Usable ("Rake") && HasEnergy (35));
-		}
-
-		public virtual bool Rake (UnitObject o)
-		{
-			return Cast ("Rake", o, () => Usable ("Rake") && HasEnergy (35));
+			u = u ?? Target;
+			return Cast ("Rake", () => Usable ("Rake") && HasEnergy (35) && u.IsInCombatRangeAndLoS, u);
 		}
 
 		public virtual bool SavageRoar ()
@@ -573,14 +584,10 @@ namespace ReBot.Druid
 			return CastSelf ("Savage Roar", () => Usable ("Savage Roar") && HasEnergyB (25) && ComboPoints > 0);
 		}
 
-		public virtual bool Rip ()
+		public virtual bool Rip (UnitObject u = null)
 		{
-			return Cast ("Rip", () => Usable ("Rip") && HasEnergy (30) && ComboPoints > 0);
-		}
-
-		public virtual bool Rip (UnitObject o)
-		{
-			return Cast ("Rip", o, () => Usable ("Rip") && HasEnergy (30) && ComboPoints > 0);
+			u = u ?? Target;
+			return Cast ("Rip", () => Usable ("Rip") && HasEnergy (30) && ComboPoints > 0 && u.IsInCombatRangeAndLoS, u);
 		}
 
 		public virtual bool Freedom ()
@@ -603,14 +610,16 @@ namespace ReBot.Druid
 			return Cast ("Swipe", () => Usable ("Swipe") && HasEnergy (45));
 		}
 
-		public virtual bool Shred ()
+		public bool Shred (UnitObject u = null)
 		{
-			return CastSelf ("Shred", () => Usable ("Shred") && HasEnergy (40));
+			u = u ?? Target;
+			return Cast ("Shred", () => Usable ("Shred") && HasEnergy (40) && u.IsInCombatRangeAndLoS, u);
 		}
 
-		public virtual bool Thrash (UnitObject o)
+		public virtual bool Thrash (UnitObject u = null)
 		{
-			return Cast ("Thrash", o, () => Usable ("Thrash") && ((IsCatForm () && HasEnergy (50))));
+			u = u ?? Target;
+			return Cast ("Thrash", () => Usable ("Thrash") && ((IsCatForm () && HasEnergy (50))) && u.IsInLoS && u.CombatRange <= 10, u);
 		}
 
 		public bool Heal ()
@@ -619,8 +628,8 @@ namespace ReBot.Druid
 				if (Healthstone ())
 					return true;
 			}
-			if (Health <= 0.75 && !HasAura ("Cenarion Ward")) {
-				if (Rejuvenation ())
+			if (Me.HasAura ("Predatory Swiftness") && Health < 0.8 && !Me.HasAura ("Cenarion Ward", true)) {
+				if (HealingTouch ())
 					return true;
 			}
 			if (Health <= 0.8) {
@@ -629,6 +638,10 @@ namespace ReBot.Druid
 			}
 			if (Health < 0.6) {
 				if (Barkskin ())
+					return true;
+			}
+			if (Health <= 0.9 && !Me.HasAura ("Rejuvenation", true) && !Me.HasAura ("Cenarion Ward", true)) {
+				if (Rejuvenation ())
 					return true;
 			}
 
