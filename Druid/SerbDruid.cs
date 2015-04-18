@@ -9,8 +9,8 @@ namespace ReBot.Druid
 	{
 		[JsonProperty ("Maximum Energy")] 
 		public int EnergyMax = 100;
-		[JsonProperty ("Use StarFall")]
-		public bool UseStarFall;
+		[JsonProperty ("Healing %")]
+		public int HealingPercent = 80;
 		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
 		public int Ttd = 10;
 		[JsonProperty ("Run to enemy")]
@@ -377,9 +377,10 @@ namespace ReBot.Druid
 			return Cast ("Solar Beam", () => Usable ("Solar Beam") && u.IsInLoS && u.CombatRange <= 40, u);
 		}
 
-		public virtual bool MarkoftheWild ()
+		public virtual bool MarkoftheWild (UnitObject u = null)
 		{
-			return CastSelf ("Mark of the Wild", () => Usable ("Mark of the Wild") && Me.AuraTimeRemaining ("Mark of the Wild") < 300 && Me.AuraTimeRemaining ("Blessing of Kings") < 300);
+			u = u ?? Me;
+			return Cast ("Mark of the Wild", () => Usable ("Mark of the Wild") && u.AuraTimeRemaining ("Mark of the Wild") < 300 && u.AuraTimeRemaining ("Blessing of Kings") < 300 && u.IsInLoS && u.CombatRange <= 40, u);
 		}
 
 		public virtual bool Rejuvenation (UnitObject u = null)
@@ -436,10 +437,16 @@ namespace ReBot.Druid
 			return CastSelf ("Moonkin Form", () => Usable ("Moonkin Form") && !Me.HasAura ("Moonkin Form"));
 		}
 
-		public virtual bool FaerieSwarm (UnitObject u = null)
+		public bool FaerieSwarm (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Faerie Swarm", () => HasEnergy (30) && u.CombatRange < 35 && u.IsInLoS, u);
+			return Cast ("Faerie Swarm", () => Usable ("Faerie Swarm") && u.CombatRange < 35 && u.IsInLoS, u);
+		}
+
+		public bool FaerieFire (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Faerie Fire", () => Usable ("Faerie Fire") && u.CombatRange < 35 && u.IsInLoS, u);
 		}
 
 		public virtual bool SkullBash (UnitObject u = null)
@@ -616,10 +623,20 @@ namespace ReBot.Druid
 			return Cast ("Shred", () => Usable ("Shred") && HasEnergy (40) && u.IsInCombatRangeAndLoS, u);
 		}
 
-		public virtual bool Thrash (UnitObject u = null)
+		public bool Thrash (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return Cast ("Thrash", () => Usable ("Thrash") && ((IsCatForm () && HasEnergy (50))) && u.IsInLoS && u.CombatRange <= 10, u);
+		}
+
+		public bool SurvivalInstincts ()
+		{
+			return CastSelf ("Survival Instincts", () => Usable ("Survival Instincts"));
+		}
+
+		public bool Dash ()
+		{
+			return CastSelf ("Dash", () => Usable ("Dash"));
 		}
 
 		public bool Heal ()
@@ -628,23 +645,76 @@ namespace ReBot.Druid
 				if (Healthstone ())
 					return true;
 			}
-			if (Me.HasAura ("Predatory Swiftness") && Health < 0.8 && !Me.HasAura ("Cenarion Ward", true)) {
-				if (HealingTouch ())
-					return true;
-			}
-			if (Health <= 0.8) {
-				if (CenarionWard ())
-					return true;
+			if (Health < 0.5) {
+				if (SurvivalInstincts ())
+					return true;	
 			}
 			if (Health < 0.6) {
 				if (Barkskin ())
 					return true;
 			}
-			if (Health <= 0.9 && !Me.HasAura ("Rejuvenation", true) && !Me.HasAura ("Cenarion Ward", true)) {
+			if (Me.HasAura ("Predatory Swiftness") && Health < HealingPercent && !Me.HasAura ("Cenarion Ward", true)) {
+				if (HealingTouch ())
+					return true;
+			}
+			if (Health <= HealingPercent) {
+				if (CenarionWard ())
+					return true;
+			}
+			if (Health <= HealingPercent && !Me.HasAura ("Rejuvenation", true) && !Me.HasAura ("Cenarion Ward", true)) {
 				if (Rejuvenation ())
 					return true;
 			}
 
+			return false;
+		}
+
+		public bool NoInvisible (UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (u.IsPlayer && (u.Class == WoWClass.Rogue || u.Class == WoWClass.Priest || u.Class == WoWClass.Mage) && !u.HasAura ("Faerie Swarm", true)) {
+				if (FaerieSwarm (u))
+					return true;
+			}
+			if (u.IsPlayer && (u.Class == WoWClass.Rogue || u.Class == WoWClass.Priest || u.Class == WoWClass.Mage) && !u.HasAura ("Faerie Fire", true)) {
+				if (FaerieFire (u))
+					return true;
+			}
+			return false;
+		}
+
+		public bool HealPartyMember ()
+		{
+			if (InArena && InInstance) {
+				CycleTarget = Group.GetGroupMemberObjects ().Where (x => !x.IsDead && x.IsInLoS && x.CombatRange < 40 && x.HealthFraction <= HealingPercent && !x.HasAura ("Rejuvenation", true) && !x.HasAura ("Cenarion Ward", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (Rejuvenation (CycleTarget))
+						return true;
+				}
+				if (Me.HasAura ("Predatory Swiftness")) {
+					CycleTarget = Group.GetGroupMemberObjects ().Where (x => !x.IsDead && x.IsInLoS && x.CombatRange < 40 && x.HealthFraction <= HealingPercent && x.HealthFraction < Health && !x.HasAura ("Cenarion Ward", true)).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (HealingTouch (CycleTarget))
+							return true;
+					}
+				}				
+			}
+				
+			return false;
+		}
+
+		public bool RunToTarget (UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (IsCatForm () && !Me.HasAura ("Prowl") && u.CombatRange >= 20 && u.IsFleeing) {
+				if (Dash ())
+					return true;
+			}
+			// // if (CastSelfPreventDouble("Stealth", () => !Me.InCombat && !HasAura("Stealth"))) return;
+			// if (Cast("Shadowstep", () => !HasAura("Sprint") && HasSpell("Shadowstep"))) return;
+			// // if (CastSelf("Sprint", () => !HasAura("Sprint") && !HasAura("Burst of Speed"))) return;
+			// // if (CastSelf("Burst of Speed", () => !HasAura("Sprint") && !HasAura("Burst of Speed") && HasSpell("Burst of Speed") && Energy > 20)) return;
+			// if (Cast(RangedAtk, () => Energy >= 40 && !HasAura("Stealth") && Target.IsInLoS)) return;
 			return false;
 		}
 	}

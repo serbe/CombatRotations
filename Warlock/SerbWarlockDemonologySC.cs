@@ -84,15 +84,15 @@ namespace ReBot.Warlock
 					return;
 			}
 			//	actions+=/dark_soul,if=!talent.demonbolt.enabled&((charges=2&(time>6|(debuff.shadowflame.stack=1&action.hand_of_guldan.in_flight)))|!talent.archimondes_darkness.enabled|(target.time_to_die<=20&!glyph.dark_soul.enabled)|target.time_to_die<=10|(target.time_to_die<=60&demonic_fury>400)|((trinket.proc.any.react|trinket.stacking_proc.any.react)&(demonic_fury>600|(glyph.dark_soul.enabled&demonic_fury>450))))
-			if (!HasSpell ("Demonbolt") && ((SpellCharges ("Dark Soul: Instability") == 2 && (Time > 6 || (Target.GetAura ("Shadowflame", true).StackCount == 1 && HandFlight))) || !HasSpell ("Archimonde's Darkness") || (TimeToDie (Target) <= 20 && !HasGlyph (159665) || TimeToDie (Target) <= 10) || (TimeToDie (Target) <= 60 && Fury > 400))) {
-				if (DarkSoul ())
-					return;
-			}
+//			if (!HasSpell ("Demonbolt") && ((SpellCharges ("Dark Soul: Instability") == 2 && (Time > 6 || (Target.GetAura ("Shadowflame", true).StackCount == 1 && HandFlight))) || !HasSpell ("Archimonde's Darkness") || (TimeToDie (Target) <= 20 && !HasGlyph (159665) || TimeToDie (Target) <= 10) || (TimeToDie (Target) <= 60 && Fury > 400))) {
+//				if (DarkSoul ())
+//					return;
+//			}
 			//	actions+=/imp_swarm,if=!talent.demonbolt.enabled&(buff.dark_soul.up|(cooldown.dark_soul.remains>(120%(1%spell_haste)))|time_to_die<32)&time>3
-			if (!HasSpell ("Demonbolt") && (Me.HasAura ("Dark Soul: Instability") || (Cooldown ("Dark Soul: Instability") > (120 / (1 / SpellHaste))) || TimeToDie (Target) < 32) && Time > 3) {
-				if (ImpSwarm ())
-					return;
-			}
+//			if (!HasSpell ("Demonbolt") && (Me.HasAura ("Dark Soul: Instability") || (Cooldown ("Dark Soul: Instability") > (120 / (1 / SpellHaste))) || TimeToDie (Target) < 32) && Time > 3) {
+//				if (ImpSwarm ())
+//					return;
+//			}
 			//	actions+=/felguard:felstorm
 			if (Felstorm ())
 				return;

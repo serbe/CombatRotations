@@ -10,12 +10,11 @@ namespace ReBot.Druid
 	public class SerbDruidFeralSc : SerbDruid
 	{
 
-		[JsonProperty ("PvP Healing")]
-		public bool PvPHealing = true;
+		[JsonProperty ("Party Healing")]
+		public bool PartyHealing = true;
 		[JsonProperty ("Use moonfire")]
 		public bool UseMoonfire;
-		[JsonProperty ("Cast Rejuvenation And Cenarion Ward")]
-		public int HealingPercent = 80;
+
 
 		public double Sleep;
 		public string Skill;
@@ -29,7 +28,8 @@ namespace ReBot.Druid
 				"Rake",
 				"Shred",
 				"Faerie Swarm",
-				"Faerie Fire"
+				"Faerie Fire",
+				"Moonfire"
 			};
 		}
 
@@ -90,31 +90,19 @@ namespace ReBot.Druid
 			var targets = Adds;
 			targets.Add (Target);
 
-			if (InArena && InInstance) {
-				CycleTarget = Group.GetGroupMemberObjects ().Where (x => !x.IsDead && x.IsInLoS && x.CombatRange < 40 && x.HealthFraction <= 0.9 && !x.HasAura ("Rejuvenation", true) && !x.HasAura ("Cenarion Ward", true)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Rejuvenation (CycleTarget))
-						return;
-				}
-				if (Me.HasAura ("Predatory Swiftness")) {
-					CycleTarget = Group.GetGroupMemberObjects ().Where (x => !x.IsDead && x.IsInLoS && x.CombatRange < 40 && x.HealthFraction <= 0.9 && x.HealthFraction < Health && !x.HasAura ("Cenarion Ward", true)).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null) {
-						if (HealingTouch (CycleTarget))
-							return;
-					}
-				}				
-			}
-
 			if (Health < 0.9) {
 				if (Heal ())
 					return;
 			}
 
-			//Try and prevent Rogues and Priests from going invisible
-			if (IsPlayer && (Target.Class == WoWClass.Rogue || Target.Class == WoWClass.Priest) && !Target.HasAura ("Faerie Swarm")) {
-				if (FaerieSwarm (Target))
+			if (PartyHealing && !IsSolo) {
+				if (HealPartyMember ())
 					return;
 			}
+
+			//Try and prevent Rogues and Priests from going invisible
+			if (IsPlayer && !Me.HasAura ("Prowl"))
+				NoInvisible ();
 
 			// Стойка медведя когда хп меньше 30%
 			// 	if (CastSelf("Bear Form", () => !HasAura("Bear Form") && Health < 0.30)) return;
@@ -251,6 +239,11 @@ namespace ReBot.Druid
 					if (Generators ())
 						return;
 				}
+
+				if (Target.CombatRange > 8) {
+					if (RunToTarget ())
+						return;
+				}
 			}
 		}
 
@@ -353,15 +346,6 @@ namespace ReBot.Druid
 			}
 
 			return false;
-		}
-
-		public void RunToEnemy ()
-		{
-			// // if (CastSelfPreventDouble("Stealth", () => !Me.InCombat && !HasAura("Stealth"))) return;
-			// if (Cast("Shadowstep", () => !HasAura("Sprint") && HasSpell("Shadowstep"))) return;
-			// // if (CastSelf("Sprint", () => !HasAura("Sprint") && !HasAura("Burst of Speed"))) return;
-			// // if (CastSelf("Burst of Speed", () => !HasAura("Sprint") && !HasAura("Burst of Speed") && HasSpell("Burst of Speed") && Energy > 20)) return;
-			// if (Cast(RangedAtk, () => Energy >= 40 && !HasAura("Stealth") && Target.IsInLoS)) return;
 		}
 	}
 }

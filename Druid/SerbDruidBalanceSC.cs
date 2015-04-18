@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using ReBot.API;
+using Newtonsoft.Json;
 
 namespace ReBot.Druid
 {
@@ -8,6 +9,8 @@ namespace ReBot.Druid
 
 	public class SerbDruidBalanceSc : SerbDruid
 	{
+		[JsonProperty ("Use StarFall")]
+		public bool UseStarFall;
 
 		public SerbDruidBalanceSc ()
 		{
