@@ -173,8 +173,8 @@ namespace ReBot.Warlock
 			//	actions+=/metamorphosis,if=(demonic_fury>750&(action.hand_of_guldan.charges=0|(!dot.shadowflame.ticking&!action.hand_of_guldan.in_flight_to_target)))|floor(demonic_fury%80)*action.soul_fire.execute_time>=target.time_to_die
 			//	actions+=/metamorphosis,if=demonic_fury>=950
 			//	actions+=/cancel_metamorphosis
-			if (Me.HasAura("Metamorphosis")
-			CancelAura("Metamorphosis");
+			if (Me.HasAura ("Metamorphosis"))
+				CancelAura ("Metamorphosis");
 			//	actions+=/imp_swarm
 			if (ImpSwarm ())
 				return;
