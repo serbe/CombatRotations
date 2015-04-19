@@ -139,12 +139,14 @@ namespace ReBot.Warlock
 			}
 		}
 
-		//		public double SleepTime {
-		//			get {
-		//				TimeSpan currentSleepTime = DateTime.Now.Subtract (StartSleepTime);
-		//				return currentSleepTime.TotalSeconds;
-		//			}
-		//		}
+		public double SpellHaste {
+			get {
+				double haste = API.ExecuteLua<double> ("return GetCombatRating(CR_HASTE_SPELL);");
+				if (haste == 0)
+					haste = 0.00001;
+				return haste;
+			}
+		}
 
 		//		public double TimeToRegen (double e)
 		//		{
@@ -173,17 +175,20 @@ namespace ReBot.Warlock
 
 		public int EnemyInRange (int range)
 		{
-			var targets = Adds;
-			targets.Add (Target);
-
-			return targets.Where (t => t.CombatRange <= range).ToList ().Count;
+			int x = 0;
+			foreach (UnitObject mob in API.CollectUnits(range)) {
+				if ((mob.IsEnemy || Me.Target == mob) && !mob.IsDead && mob.IsAttackable) {
+					x++;
+				}
+			}
+			return x;
 		}
 
 		public bool IncapacitatedInRange (int range)
 		{
 			int x = 0;
 			foreach (UnitObject mob in API.CollectUnits(range)) {
-				if ((mob.IsEnemy || Me.Target == mob) && !mob.IsDead && IsNotForDamage (mob)) {
+				if ((mob.IsEnemy || Me.Target == mob) && !mob.IsDead && mob.IsAttackable && IsNotForDamage (mob)) {
 					x++;
 				}
 			}
@@ -208,9 +213,7 @@ namespace ReBot.Warlock
 
 		public double CastTimeSB {
 			get {
-				
 				return API.ExecuteLua<double> ("local _, _, _, castTime, _, _ = GetSpellInfo(686); return castTime;");
-
 			}
 		}
 
@@ -393,25 +396,103 @@ namespace ReBot.Warlock
 			u = u ?? Target;
 			return Cast ("Shadow Bolt", () => Usable ("Shadow Bolt") && u.IsInLoS && u.CombatRange <= 40 && ((!Me.HasAura ("Metamorphosis") && Mana >= 5.5) || (Me.HasAura ("Metamorphosis") && Fury >= 40)), u);
 		}
-		
+
+		public bool Doom (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Doom", () => Usable ("Doom") && u.IsInLoS && u.CombatRange <= 40 && Me.HasAura ("Metamorphosis") && Fury >= 60, u);
+		}
+
+		public bool Corruption (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Corruption", () => Usable ("Corruption") && u.IsInLoS && u.CombatRange <= 40, u);
+		}
+
+		public bool Metamorphosis ()
+		{
+			return CastSelf ("Metamorphosis", () => Usable ("Metamorphosis"));
+		}
+
+		public bool TouchofChaos (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Touch of Chaos", () => Usable ("Touch of Chaos") && u.IsInLoS && u.CombatRange <= 40 && Me.HasAura ("Metamorphosis") && Fury >= 40, u);
+		}
+
+
 		//		public bool  (UnitObject u = null)
 		//		{
 		//			u = u ?? Target;
 		//			return Cast ("", () => Usable ("") && u.IsInLoS && u.CombatRange <= 40, u);
 		//		}
-		//
+
 		//		public bool  (UnitObject u = null)
 		//		{
 		//			u = u ?? Target;
 		//			return Cast ("", () => Usable ("") && u.IsInLoS && u.CombatRange <= 40, u);
 		//		}
-		//
+
 		//		public bool  (UnitObject u = null)
 		//		{
 		//			u = u ?? Target;
 		//			return Cast ("", () => Usable ("") && u.IsInLoS && u.CombatRange <= 40, u);
 		//		}
-		//
+
+		//		public bool  (UnitObject u = null)
+		//		{
+		//			u = u ?? Target;
+		//			return Cast ("", () => Usable ("") && u.IsInLoS && u.CombatRange <= 40, u);
+		//		}
+
+		//		public bool  (UnitObject u = null)
+		//		{
+		//			u = u ?? Target;
+		//			return Cast ("", () => Usable ("") && u.IsInLoS && u.CombatRange <= 40, u);
+		//		}
+
+		//		public bool  (UnitObject u = null)
+		//		{
+		//			u = u ?? Target;
+		//			return Cast ("", () => Usable ("") && u.IsInLoS && u.CombatRange <= 40, u);
+		//		}
+
+		//		public bool  (UnitObject u = null)
+		//		{
+		//			u = u ?? Target;
+		//			return Cast ("", () => Usable ("") && u.IsInLoS && u.CombatRange <= 40, u);
+		//		}
+
+		//		public bool  (UnitObject u = null)
+		//		{
+		//			u = u ?? Target;
+		//			return Cast ("", () => Usable ("") && u.IsInLoS && u.CombatRange <= 40, u);
+		//		}
+
+		//		public bool  (UnitObject u = null)
+		//		{
+		//			u = u ?? Target;
+		//			return Cast ("", () => Usable ("") && u.IsInLoS && u.CombatRange <= 40, u);
+		//		}
+
+		//		public bool  (UnitObject u = null)
+		//		{
+		//			u = u ?? Target;
+		//			return Cast ("", () => Usable ("") && u.IsInLoS && u.CombatRange <= 40, u);
+		//		}
+
+		//		public bool  (UnitObject u = null)
+		//		{
+		//			u = u ?? Target;
+		//			return Cast ("", () => Usable ("") && u.IsInLoS && u.CombatRange <= 40, u);
+		//		}
+
+		//		public bool  (UnitObject u = null)
+		//		{
+		//			u = u ?? Target;
+		//			return Cast ("", () => Usable ("") && u.IsInLoS && u.CombatRange <= 40, u);
+		//		}
+
 		//		public bool  (UnitObject u = null)
 		//		{
 		//			u = u ?? Target;
