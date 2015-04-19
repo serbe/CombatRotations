@@ -63,11 +63,6 @@ namespace ReBot.Hunter
 					return true;
 			}
 
-			if (Me.HasAlivePet && Me.Pet.HealthFraction <= 0.8) {
-				if (MendPet ())
-					return true;
-			}
-
 			if (CrystalOfInsanity ())
 				return true;
 
@@ -155,28 +150,28 @@ namespace ReBot.Hunter
 
 			//Heal
 			if (Me.HasAlivePet) {
-				if (Me.Pet.HealthFraction <= 0.8) {
+				if (Health (Me.Pet) <= 0.8) {
 					if (MendPet ())
 						return;
 				}
-				if (Me.Pet.HealthFraction <= 0.3) {
+				if (Health (Me.Pet) <= 0.3) {
 					if (LastStand ())
 						return;
 				}
-				if (Health <= 0.3) {
+				if (Health () <= 0.3) {
 					if (RoarofSacrifice ())
 						return;
 				}
 			}
-			if (Health <= 0.3) {
+			if (Health () <= 0.3) {
 				if (Exhilaration ())
 					return;
 			}
-			if (Health < 0.4) {
+			if (Health () < 0.4) {
 				if (Deterrence ())
 					return;
 			}
-			if (Health <= 0.2) {
+			if (Health () <= 0.2) {
 				if (FeignDeath ())
 					return;
 			}
@@ -229,7 +224,7 @@ namespace ReBot.Hunter
 					return;
 			}
 			//	actions+=/explosive_trap,if=active_enemies>5
-			if (FireTrap && (EnemyWithTarget (Target, 8) > 5 || IsPlayer || IsElite)) {
+			if (FireTrap && (EnemyWithTarget (Target, 8) > 5 || IsPlayer () || IsElite ())) {
 				if (ExplosiveTrap (Target))
 					return;
 			}
@@ -261,7 +256,7 @@ namespace ReBot.Hunter
 					return;
 			}
 			//	actions+=/explosive_trap,if=active_enemies>1
-			if (FireTrap && (EnemyWithTarget (Target, 8) > 1 || IsPlayer || IsElite)) {
+			if (FireTrap && (EnemyWithTarget (Target, 8) > 1 || IsPlayer () || IsElite ())) {
 				if (ExplosiveTrap (Target))
 					return;
 			}

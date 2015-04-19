@@ -50,11 +50,11 @@ namespace ReBot.Druid
 
 
 			// Heal
-			if (Health <= 0.75 && !Me.HasAura ("Rejuvenation")) {
+			if (Health () <= 0.75 && !Me.HasAura ("Rejuvenation")) {
 				if (Rejuvenation ())
 					return true;
 			}
-			if (Health <= 0.5 && !Me.IsMoving) {
+			if (Health () <= 0.5 && !Me.IsMoving) {
 				if (HealingTouch ())
 					return true;
 			}
@@ -90,7 +90,7 @@ namespace ReBot.Druid
 			var targets = Adds;
 			targets.Add (Target);
 
-			if (Health < 0.9) {
+			if (Health () < 0.9) {
 				if (Heal ())
 					return;
 			}
@@ -101,7 +101,7 @@ namespace ReBot.Druid
 			}
 
 			//Try and prevent Rogues and Priests from going invisible
-			if (IsPlayer && !Me.HasAura ("Prowl"))
+			if (IsPlayer () && !Me.HasAura ("Prowl"))
 				NoInvisible ();
 
 			// Стойка медведя когда хп меньше 30%
