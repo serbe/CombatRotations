@@ -99,10 +99,10 @@ namespace ReBot.Warlock
 			return false;
 		}
 
-		public double Mana { 
-			get { 
-				return Me.ManaFraction;
-			}
+		public double Mana (UnitObject u = null)
+		{
+			u = u ?? Me;
+			return u.ManaFraction;
 		}
 
 		public int Fury { 
@@ -329,7 +329,7 @@ namespace ReBot.Warlock
 
 		public bool LifeTap ()
 		{
-			return CastSelf ("Life Tap", () => Usable ("Life Tap") && Mana < 0.6);
+			return CastSelf ("Life Tap", () => Usable ("Life Tap") && Mana () < 0.6);
 		}
 
 		public bool Felstorm (UnitObject u = null)
@@ -394,7 +394,7 @@ namespace ReBot.Warlock
 		public bool ShadowBolt (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Shadow Bolt", () => Usable ("Shadow Bolt") && u.IsInLoS && u.CombatRange <= 40 && ((!Me.HasAura ("Metamorphosis") && Mana >= 5.5) || (Me.HasAura ("Metamorphosis") && Fury >= 40)), u);
+			return Cast ("Shadow Bolt", () => Usable ("Shadow Bolt") && u.IsInLoS && u.CombatRange <= 40 && ((!Me.HasAura ("Metamorphosis") && Mana () >= 0.055) || (Me.HasAura ("Metamorphosis") && Fury >= 40)), u);
 		}
 
 		public bool Doom (UnitObject u = null)
@@ -421,17 +421,17 @@ namespace ReBot.Warlock
 		}
 
 
-		//		public bool  (UnitObject u = null)
-		//		{
-		//			u = u ?? Target;
-		//			return Cast ("", () => Usable ("") && u.IsInLoS && u.CombatRange <= 40, u);
-		//		}
+		public bool ChaosWave (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Chaos Wave", () => Usable ("Chaos Wave") && u.IsInLoS && u.CombatRange <= 40 && Me.HasAura ("Metamorphosis") && Fury >= 80, u);
+		}
 
-		//		public bool  (UnitObject u = null)
-		//		{
-		//			u = u ?? Target;
-		//			return Cast ("", () => Usable ("") && u.IsInLoS && u.CombatRange <= 40, u);
-		//		}
+		public bool SoulFire (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Soul Fire", () => Usable ("Soul Fire") && u.IsInLoS && u.CombatRange <= 40 && !Me.IsMoving, u);
+		}
 
 		//		public bool  (UnitObject u = null)
 		//		{

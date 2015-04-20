@@ -174,7 +174,7 @@ namespace ReBot.Warlock
 			}
 			//	actions+=/corruption,cycle_targets=1,if=target.time_to_die>=6&remains<=(0.3*duration)&buff.metamorphosis.down
 			if (Usable ("Corruption") && !Me.HasAura ("Metamorphosis")) {
-				CycleTarget = targets.Where (x => x.IsInLoS && x.CombatRange <= 40 && x.AuraTimeRemaining ("Corruption", true) < (18 * 0.3) && TimeToDie (u) >= 6).DefaultIfEmpty (null).FirstOrDefault ();
+				CycleTarget = targets.Where (u => u.IsInLoS && u.CombatRange <= 40 && u.AuraTimeRemaining ("Corruption", true) < (18 * 0.3) && TimeToDie (u) >= 6).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CycleTarget != null) {
 					if (Corruption (CycleTarget))
 						return;
@@ -184,8 +184,18 @@ namespace ReBot.Warlock
 			if (Me.HasAura ("Metamorphosis") && ((Fury < 650 && !HasGlyph (159665)) || Fury < 450) && !Me.HasAura ("Dark Soul: Instability") && (Fury < (800 - Cooldown ("Dark Soul: Instability") * (10 / SpellHaste))) && TimeToDie () > 20)
 				CancelAura ("Metamorphosis");
 			//	actions+=/cancel_metamorphosis,if=buff.metamorphosis.up&action.hand_of_guldan.charges>0&dot.shadowflame.remains<action.hand_of_guldan.travel_time+action.shadow_bolt.cast_time&((demonic_fury<100&buff.dark_soul.remains>10)|time<15)&!glyph.dark_soul.enabled
+			if (Me.HasAura ("Metamorphosis") && SpellCharges ("Hand of Gul'dan") > 0 && Target.AuraTimeRemaining ("Shadowflame", true) < HandTravelTime + CastTimeSB && ((Fury < 100 && Me.AuraTimeRemaining ("Dark Soul: Instability") > 10) || Time < 15) && !HasGlyph (159665)) {
+				CancelAura ("Metamorphosis");
+			}
 			//	actions+=/cancel_metamorphosis,if=buff.metamorphosis.up&action.hand_of_guldan.charges=3&(!buff.dark_soul.remains>gcd|action.metamorphosis.cooldown<gcd)
+			if (Me.HasAura ("Metamorphosis") && SpellCharges ("Hand of Gul'dan") == 3 && (Me.AuraTimeRemaining ("Dark Soul: Instability") > 1.5 || Cooldown ("Metamorphosis") < 1.5)) {
+				CancelAura ("Metamorphosis");
+			}
 			//	actions+=/chaos_wave,if=buff.metamorphosis.up&(buff.dark_soul.up&active_enemies>=2|(charges=3|set_bonus.tier17_4pc=0&charges=2))
+			if (Me.HasAura ("Metamorphosis") && (Me.HasAura ("Dark Soul: Instability") && EnemyInRange (40) >= 2 || (SpellCharges ("Chaos Wave") == 3 || !HasSpell (165451) && SpellCharges ("Chaos Wave") == 2))) {
+				if (ChaosWave ())
+					return;
+			}
 			//	actions+=/soul_fire,if=buff.metamorphosis.up&buff.molten_core.react&(buff.dark_soul.remains>execute_time|target.health.pct<=25)&(((buff.molten_core.stack*execute_time>=trinket.stacking_proc.multistrike.remains-1|demonic_fury<=ceil((trinket.stacking_proc.multistrike.remains-buff.molten_core.stack*execute_time)*40)+80*buff.molten_core.stack)|target.health.pct<=25)&trinket.stacking_proc.multistrike.remains>=execute_time|trinket.stacking_proc.multistrike.down|!trinket.has_stacking_proc.multistrike)
 			//	actions+=/touch_of_chaos,cycle_targets=1,if=buff.metamorphosis.up&dot.corruption.remains<17.4&demonic_fury>750
 			if (Me.HasAura ("Metamorphosis") && Fury > 750) {
@@ -201,6 +211,10 @@ namespace ReBot.Warlock
 					return;
 			}
 			//	actions+=/metamorphosis,if=buff.dark_soul.remains>gcd&(time>6|debuff.shadowflame.stack=2)&(demonic_fury>300|!glyph.dark_soul.enabled)&(demonic_fury>=80&buff.molten_core.stack>=1|demonic_fury>=40)
+			if (Me.AuraTimeRemaining ("Dark Soul: Instability") > 1.5 && (Time > 6 || Target.GetAura ("Shadowflame", true).StackCount == 2) && (Fury > 300 || !HasGlyph (159665)) && (Fury >= 80 && AuraStackCount ("Molten Core") >= 1 || Fury >= 40)) {
+				if (Metamorphosis ())
+					return;
+			}
 			//	actions+=/metamorphosis,if=(trinket.stacking_proc.multistrike.react|trinket.proc.any.react)&((demonic_fury>450&action.dark_soul.recharge_time>=10&glyph.dark_soul.enabled)|(demonic_fury>650&cooldown.dark_soul.remains>=10))
 			//	actions+=/metamorphosis,if=!cooldown.cataclysm.remains&talent.cataclysm.enabled
 			if (Cooldown ("Cataclysm") == 0 && HasSpell ("Cataclysm")) {
@@ -208,7 +222,15 @@ namespace ReBot.Warlock
 					return;
 			}
 			//	actions+=/metamorphosis,if=!dot.doom.ticking&target.time_to_die>=30%(1%spell_haste)&demonic_fury>300
+			if (!Target.HasAura ("Doom", true) && TimeToDie () >= 30 / (1 / SpellHaste) && Fury > 300) {
+				if (Metamorphosis ())
+					return;
+			}
 			//	actions+=/metamorphosis,if=(demonic_fury>750&(action.hand_of_guldan.charges=0|(!dot.shadowflame.ticking&!action.hand_of_guldan.in_flight_to_target)))|floor(demonic_fury%80)*action.soul_fire.execute_time>=target.time_to_die
+			if ((Fury > 750 && (SpellCharges ("Hand of Gul'dan") == 0 || (!Target.HasAura ("Shadowflame") && !HandInFlight))) || (Fury / 80) * 4 >= TimeToDie ()) {
+				if (Metamorphosis ())
+					return;
+			}
 			//	actions+=/metamorphosis,if=demonic_fury>=950
 			if (Fury >= 950) {
 				if (Metamorphosis ())
@@ -223,7 +245,15 @@ namespace ReBot.Warlock
 			//	actions+=/hellfire,interrupt=1,if=active_enemies>=5
 			//	actions+=/soul_fire,if=buff.molten_core.react&(buff.molten_core.stack>=7|target.health.pct<=25|(buff.dark_soul.remains&cooldown.metamorphosis.remains>buff.dark_soul.remains)|trinket.proc.any.remains>execute_time|trinket.stacking_proc.multistrike.remains>execute_time)&(buff.dark_soul.remains<action.shadow_bolt.cast_time|buff.dark_soul.remains>execute_time)
 			//	actions+=/soul_fire,if=buff.molten_core.react&target.time_to_die<(time+target.time_to_die)*0.25+cooldown.dark_soul.remains
+			if (Me.HasAura ("Molten Core") && TimeToDie () < (Time + TimeToDie ()) * 0.25 + Cooldown ("Dark Soul: Instability")) {
+				if (SoulFire ())
+					return;
+			}
 			//	actions+=/life_tap,if=mana.pct<40&buff.dark_soul.down
+			if (Mana () < 0.4 && !Me.HasAura ("Dark Soul: Instability")) {
+				if (LifeTap ())
+					return;
+			}
 			//	actions+=/hellfire,interrupt=1,if=active_enemies>=4
 			//	actions+=/shadow_bolt
 			if (ShadowBolt ())
