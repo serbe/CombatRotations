@@ -59,7 +59,7 @@ namespace ReBot.Rogue
 			// }
 
 			// Heal
-			if ((!InRaid && Health < 0.8) || (Health < 0.3)) {
+			if ((!InRaid && Health () < 0.8) || (Health () < 0.3)) {
 				if (Recuperate ())
 					return true;
 			}
@@ -104,29 +104,13 @@ namespace ReBot.Rogue
 			var targets = Adds;
 			targets.Add (Target);
 
-			if (Health < 0.55 || (Health < 0.4 && Me.Auras.Any (x => x.IsDebuff && x.DebuffType.Contains ("magic"))))
-				CloakofShadows ();
-			if (Health < 0.65)
-				CombatReadiness ();
-			if (Health < 0.4)
-				Evasion ();
-			if (Health < 0.45) {
-				if (Healthstone ())
-					return;
-			}
-
-			if ((!InRaid && !InInstance && Health < 0.9) || (!InRaid && Health < 0.3)) {
-				if (Recuperate ())
+			if (Health () < 0.9) {
+				if (Heal ())
 					return;
 			}
 
 			if (Me.CanNotParticipateInCombat ())
 				Freedom ();
-
-			if (!Me.IsMoving && Health < 0.5) {
-				if (SmokeBomb ())
-					return;
-			}
 
 			// actions=potion,name=draenic_agility,if=buff.bloodlust.react|target.time_to_die<40|(buff.shadow_reflection.up|(!talent.shadow_reflection.enabled&buff.shadow_dance.up))&(trinket.stat.agi.react|trinket.stat.multistrike.react|buff.archmages_greater_incandescence_agi.react)|((buff.shadow_reflection.up|(!talent.shadow_reflection.enabled&buff.shadow_dance.up))&target.time_to_die<136)
 			// actions+=/kick
@@ -167,43 +151,11 @@ namespace ReBot.Rogue
 			if (CastSpell (Spell))
 				return;
 
-			if ((InArena || InBg) && Health < 0.7) {
-				if (Feint ())
-					return;
-			}
-			if (Usable ("Feint") && Health < 0.8 && (InRaid || InInstance)) {
-				var useFeint = targets.Where (x => IsBoss (x) && x.CombatRange <= 30 && x.IsCasting && x.RemainingCastTime > Me.AuraTimeRemaining ("Feint")).DefaultIfEmpty (null).FirstOrDefault ();
-				if (useFeint != null) {
-					if (Feint ())
-						return;
-				}
-			}
-
-			if ((InBg && InArena) && IsPlayer && Target.CanParticipateInCombat) {
-				if (CheapShot ())
-					return;
-			}
-
-			if (Usable ("Gouge") && EnemyInRange (6) > 1 && Multitarget) {
-				CycleTarget = Adds.Where (x => x.IsInCombatRangeAndLoS && x.CanParticipateInCombat && Target != x).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Gouge (CycleTarget))
-						return;
-				}
-			}
-
-			// Analysis disable once CompareOfFloatsByEqualityOperator
-			if (HasSpell ("Blind") && Cooldown ("Blind") == 0 && (Me.HasAura ("Stealth") || Me.HasAura ("Subterfuge") || Me.HasAura ("Shadow Dance")) && Energy >= 15 && EnemyInRange (15) > 1 && Multitarget) {
-				CycleTarget = Adds.Where (x => x.IsInLoS && x.CombatRange <= 15 && x.CanParticipateInCombat && Target != x).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Blind (CycleTarget))
-						return;
-				}
-			}
-
+			if (Cc ())
+				return;
 
 			// actions+=/pool_resource,for_next=1
-			if (HasSpell ("Garrote") && !IsPlayer && TimeToRegen (Cost (45)) < 1 && Time < 1 && (Me.HasAura ("Stealth") || Me.AuraTimeRemaining ("Subterfuge") >= 1 || Me.AuraTimeRemaining ("Vanish") >= 1 || Me.AuraTimeRemaining ("Shadow Dance") >= 1)) {
+			if (HasSpell ("Garrote") && !IsPlayer () && TimeToRegen (Cost (45)) < 1 && Time < 1 && (Me.HasAura ("Stealth") || Me.AuraTimeRemaining ("Subterfuge") >= 1 || Me.AuraTimeRemaining ("Vanish") >= 1 || Me.AuraTimeRemaining ("Shadow Dance") >= 1)) {
 				Sleep = Cost (45);
 				Spell = "Garrote";
 				return;
@@ -231,14 +183,14 @@ namespace ReBot.Rogue
 //					return;
 //			}
 			// actions+=/pool_resource,for_next=1,extra_amount=50
-			if (Usable ("Shadowmeld", TimeToRegen (50)) && (IsPlayer || InBg || InArena || InInstance || InRaid) && HasSpell ("Shadow Focus") && ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && ComboPoints < 3)) && !Me.HasAura ("Stealth") && Me.AuraTimeRemaining ("Shadow Dance") < TimeToRegen (45) && Me.AuraTimeRemaining ("Master of Subtlety") < TimeToRegen (45) && Target.AuraTimeRemaining ("Find Weakness", true) < TimeToRegen (45)) {
+			if (Usable ("Shadowmeld", TimeToRegen (50)) && (IsPlayer () || InBg || InArena || InInstance || InRaid) && HasSpell ("Shadow Focus") && ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && ComboPoints < 3)) && !Me.HasAura ("Stealth") && Me.AuraTimeRemaining ("Shadow Dance") < TimeToRegen (45) && Me.AuraTimeRemaining ("Master of Subtlety") < TimeToRegen (45) && Target.AuraTimeRemaining ("Find Weakness", true) < TimeToRegen (45)) {
 				Sleep = 50;
 				Spell = "Shadowmeld";
 				return;
 			}
 			// actions+=/shadowmeld,if=talent.shadow_focus.enabled&energy>=45&energy<=75&combo_points<4-talent.anticipation.enabled&buff.stealth.down&buff.shadow_dance.down&buff.master_of_subtlety.down&debuff.find_weakness.down
 			// actions+=/pool_resource,for_next=1,extra_amount=50
-			if (Usable ("Vanish", TimeToRegen (50)) && (IsPlayer || InBg || InArena || InInstance || InRaid) && HasSpell ("Shadow Focus") && ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && ComboPoints < 3)) && Me.AuraTimeRemaining ("Shadow Dance") < TimeToRegen (50) && Me.AuraTimeRemaining ("Master of Subtlety") < TimeToRegen (50) && Target.AuraTimeRemaining ("Find Weakness", true) < TimeToRegen (50)) {
+			if (Usable ("Vanish", TimeToRegen (50)) && (IsPlayer () || InBg || InArena || InInstance || InRaid) && HasSpell ("Shadow Focus") && ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && ComboPoints < 3)) && Me.AuraTimeRemaining ("Shadow Dance") < TimeToRegen (50) && Me.AuraTimeRemaining ("Master of Subtlety") < TimeToRegen (50) && Target.AuraTimeRemaining ("Find Weakness", true) < TimeToRegen (50)) {
 				Sleep = 50;
 				Spell = "Vanish";
 				return;
@@ -252,7 +204,7 @@ namespace ReBot.Rogue
 			}
 			// actions+=/shadowmeld,if=talent.subterfuge.enabled&energy>=90&combo_points<4-talent.anticipation.enabled&buff.stealth.down&buff.shadow_dance.down&buff.master_of_subtlety.down&debuff.find_weakness.down
 			// actions+=/pool_resource,for_next=1,extra_amount=90
-			if (Usable ("Vanish", TimeToRegen (90)) && (IsPlayer || InBg || InArena || InInstance || InRaid) && HasSpell ("Subterfuge") && ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && ComboPoints < 3)) && Me.AuraTimeRemaining ("Shadow Dance") < TimeToRegen (90) && Me.AuraTimeRemaining ("Master of Subtlety") < TimeToRegen (90) && Target.AuraTimeRemaining ("Find Weakness", true) < TimeToRegen (90)) {
+			if (Usable ("Vanish", TimeToRegen (90)) && (IsPlayer () || InBg || InArena || InInstance || InRaid) && HasSpell ("Subterfuge") && ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && ComboPoints < 3)) && Me.AuraTimeRemaining ("Shadow Dance") < TimeToRegen (90) && Me.AuraTimeRemaining ("Master of Subtlety") < TimeToRegen (90) && Target.AuraTimeRemaining ("Find Weakness", true) < TimeToRegen (90)) {
 				Sleep = 90;
 				Spell = "Vanish";
 				return;

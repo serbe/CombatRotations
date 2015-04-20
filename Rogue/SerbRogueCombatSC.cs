@@ -60,7 +60,7 @@ namespace ReBot.Rogue
 			// }
 
 			// Heal
-			if ((!InRaid && Health < 0.8) || (Health < 0.3)) {
+			if ((!InRaid && Health () < 0.8) || (Health () < 0.3)) {
 				if (Recuperate ())
 					return true;
 			}
@@ -75,6 +75,12 @@ namespace ReBot.Rogue
 			// if (!InArena)
 			if (OraliusWhisperingCrystal ())
 				return true;
+
+			if (CurrentBotName == "Questing" && Target.CombatRange > 20 && Target.IsEnemy) {
+				if (Stealth ())
+					return true;
+			}
+
 
 
 			if (InCombat) {
@@ -95,14 +101,13 @@ namespace ReBot.Rogue
 			var targets = Adds;
 			targets.Add (Target);
 
-			if (Health < 0.9) {
+			if (Health (Me) < 0.9) {
 				if (Heal ())
 					return;
 			}
 
 			if (Me.CanNotParticipateInCombat ())
 				Freedom ();
-
 
 			if (!Me.HasAura ("Stealth")) {
 				Interrupt ();

@@ -55,7 +55,7 @@ namespace ReBot.Rogue
 			// }
 
 			// Heal
-			if ((!InRaid && Health < 0.8) || (Health < 0.3)) {
+			if ((!InRaid && Health () < 0.8) || (Health () < 0.3)) {
 				if (Recuperate ())
 					return true;
 			}
@@ -89,14 +89,13 @@ namespace ReBot.Rogue
 			var targets = Adds;
 			targets.Add (Target);
 
-			if (Health < 0.9) {
+			if (Health () < 0.9) {
 				if (Heal ())
 					return;
 			}
 
 			if (Me.CanNotParticipateInCombat ())
 				Freedom ();
-
 
 			if (!Me.HasAura ("Stealth")) {
 				Interrupt ();
@@ -243,7 +242,7 @@ namespace ReBot.Rogue
 				}
 			}
 //			actions+=/mutilate,if=target.health.pct>35&(combo_points<4|(talent.anticipation.enabled&anticipation_charges<3))&active_enemies<5
-			if (TargetHealth > 0.35 && ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") < 3)) && EnemyInRange (6) < 5) {
+			if (Health (Target) > 0.35 && ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") < 3)) && EnemyInRange (6) < 5) {
 				if (Mutilate ())
 					return;
 			}
