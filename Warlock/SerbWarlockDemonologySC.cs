@@ -69,6 +69,9 @@ namespace ReBot.Warlock
 					HandInFlight = false;
 			}
 
+			if (Me.HasAura ("Hellfire") && !Me.IsMoving && EnemyInRange (10) < 4)
+				CancelAura ("Hellfire");
+			
 			var targets = Adds;
 			targets.Add (Target);
 
@@ -243,6 +246,10 @@ namespace ReBot.Warlock
 			if (ImpSwarm ())
 				return;
 			//	actions+=/hellfire,interrupt=1,if=active_enemies>=5
+			if (EnemyInRange (10) >= 5) {
+				if (Hellfire ())
+					return;
+			}
 			//	actions+=/soul_fire,if=buff.molten_core.react&(buff.molten_core.stack>=7|target.health.pct<=25|(buff.dark_soul.remains&cooldown.metamorphosis.remains>buff.dark_soul.remains)|trinket.proc.any.remains>execute_time|trinket.stacking_proc.multistrike.remains>execute_time)&(buff.dark_soul.remains<action.shadow_bolt.cast_time|buff.dark_soul.remains>execute_time)
 			//	actions+=/soul_fire,if=buff.molten_core.react&target.time_to_die<(time+target.time_to_die)*0.25+cooldown.dark_soul.remains
 			if (Me.HasAura ("Molten Core") && TimeToDie () < (Time + TimeToDie ()) * 0.25 + Cooldown ("Dark Soul: Instability")) {
@@ -255,10 +262,18 @@ namespace ReBot.Warlock
 					return;
 			}
 			//	actions+=/hellfire,interrupt=1,if=active_enemies>=4
+			if (EnemyInRange (10) >= 4) {
+				if (Hellfire ())
+					return;
+			}
 			//	actions+=/shadow_bolt
 			if (ShadowBolt ())
 				return;
 			//	actions+=/hellfire,moving=1,interrupt=1
+			if (Me.IsMoving) {
+				if (Hellfire ())
+					return;
+			}
 			//	actions+=/life_tap
 			if (LifeTap ())
 				return;
@@ -268,13 +283,36 @@ namespace ReBot.Warlock
 
 		public bool DB_Action ()
 		{
+			var targets = Adds;
+			targets.Add (Target);
+
 			//	actions.db=immolation_aura,if=demonic_fury>450&active_enemies>=5&buff.immolation_aura.down
+			if (Fury > 450 && EnemyInRange (10) >= 5 && !Me.HasAura ("Immolation Aura")) {
+				if (ImmolationAura ())
+					return true;
+			}
 			//	actions.db+=/doom,cycle_targets=1,if=buff.metamorphosis.up&active_enemies>=6&target.time_to_die>=30*spell_haste&remains<=(duration*0.3)&(buff.dark_soul.down|!glyph.dark_soul.enabled)
+			if (Me.HasAura ("Metamorphosis") && EnemyInRange (40) >= 6 && (Me.HasAura ("Dark Soul: Instability") || !HasSpell (165451))) {
+				CycleTarget = targets.Where (u => u.IsInLoS && u.CombatRange <= 40 && TimeToDie (u) >= 30 * SpellHaste && u.AuraTimeRemaining ("Doom", true) < (60 * 0.3)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (Doom (CycleTarget))
+						return true;
+				}
+			}
 			//	actions.db+=/kiljaedens_cunning,moving=1,if=buff.demonbolt.stack=0|(buff.demonbolt.stack<4&buff.demonbolt.remains>=(40*spell_haste-execute_time))
 			//	actions.db+=/demonbolt,if=buff.demonbolt.stack=0|(buff.demonbolt.stack<4&buff.demonbolt.remains>=(40*spell_haste-execute_time))
 			//	actions.db+=/doom,cycle_targets=1,if=buff.metamorphosis.up&target.time_to_die>=30*spell_haste&remains<=(duration*0.3)&(buff.dark_soul.down|!glyph.dark_soul.enabled)
+			if (Me.HasAura ("Metamorphosis") && Fury > 750 && (Me.HasAura ("Dark Soul: Instability") || !HasSpell (165451))) {
+				CycleTarget = targets.Where (u => u.IsInLoS && u.CombatRange <= 40 && TimeToDie (u) >= 30 * SpellHaste && u.AuraTimeRemaining ("Doom", true) < (60 * 0.3)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (Doom (CycleTarget))
+						return true;
+				}
+			}
 			//	actions.db+=/corruption,cycle_targets=1,if=target.time_to_die>=6&remains<=(0.3*duration)&buff.metamorphosis.down
 			//	actions.db+=/cancel_metamorphosis,if=buff.metamorphosis.up&buff.demonbolt.stack>3&demonic_fury<=600&target.time_to_die>buff.demonbolt.remains&buff.dark_soul.down
+//			if (Me.HasAura ("Metamorphosis") && SpellCharges("Demonbolt") > 3)
+//				CancelAura ("Metamorphosis");
 			//	actions.db+=/chaos_wave,if=buff.metamorphosis.up&buff.dark_soul.up&active_enemies>=2&demonic_fury>450
 			//	actions.db+=/soul_fire,if=buff.metamorphosis.up&buff.molten_core.react&(((buff.dark_soul.remains>execute_time)&demonic_fury>=175)|(target.time_to_die<buff.demonbolt.remains))
 			//	actions.db+=/soul_fire,if=buff.metamorphosis.up&buff.molten_core.react&target.health.pct<=25&(((demonic_fury-80)%800)>(buff.demonbolt.remains%(40*spell_haste)))&demonic_fury>=750
@@ -288,15 +326,35 @@ namespace ReBot.Warlock
 			//	actions.db+=/metamorphosis,if=demonic_fury>750&buff.demonbolt.remains>=action.metamorphosis.cooldown
 			//	actions.db+=/metamorphosis,if=(((demonic_fury-120)%800)>(buff.demonbolt.remains%(40*spell_haste)))&buff.demonbolt.remains>=10&dot.doom.remains<=dot.doom.duration*0.3
 			//	actions.db+=/cancel_metamorphosis
+			if (Me.HasAura ("Metamorphosis"))
+				CancelAura ("Metamorphosis");
 			//	actions.db+=/imp_swarm
+			if (ImpSwarm ())
+				return true;
 			//	actions.db+=/hellfire,interrupt=1,if=active_enemies>=5
+			if (EnemyInRange (10) >= 5) {
+				if (Hellfire ())
+					return true;
+			}
 			//	actions.db+=/soul_fire,if=buff.molten_core.react&(buff.dark_soul.remains<action.shadow_bolt.cast_time|buff.dark_soul.remains>cast_time)
 			//	actions.db+=/life_tap,if=mana.pct<40&buff.dark_soul.down
+			if (Mana () < 0.4 && !Me.HasAura ("Dark Soul: Instability")) {
+				if (LifeTap ())
+					return true;
+			}
 			//	actions.db+=/hellfire,interrupt=1,if=active_enemies>=4
+			if (EnemyInRange (10) >= 4) {
+				if (Hellfire ())
+					return true;
+			}
 			//	actions.db+=/shadow_bolt
 			if (ShadowBolt ())
 				return true;
 			//	actions.db+=/hellfire,moving=1,interrupt=1
+			if (Me.IsMoving) {
+				if (Hellfire ())
+					return true;
+			}
 			//	actions.db+=/life_tap
 			if (LifeTap ())
 				return true;

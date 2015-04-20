@@ -385,10 +385,9 @@ namespace ReBot.Warlock
 			return CastOnTerrain ("Cataclysm", u.Position, () => Usable ("Cataclysm") && u.IsInLoS && u.CombatRange <= 40);
 		}
 
-		public bool ImmolationAura (UnitObject u = null)
+		public bool ImmolationAura ()
 		{
-			u = u ?? Target;
-			return Cast ("Immolation Aura", () => Usable ("Immolation Aura") && Me.HasAura ("Metamorphosis") && u.IsInLoS && u.CombatRange <= 40, u);
+			return Cast ("Immolation Aura", () => Usable ("Immolation Aura") && Me.HasAura ("Metamorphosis") && !Me.HasAura ("Immolation Aura"));
 		}
 
 		public bool ShadowBolt (UnitObject u = null)
@@ -433,11 +432,10 @@ namespace ReBot.Warlock
 			return Cast ("Soul Fire", () => Usable ("Soul Fire") && u.IsInLoS && u.CombatRange <= 40 && !Me.IsMoving, u);
 		}
 
-		//		public bool  (UnitObject u = null)
-		//		{
-		//			u = u ?? Target;
-		//			return Cast ("", () => Usable ("") && u.IsInLoS && u.CombatRange <= 40, u);
-		//		}
+		public bool Hellfire ()
+		{
+			return Cast ("Hellfire", () => Usable ("Hellfire") && !Me.HasAura ("Metamorphosis") && !Me.HasAura ("Hellfire"));
+		}
 
 		//		public bool  (UnitObject u = null)
 		//		{
