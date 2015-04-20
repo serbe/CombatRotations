@@ -19,7 +19,13 @@ namespace ReBot.Rogue
 
 		public SerbRogueCombatSc ()
 		{
-			RangedAttack = HasSpell ("Shuriken Toss") ? "Shuriken Toss" : "Throw";
+			RangedAttack = "Throw";
+			PullSpells = new[] {
+//				"Stealth",
+				"Sap",
+				"Pick Pocket",
+				"Ambush"
+			};
 		}
 
 		public override bool OutOfCombat ()
@@ -81,7 +87,11 @@ namespace ReBot.Rogue
 					return true;
 			}
 
-
+			if (Target != null && Target.CombatRange > 10 && Target.IsEnemy) {
+				if (Stealth ())
+					return true;
+			}
+				
 
 			if (InCombat) {
 				InCombat = false;
@@ -212,7 +222,8 @@ namespace ReBot.Rogue
 					return;
 			}
 
-			Cast (RangedAttack, () => Energy >= 40 && !Me.IsMoving && !HasAura ("Stealth") && Target.IsInLoS && Target.CombatRange > 10 && Target.CombatRange <= 30 && UseRangedAttack);
+			if (UseRangedAttack && !HasAura ("Stealth"))
+				RogueRangedAttack ();
 		}
 
 		public bool ActionAdrenalineRush ()

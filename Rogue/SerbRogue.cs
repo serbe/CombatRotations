@@ -539,7 +539,7 @@ namespace ReBot.Rogue
 
 		public bool ShurikenToss ()
 		{
-			return Cast ("Shuriken Toss", () => Usable ("Shuriken Toss") && HasCost (40));
+			return Cast ("Shuriken Toss", () => Usable ("Shuriken Toss") && HasCost (40) && Target.IsInLoS && Target.CombatRange > 10 && Target.CombatRange <= 30);
 		}
 
 		public  bool Rupture (UnitObject u = null)
@@ -733,6 +733,17 @@ namespace ReBot.Rogue
 			}
 
 			return false;
+		}
+
+		public bool RogueRangedAttack ()
+		{
+			return ShurikenToss () || Throw ();
+		}
+
+		public bool Throw ()
+		{
+			return Cast ("Throw", () => Usable ("Throw") && !Me.IsMoving && Target.IsInLoS && Target.CombatRange > 10 && Target.CombatRange <= 30);
+
 		}
 	}
 }

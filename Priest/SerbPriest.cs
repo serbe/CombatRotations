@@ -13,7 +13,7 @@ namespace ReBot.Priest
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
 		public UnitObject CycleTarget;
-
+		public IEnumerable<UnitObject> MaxCycle;
 
 		public bool InRaid {
 			get {
@@ -82,7 +82,9 @@ namespace ReBot.Priest
 			return(u.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || u.Level >= Me.Level + BossLevelIncrease;
 		}
 
-		public virtual List<PlayerObject> GroupMembers {
+		public int Orb { get { return Me.GetPower (WoWPowerType.PriestShadowOrbs); } }
+
+		public List<PlayerObject> GroupMembers {
 			get {
 				return Group.GetGroupMemberObjects ();
 			}
@@ -118,14 +120,16 @@ namespace ReBot.Priest
 			return CastSelf ("Berserking", () => Usable ("Berserking") && Target.IsInCombatRangeAndLoS && (Target.IsElite () || Target.IsPlayer));
 		}
 
-		public virtual bool ArcaneTorrent ()
+		public virtual bool ArcaneTorrent (UnitObject u = null)
 		{
-			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && Target.IsInCombatRangeAndLoS && (Target.IsElite () || Target.IsPlayer));
+			u = u ?? Target;
+			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && u.IsInCombatRangeAndLoS && (u.IsElite () || u.IsPlayer));
 		}
 
-		public virtual bool PowerInfusion ()
+		public virtual bool PowerInfusion (UnitObject u = null)
 		{
-			return CastSelf ("Power Infusion", () => Usable ("Power Infusion") && Target.IsInCombatRangeAndLoS && (Target.IsElite () || Target.IsPlayer));
+			u = u ?? Target;
+			return CastSelf ("Power Infusion", () => Usable ("Power Infusion") && u.IsInCombatRangeAndLoS && (u.IsElite () || u.IsPlayer));
 		}
 
 		public bool PowerWordFortitude (UnitObject u = null)
@@ -231,6 +235,11 @@ namespace ReBot.Priest
 			}
 			return false;
 		}
+
+		public bool Shadowform ()
+		{
+			return CastSelf ("Shadowform", () => Usable ("Shadowform") && !Me.HasAura ("Shadowform"));
+		}
 	}
 }
-
+	

@@ -62,6 +62,7 @@
     <Compile Include="Priest\SerbPriest.cs" />
     <Compile Include="Priest\SerbPriestDiscipline.cs" />
     <Compile Include="Monk\SerbMonk.cs" />
+    <Compile Include="Priest\SerbPriestShadow.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
