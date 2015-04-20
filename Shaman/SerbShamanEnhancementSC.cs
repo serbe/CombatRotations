@@ -32,7 +32,7 @@ namespace ReBot.Shaman
 			//	actions=wind_shear
 			//	# Bloodlust casting behavior mirrors the simulator settings for proxy bloodlust. See options 'bloodlust_percent', and 'bloodlust_time'. 
 			//	actions+=/bloodlust,if=target.health.pct<25|time>0.500
-			if ((IsBoss (Target) && Target.HealthFraction < 0.25) || (IsPlayer && Target.HealthFraction < 0.6))
+			if ((IsBoss (Target) && Health (Target) < 0.25) || (IsPlayer () && Health (Target) < 0.6))
 				Bloodlust ();
 			//	actions+=/auto_attack
 			//	actions+=/use_item,name=beating_heart_of_the_mountain
@@ -92,7 +92,10 @@ namespace ReBot.Shaman
 					return true;
 			}
 			//	actions.single+=/windstrike,if=!talent.echo_of_the_elements.enabled|(talent.echo_of_the_elements.enabled&(charges=2|(action.windstrike.charges_fractional>1.75)|(charges=1&buff.ascendance.remains<1.5)))
-//			if (!HasSpell("Echo of the Elements") || (HasSpell("Echo of the Elements") && (SpellCharges("Windstrike") == 2 || (
+//			if (!HasSpell ("Echo of the Elements") || (HasSpell ("Echo of the Elements") && (SpellCharges ("Windstrike") == 2 || (WindstrikeFrac > 1.75) || (SpellCharges ("Windstrike") == 1 && Me.AuraTimeRemaining ("Ascendance") < 1.5)))) {
+//				if (Windstrike ())
+//					return true;
+//			}
 			//	actions.single+=/lightning_bolt,if=buff.maelstrom_weapon.react=5
 			if (Me.GetAura ("Maelstrom Weapon").StackCount == 5) {
 				if (LightningBolt ())
