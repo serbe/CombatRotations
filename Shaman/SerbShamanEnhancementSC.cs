@@ -102,9 +102,23 @@ namespace ReBot.Shaman
 					return true;
 			}
 			//	actions.single+=/stormstrike,if=!talent.echo_of_the_elements.enabled|(talent.echo_of_the_elements.enabled&(charges=2|(action.stormstrike.charges_fractional>1.75)|target.time_to_die<6))
+			if (!HasSpell ("Echo of the Elements") || (HasSpell ("Echo of the Elements") && (SpellCharges ("Stormstrike") == 2 || (Frac ("Stormstrike") > 1.75) || TimeToDie () < 6))) {
+				if (Stormstrike ())
+					return true;
+			}
 			//	actions.single+=/lava_lash,if=!talent.echo_of_the_elements.enabled|(talent.echo_of_the_elements.enabled&(charges=2|(action.lava_lash.charges_fractional>1.8)|target.time_to_die<8))
+			if (!HasSpell ("Echo of the Elements") || (HasSpell ("Echo of the Elements") && (SpellCharges ("Lava Lash") == 2 || (Frac ("Lava Lash") > 1.75) || TimeToDie () < 8))) {
+				if (LavaLash ())
+					return true;
+			}
 			//	actions.single+=/flame_shock,if=(talent.elemental_fusion.enabled&buff.elemental_fusion.stack=2&buff.unleash_flame.up&dot.flame_shock.remains<16)|(!talent.elemental_fusion.enabled&buff.unleash_flame.up&dot.flame_shock.remains<=9)|!ticking
+			if ((HasSpell ("Elemental Fusion") && Me.GetAura ("Elemental Fusion").StackCount == 2 && Me.HasAura ("Unleash Flame") && Target.AuraTimeRemaining ("Flame Shock", true) < 16) || (!HasSpell ("Elemental Fusion") && Me.HasAura ("Unleash Flame") && Target.AuraTimeRemaining ("Flame Shock", true) <= 9) || !Target.HasAura ("Flame Shock", true)) {
+				if (FlameShock ())
+					return true;
+			}
 			//	actions.single+=/unleash_elements
+			if (UnleashElements ())
+				return true;
 			//	actions.single+=/windstrike,if=talent.echo_of_the_elements.enabled
 			//	actions.single+=/elemental_blast,if=buff.maelstrom_weapon.react>=3|buff.ancestral_swiftness.up
 			//	actions.single+=/lightning_bolt,if=(buff.maelstrom_weapon.react>=3&!buff.ascendance.up)|buff.ancestral_swiftness.up

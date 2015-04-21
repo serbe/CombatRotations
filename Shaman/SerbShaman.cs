@@ -1,10 +1,13 @@
-﻿using System.Linq;
-using ReBot.API;
+﻿using ReBot.API;
+using Newtonsoft.Json;
 
 namespace ReBot.Shaman
 {
 	public abstract class SerbShaman : CombatRotation
 	{
+		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
+		public int Ttd = 10;
+
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
 
@@ -69,6 +72,28 @@ namespace ReBot.Shaman
 			return x > 0;
 		}
 
+		public double Frac (string s)
+		{
+			string scurrentCharges = "local currentCharges, maxCharges, cooldownStart, cooldownDuration = GetSpellCharges(\"" + s + "\"); return currentCharges";
+			string smaxCharges = "local currentCharges, maxCharges, cooldownStart, cooldownDuration = GetSpellCharges(\"" + s + "\"); return maxCharges";
+			string scooldownStart = "local currentCharges, maxCharges, cooldownStart, cooldownDuration = GetSpellCharges(\"" + s + "\"); return cooldownStart";
+			string scooldownDuration = "local currentCharges, maxCharges, cooldownStart, cooldownDuration = GetSpellCharges(\"" + s + "\"); return cooldownDuration";
+
+			double currentCharges = API.ExecuteLua<double> (scurrentCharges);
+			double maxCharges = API.ExecuteLua<double> (smaxCharges);
+			double cooldownStart = API.ExecuteLua<double> (scooldownStart);
+			double cooldownDuration = API.ExecuteLua<double> (scooldownDuration);
+
+			double f = currentCharges;
+
+			if (f != maxCharges) {
+				double currentTime = API.ExecuteLua<double> ("return GetTime()");
+				f = f + ((currentTime - cooldownStart) / cooldownDuration);
+			}
+
+			return f;
+		}
+
 		public bool Usable (string s)
 		{ 
 			// Analysis disable once CompareOfFloatsByEqualityOperator
@@ -78,6 +103,12 @@ namespace ReBot.Shaman
 		public double Cooldown (string s)
 		{ 
 			return SpellCooldown (s) < 0 ? 0 : SpellCooldown (s);
+		}
+
+		public double TimeToDie (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return u.Health / Ttd;
 		}
 
 		public bool LightningShield ()
@@ -169,23 +200,23 @@ namespace ReBot.Shaman
 			return Cast ("Lightning Bolt", () => Usable ("Lightning Bolt") && u.IsInLoS && u.CombatRange <= 30 && (!Me.IsMoving || Me.HasAura ("Ancestral Swiftness")), u);
 		}
 
-		//		public bool Windstrike (UnitObject u = null)
-		//		{
-		//			u = u ?? Target;
-		//			return Cast ("Windstrike", () => Usable ("Windstrike") && u.IsInLoS && u.CombatRange <= 40, u);
-		//		}
+		public bool Stormstrike (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Stormstrike", () => Usable ("Stormstrike") && u.IsInLoS && u.CombatRange <= 5, u);
+		}
 
-		//		public bool  (UnitObject u = null)
-		//		{
-		//			u = u ?? Target;
-		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && u.IsInLoS && u.CombatRange <= 40, u);
-		//		}
+		public bool LavaLash (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Lava Lash", () => Usable ("Lava Lash") && u.IsInLoS && u.CombatRange <= 5, u);
+		}
 
-		//		public bool  (UnitObject u = null)
-		//		{
-		//			u = u ?? Target;
-		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && u.IsInLoS && u.CombatRange <= 40, u);
-		//		}
+		public bool FlameShock (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Flame Shock", () => Usable ("Flame Shock") && u.IsInLoS && u.CombatRange <= 25, u);
+		}
 
 		//		public bool  (UnitObject u = null)
 		//		{

@@ -321,12 +321,6 @@ namespace ReBot.Priest
 			return Cast ("Devouring Plague", () => Usable ("Devouring Plague") && u.IsInLoS && u.CombatRange <= 40, u);
 		}
 
-		public bool ShadowWordPain (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Shadow Word: Pain", () => Usable ("Shadow Word: Pain") && u.IsInLoS && u.CombatRange <= 40, u);
-		}
-
 		public bool MindSear (UnitObject u = null)
 		{
 			u = u ?? Target;
