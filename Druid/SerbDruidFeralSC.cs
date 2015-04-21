@@ -76,6 +76,8 @@ namespace ReBot.Druid
 				return true;
 			}
 
+			Sleep = 0;
+
 			return false;
 		}
 
@@ -122,6 +124,14 @@ namespace ReBot.Druid
 				return;
 			
 			if (IsCatForm ()) {
+				if (Energy < Sleep)
+					return;
+				if (Sleep > 0) {
+					Sleep = 0;
+					if (Thrash ())
+						return;
+				}
+
 				//	actions+=/wild_charge
 				//	actions+=/displacer_beast,if=movement.distance>10
 				//	actions+=/dash,if=movement.distance&buff.displacer_beast.down&buff.wild_charge_movement.down
@@ -245,6 +255,8 @@ namespace ReBot.Druid
 						return;
 				}
 			}
+
+			Sleep = 0;
 		}
 
 		public bool Finishers ()

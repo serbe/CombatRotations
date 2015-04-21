@@ -2,6 +2,7 @@
 using System.Linq;
 using Newtonsoft.Json;
 using ReBot.API;
+using Geometry;
 
 namespace ReBot.Priest
 {
@@ -14,6 +15,7 @@ namespace ReBot.Priest
 		public int BossLevelIncrease = 5;
 		public UnitObject CycleTarget;
 		public IEnumerable<UnitObject> MaxCycle;
+		public string Interrupt;
 
 		public bool InRaid {
 			get {
@@ -82,7 +84,46 @@ namespace ReBot.Priest
 			return(u.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || u.Level >= Me.Level + BossLevelIncrease;
 		}
 
-		public int Orb { get { return Me.GetPower (WoWPowerType.PriestShadowOrbs); } }
+		public int Orb {
+			get {
+				return Me.GetPower (WoWPowerType.PriestShadowOrbs);
+			}
+		}
+
+		public double Health (UnitObject u = null)
+		{
+			u = u ?? Me;
+			return u.HealthFraction;
+		}
+
+		public bool IsNotForDamage (UnitObject o)
+		{
+			if (o.HasAura ("Fear") || o.HasAura ("Polymorph") || o.HasAura ("Gouge") || o.HasAura ("Paralysis") || o.HasAura ("Blind") || o.HasAura ("Hex"))
+				return true;
+			return false;
+		}
+
+		public int EnemyInRange (int range)
+		{
+			int x = 0;
+			foreach (UnitObject mob in API.CollectUnits(range)) {
+				if ((mob.IsEnemy || Me.Target == mob) && !mob.IsDead && mob.IsAttackable) {
+					x++;
+				}
+			}
+			return x;
+		}
+
+		public bool IncapacitatedInRange (int range)
+		{
+			int x = 0;
+			foreach (UnitObject mob in API.CollectUnits(range)) {
+				if ((mob.IsEnemy || Me.Target == mob) && !mob.IsDead && mob.IsAttackable && IsNotForDamage (mob)) {
+					x++;
+				}
+			}
+			return x > 0;
+		}
 
 		public List<PlayerObject> GroupMembers {
 			get {
@@ -108,25 +149,46 @@ namespace ReBot.Priest
 			}
 		}
 
+		public int ShadowApparitions {
+			get {
+				int CountOfShadowApparitions = API.Units.Where (u => (u.EntryID == 46954 || u.EntryID == 46954)).ToList ().Count;
+				// int CountOfShadowApparitions = API.Units.Where(u => u.EntryID == 46954 && u.CreatedByMe == true).ToList().Count;
+				return CountOfShadowApparitions;
+			}
+		}
+
+		public UnitObject BestTarget (int SpellRange, int AoeRange, int MinCount)
+		{
+			var targets = Adds;
+			targets.Add (Target);
+
+			var bestTarget = targets.Where (u => u.IsInLoS && u.CombatRange <= SpellRange).OrderByDescending (u => targets.Count (o => Vector3.Distance (u.Position, o.Position) <= AoeRange)).DefaultIfEmpty (null).FirstOrDefault ();
+			if (bestTarget != null) {
+				if (targets.Where (u => Vector3.Distance (u.Position, bestTarget.Position) <= AoeRange).ToList ().Count >= MinCount)
+					return bestTarget;
+			}
+			return null;
+		}
+			
 		// Spell
 
-		public virtual bool BloodFury ()
+		public bool BloodFury ()
 		{
 			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && Target.IsInCombatRangeAndLoS && (Target.IsElite () || Target.IsPlayer));
 		}
 
-		public virtual bool Berserking ()
+		public bool Berserking ()
 		{
 			return CastSelf ("Berserking", () => Usable ("Berserking") && Target.IsInCombatRangeAndLoS && (Target.IsElite () || Target.IsPlayer));
 		}
 
-		public virtual bool ArcaneTorrent (UnitObject u = null)
+		public bool ArcaneTorrent (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && u.IsInCombatRangeAndLoS && (u.IsElite () || u.IsPlayer));
 		}
 
-		public virtual bool PowerInfusion (UnitObject u = null)
+		public bool PowerInfusion (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return CastSelf ("Power Infusion", () => Usable ("Power Infusion") && u.IsInCombatRangeAndLoS && (u.IsElite () || u.IsPlayer));
@@ -212,13 +274,13 @@ namespace ReBot.Priest
 		public bool ClarityofWill (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Clarity of Will", u, () => Usable ("Clarity of Will") && u.IsInLoS && u.CombatRange <= 40 && !Me.IsMoving);
+			return Cast ("Clarity of Will", () => Usable ("Clarity of Will") && u.IsInLoS && u.CombatRange <= 40 && !Me.IsMoving, u);
 		}
 
 		public bool Levitate (UnitObject u = null)
 		{
 			u = u ?? Me;
-			return Cast ("Levitate", u, () => Usable ("Mindbender") && !HasAura ("Levitate") && u.IsInLoS && u.CombatRange <= 40);
+			return Cast ("Levitate", () => Usable ("Mindbender") && !HasAura ("Levitate") && u.IsInLoS && u.CombatRange <= 40, u);
 		}
 
 		public bool Archangel ()
@@ -240,6 +302,43 @@ namespace ReBot.Priest
 		{
 			return CastSelf ("Shadowform", () => Usable ("Shadowform") && !Me.HasAura ("Shadowform"));
 		}
+
+		public bool ShadowWordDeath (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Shadow Word: Death", () => Usable ("Shadow Word: Death") && u.IsInLoS && u.CombatRange <= 40 && Health (u) <= 0.2, u);
+		}
+
+		public bool MindBlast (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Mind Blast", () => Usable ("Mind Blast") && u.IsInLoS && u.CombatRange <= 40, u);
+		}
+
+		public bool DevouringPlague (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Devouring Plague", () => Usable ("Devouring Plague") && u.IsInLoS && u.CombatRange <= 40, u);
+		}
+
+		public bool ShadowWordPain (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Shadow Word: Pain", () => Usable ("Shadow Word: Pain") && u.IsInLoS && u.CombatRange <= 40, u);
+		}
+
+		public bool MindSear (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Mind Sear", () => Usable ("Mind Sear") && u.IsInLoS && u.CombatRange <= 40, u);
+		}
+
+		public bool MindFlay (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Mind Flay", () => Usable ("Mind Flay") && u.IsInLoS && u.CombatRange <= 40, u);
+		}
+
 	}
 }
 	
