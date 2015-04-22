@@ -120,14 +120,47 @@ namespace ReBot.Shaman
 			if (UnleashElements ())
 				return true;
 			//	actions.single+=/windstrike,if=talent.echo_of_the_elements.enabled
+			//
 			//	actions.single+=/elemental_blast,if=buff.maelstrom_weapon.react>=3|buff.ancestral_swiftness.up
+			if (Me.GetAura ("Maelstrom Weapon").StackCount >= 3 || Me.HasAura ("Ancestral Swiftness")) {
+				if (ElementalBlast ())
+					return true;
+			}
 			//	actions.single+=/lightning_bolt,if=(buff.maelstrom_weapon.react>=3&!buff.ascendance.up)|buff.ancestral_swiftness.up
+			if ((Me.GetAura ("Maelstrom Weapon").StackCount >= 3 && !Me.HasAura ("Ascendance")) || Me.HasAura ("Ancestral Swiftness")) {
+				if (LightningBolt ())
+					return true;
+			}
 			//	actions.single+=/lava_lash,if=talent.echo_of_the_elements.enabled
+			if (HasSpell ("Echo of the Elements")) {
+				if (LavaLash ())
+					return true;
+			}
 			//	actions.single+=/frost_shock,if=(talent.elemental_fusion.enabled&dot.flame_shock.remains>=16)|!talent.elemental_fusion.enabled
+			if ((HasSpell ("Elemental Fusion") && Target.AuraTimeRemaining ("Flame Shock", true) >= 16) || !HasSpell ("Elemental Fusion")) {
+				if (FrostShock ())
+					return true;
+			}
 			//	actions.single+=/elemental_blast,if=buff.maelstrom_weapon.react>=1
+			if (Me.GetAura ("Maelstrom Weapon").StackCount >= 1) {
+				if (ElementalBlast ())
+					return true;
+			}
 			//	actions.single+=/lightning_bolt,if=talent.echo_of_the_elements.enabled&((buff.maelstrom_weapon.react>=2&!buff.ascendance.up)|buff.ancestral_swiftness.up)
+			if (HasSpell ("Echo of the Elements") && ((Me.GetAura ("Maelstrom Weapon").StackCount >= 2 && !Me.HasAura ("Ascendance")) || Me.HasAura ("Ancestral Swiftness"))) {
+				if (LightningBolt ())
+					return true;
+			}
 			//	actions.single+=/stormstrike,if=talent.echo_of_the_elements.enabled
+			if (HasSpell ("Echo of the Elements")) {
+				if (Stormstrike ())
+					return true;
+			}
 			//	actions.single+=/lightning_bolt,if=(buff.maelstrom_weapon.react>=1&!buff.ascendance.up)|buff.ancestral_swiftness.up
+			if ((Me.GetAura ("Maelstrom Weapon").StackCount >= 1 && !Me.HasAura ("Ascendance")) || Me.HasAura ("Ancestral Swiftness")) {
+				if (LightningBolt ())
+					return true;
+			}
 			//	actions.single+=/searing_totem,if=pet.searing_totem.remains<=20&!pet.fire_elemental_totem.active&!buff.liquid_magma.up
 
 			return false;
@@ -137,6 +170,10 @@ namespace ReBot.Shaman
 		{
 			//	actions.aoe=unleash_elements,if=active_enemies>=4&dot.flame_shock.ticking&(cooldown.shock.remains>cooldown.fire_nova.remains|cooldown.fire_nova.remains=0)
 			//	actions.aoe+=/fire_nova,if=active_dot.flame_shock>=3
+			if (Target.HasAura ("Flame Shock", true)) {
+				if (FireNova ())
+					return true;
+			}
 			//	actions.aoe+=/wait,sec=cooldown.fire_nova.remains,if=!talent.echo_of_the_elements.enabled&active_dot.flame_shock>=4&cooldown.fire_nova.remains<=action.fire_nova.gcd%2
 			//	actions.aoe+=/magma_totem,if=!totem.fire.active
 			//	actions.aoe+=/lava_lash,if=dot.flame_shock.ticking&active_dot.flame_shock<active_enemies
@@ -156,7 +193,11 @@ namespace ReBot.Shaman
 			//	actions.aoe+=/stormstrike,target=2,if=!debuff.stormstrike.up
 			//	actions.aoe+=/stormstrike,target=3,if=!debuff.stormstrike.up
 			//	actions.aoe+=/stormstrike
+			if (Stormstrike ())
+				return true;
 			//	actions.aoe+=/lava_lash
+			if (LavaLash ())
+				return true;
 			//	actions.aoe+=/fire_nova,if=active_dot.flame_shock>=2
 			//	actions.aoe+=/elemental_blast,if=!buff.unleash_flame.up&buff.maelstrom_weapon.react>=1
 			//	actions.aoe+=/chain_lightning,if=(buff.maelstrom_weapon.react>=1|buff.ancestral_swiftness.up)&((glyph.chain_lightning.enabled&active_enemies>=3)|(!glyph.chain_lightning.enabled&active_enemies>=2))

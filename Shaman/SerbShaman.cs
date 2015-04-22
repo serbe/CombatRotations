@@ -149,7 +149,7 @@ namespace ReBot.Shaman
 		public bool FeralSpirit (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Feral Spirit", () => Usable ("Feral Spirit") && u.IsInLoS && u.CombatRange < 30 && (IsElite (u) || IsPlayer (u) || EnemyInRange (10) > 2));
+			return Cast ("Feral Spirit", () => Usable ("Feral Spirit") && u.IsInLoS && u.CombatRange < 30 && (IsElite (u) || IsPlayer (u) || EnemyInRange (10) > 2), u);
 		}
 
 		public bool AncestralSwiftness (UnitObject u = null)
@@ -218,17 +218,17 @@ namespace ReBot.Shaman
 			return Cast ("Flame Shock", () => Usable ("Flame Shock") && u.IsInLoS && u.CombatRange <= 25, u);
 		}
 
-		//		public bool  (UnitObject u = null)
-		//		{
-		//			u = u ?? Target;
-		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && u.IsInLoS && u.CombatRange <= 40, u);
-		//		}
+		public bool FrostShock (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Frost Shock", () => Usable ("Frost Shock") && u.IsInLoS && u.CombatRange <= 25, u);
+		}
 
-		//		public bool  (UnitObject u = null)
-		//		{
-		//			u = u ?? Target;
-		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && u.IsInLoS && u.CombatRange <= 40, u);
-		//		}
+		public bool FireNova (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Fire Nova", () => Usable ("Fire Nova") && u.IsInLoS, u);
+		}
 
 		//		public bool  (UnitObject u = null)
 		//		{
