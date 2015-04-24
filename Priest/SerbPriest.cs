@@ -96,6 +96,12 @@ namespace ReBot.Priest
 			return u.HealthFraction;
 		}
 
+		public double Range (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return u.CombatRange;
+		}
+
 		public bool IsNotForDamage (UnitObject o)
 		{
 			if (o.HasAura ("Fear") || o.HasAura ("Polymorph") || o.HasAura ("Gouge") || o.HasAura ("Paralysis") || o.HasAura ("Blind") || o.HasAura ("Hex"))
@@ -333,6 +339,36 @@ namespace ReBot.Priest
 			return Cast ("Mind Flay", () => Usable ("Mind Flay") && u.IsInLoS && u.CombatRange <= 40, u);
 		}
 
+		public bool MindSpike (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Mind Spike", () => Usable ("Mind Spike") && u.IsInLoS && u.CombatRange <= 40, u);
+		}
+
+		public bool Halo (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Halo", () => Usable ("Halo") && u.IsInLoS && u.CombatRange <= 30, u);
+		}
+
+		public bool Cascade (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Cascade", () => Usable ("Cascade") && u.IsInLoS && u.CombatRange <= 40, u);
+		}
+
+		public bool DivineStar (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Divine Star", () => Usable ("Divine Star") && u.IsInLoS && u.CombatRange <= 30, u);
+		}
+
+		public bool VampiricTouch (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Vampiric Touch", () => Usable ("Vampiric Touch") && u.IsInLoS && u.CombatRange <= 40, u);
+		}
+	
 	}
 }
 	

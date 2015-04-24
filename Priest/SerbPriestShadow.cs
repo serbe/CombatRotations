@@ -291,14 +291,62 @@ namespace ReBot.Priest
 				}
 			}
 			//	actions.main+=/halo,if=talent.halo.enabled&target.distance<=30&active_enemies>2
+			if (HasSpell ("Halo") && Range () <= 30 && EnemyInRange (30) > 2) {
+				if (Halo ())
+					return true;
+			}
 			//	actions.main+=/cascade,if=talent.cascade.enabled&active_enemies>2&target.distance<=40
+			if (HasSpell ("Cascade") && EnemyInRange (40) > 2 && Range () <= 40) {
+				if (Cascade ())
+					return true;
+			}
 			//	actions.main+=/divine_star,if=talent.divine_star.enabled&active_enemies>4&target.distance<=24
+			if (HasSpell ("Divine Star") && EnemyInRange (24) > 4 && Range () <= 24) {
+				if (DivineStar ())
+					return true;
+			}
 			//	actions.main+=/shadow_word_pain,if=!talent.auspicious_spirits.enabled&remains<(18*0.3)&target.time_to_die>(18*0.75)&miss_react&active_enemies<=5,cycle_targets=1,max_cycle_targets=5
+			if (!HasSpell ("Auspicious Spirits") && EnemyInRange (40) <= 5) {
+				MaxCycle = targets.Where (u => u.IsInLoS && Range (u) <= 40 && u.AuraTimeRemaining ("Shadow Word: Pain", true) < 18 * 0.3 && TimeToDie (u) > (18 * 0.75));
+				if (MaxCycle.ToList ().Count <= 5) {
+					CycleTarget = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (ShadowWordPain (CycleTarget))
+							return true;
+					}
+				}
+			}
 			//	actions.main+=/vampiric_touch,if=remains<(15*0.3+cast_time)&target.time_to_die>(15*0.75+cast_time)&miss_react&active_enemies<=5,cycle_targets=1,max_cycle_targets=5
+			if (EnemyInRange (40) <= 5) {
+				MaxCycle = targets.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Vampiric Touch", true) < (15 * 0.3 + 1.5));
+				if (MaxCycle.ToList ().Count <= 5) {
+					CycleTarget = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (VampiricTouch (CycleTarget))
+							return true;
+					}
+				}
+			}
 			//	actions.main+=/devouring_plague,if=!talent.void_entropy.enabled&shadow_orb>=3&ticks_remain<=1
+			if (!HasSpell ("Void Entropy") && Orb >= 3 && Target.AuraTimeRemaining ("Devouring Plague", true) <= 1) {
+				if (DevouringPlague ())
+					return true;
+			}
 			//	actions.main+=/mind_spike,if=active_enemies<=5&buff.surge_of_darkness.react=3
+			if (EnemyInRange (40) <= 5 && AuraStackCount ("Surge of Darkness") == 3) {
+				if (MindSpike ())
+					return true;
+			}
 			//	actions.main+=/halo,if=talent.halo.enabled&target.distance<=30&target.distance>=17
+			if (HasSpell ("Halo") && Range () <= 30 && Range () >= 17) {
+				if (Halo ())
+					return true;
+			}
 			//	actions.main+=/cascade,if=talent.cascade.enabled&(active_enemies>1|target.distance>=28)&target.distance<=40&target.distance>=11
+			if (HasSpell ("Cascade") && (EnemyInRange (40) > 1 || Range () >= 28) && Range <= 40 && Range () >= 11) {
+				if (Cascade ())
+					return true;
+			}
 			//	actions.main+=/divine_star,if=talent.divine_star.enabled&(active_enemies>1&target.distance<=24)
 			//	actions.main+=/wait,sec=cooldown.shadow_word_death.remains,if=natural_shadow_word_death_range&cooldown.shadow_word_death.remains<0.5&active_enemies<=1,cycle_targets=1
 			//	actions.main+=/wait,sec=cooldown.mind_blast.remains,if=cooldown.mind_blast.remains<0.5&cooldown.mind_blast.remains&active_enemies<=1
@@ -324,30 +372,6 @@ namespace ReBot.Priest
 //				goto Skill_2;
 //			}
 //
-//			// actions.main+=/halo,if=talent.halo.enabled&target.distance<=30&active_enemies>2
-//			if (Cast("Halo", () => HasSpell("Halo") && Range <= 30 && EnemyInRange(30) > 2)) return;
-//			// actions.main+=/cascade,if=talent.cascade.enabled&active_enemies>2&target.distance<=40
-//			if (Cast("Cascade", () => HasSpell("Cascade") && EnemyInRange(40) > 2 && Range <= 40)) return;
-//			// actions.main+=/divine_star,if=talent.divine_star.enabled&active_enemies>4&target.distance<=24
-//			if (Cast("Divine Star", () => HasSpell("Divine Star") && EnemyInRange(24) > 4 && Range <= 24)) return;
-//			// actions.main+=/shadow_word_pain,if=!talent.auspicious_spirits.enabled&remains<(18*0.3)&target.time_to_die>(18*0.75)&miss_react&active_enemies<=5,cycle_targets=1,max_cycle_targets=5
-//			if (!HasSpell("Auspicious Spirits") && EnemyInRange(40) <= 5) {
-//				CycleTarget = targets.Where(u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining("Shadow Word: Pain", true) < 18 * 0.3).DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Shadow Word: Pain", CycleTarget, () => CycleTarget != null)) return;
-//			}
-//			// actions.main+=/vampiric_touch,if=remains<(15*0.3+cast_time)&target.time_to_die>(15*0.75+cast_time)&miss_react&active_enemies<=5,cycle_targets=1,max_cycle_targets=5
-//			if (EnemyInRange(40) <= 5) {
-//				CycleTarget = targets.Where(u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining("Vampiric Touch", true) < (15 * 0.3 + 1.5)).DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Vampiric Touch", CycleTarget, () => CycleTarget != null)) return;
-//			}
-//			// actions.main+=/devouring_plague,if=!talent.void_entropy.enabled&shadow_orb>=3&ticks_remain<=1
-//			if (Cast("Devouring Plague", () => !HasSpell("Void Entropy") && Orb >= 3 && Target.AuraTimeRemaining("Devouring Plague", true) <= 1)) return;
-//			// actions.main+=/mind_spike,if=active_enemies<=5&buff.surge_of_darkness.react=3
-//			if (Cast("Mind Spike", () => EnemyInRange(40) <= 5 && AuraStackCount("Surge of Darkness") == 3)) return;
-//			// actions.main+=/halo,if=talent.halo.enabled&target.distance<=30&target.distance>=17
-//			if (Cast("Halo", () => HasSpell("Halo") && IsBoss(Target) && Range <= 30 && Range >= 17)) return;
-//			// actions.main+=/cascade,if=talent.cascade.enabled&(active_enemies>1|target.distance>=28)&target.distance<=40&target.distance>=11
-//			if (Cast("Cascade", () => HasSpell("Cascade") && (EnemyInRange(40) > 2 && Range <= 40))) return;
 //			// actions.main+=/divine_star,if=talent.divine_star.enabled&(active_enemies>1&target.distance<=24)
 //			if (Cast("Divine Star", () => HasSpell("Divine Star") && EnemyInRange(24) > 1 && Range <= 24)) return;
 //			// actions.main+=/wait,sec=cooldown.shadow_word_death.remains,if=natural_shadow_word_death_range&cooldown.shadow_word_death.remains<0.5&active_enemies<=1,cycle_targets=1
