@@ -220,6 +220,12 @@ namespace ReBot.Rogue
 			return HasSpell (s) && Cooldown (s) <= d;
 		}
 
+		public bool MeInStealth {
+			get {
+				return  Me.HasAura ("Stealth") || Me.HasAura ("Shadow Dance") || Me.HasAura ("Subterfuge");
+			}
+		}
+
 		public int AmbushCost {
 			get {
 				int cost = 60;
@@ -293,13 +299,13 @@ namespace ReBot.Rogue
 		public bool Kick (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Kick", () => Usable ("Kick") && u.IsInCombatRangeAndLoS, u);
+			return Cast ("Kick", () => Usable ("Kick") && u.IsInLoS && u.CombatRange <= 5, u);
 		}
 
 		public bool Shiv (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Shiv", () => Usable ("Shiv") && HasCost (20) && u.IsInCombatRangeAndLoS, u);
+			return Cast ("Shiv", () => Usable ("Shiv") && HasCost (20) && u.IsInLoS && u.CombatRange <= 5, u);
 		}
 
 		public  bool DeadlyThrow (UnitObject u = null)
@@ -311,7 +317,7 @@ namespace ReBot.Rogue
 		public  bool Gouge (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Gouge", () => Usable ("Gouge") && HasCost (45) && u.IsInCombatRangeAndLoS, u);
+			return Cast ("Gouge", () => Usable ("Gouge") && HasCost (45) && u.IsInLoS && u.CombatRange <= 5, u);
 		}
 
 		public  bool UnEnrage ()
@@ -321,7 +327,7 @@ namespace ReBot.Rogue
 
 			if (HasSpell ("Shiv") && Cooldown ("Shiv") == 0 && HasCost (20)) {
 				if (EnemyInRange (6) > 1 && Multitarget) {
-					CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && IsInEnrage (x) && !IsBoss (x)).DefaultIfEmpty (null).FirstOrDefault ();
+					CycleTarget = targets.Where (x => x.IsInLoS && x.CombatRange <= 5 && IsInEnrage (x) && !IsBoss (x)).DefaultIfEmpty (null).FirstOrDefault ();
 					if (CycleTarget != null) {
 						if (Shiv (CycleTarget))
 							return true;
@@ -346,7 +352,7 @@ namespace ReBot.Rogue
 
 		public bool Stealth ()
 		{
-			return CastSelf ("Stealth", () => Usable ("Stealth") && !Me.HasAura ("Stealth") && !Me.HasAura ("Vanish") && !Me.HasAura ("Shadow Dance") && !Me.HasAura ("Subterfuge"));
+			return CastSelf ("Stealth", () => Usable ("Stealth") && !Me.HasAura ("Vanish") && !MeInStealth);
 		}
 
 		public bool CloakofShadows ()
@@ -367,7 +373,7 @@ namespace ReBot.Rogue
 		public bool Ambush (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Ambush", () => Energy >= AmbushCost && (Me.HasAura ("Stealth") || Me.HasAura ("Vanish") || Me.HasAura ("Shadow Dance") || Me.HasAura ("Subterfuge")) && u.IsInCombatRangeAndLoS, u);
+			return Cast ("Ambush", () => Energy >= AmbushCost && (Me.HasAura ("Vanish") || MeInStealth) && u.IsInLoS && (u.CombatRange <= 5 || (HasGlyph (56813) && u.CombatRange <= 10) || (HasSpell ("Cloak and Dagger") && u.CombatRange <= 40)), u);
 		}
 
 		public bool Recuperate ()
@@ -388,19 +394,19 @@ namespace ReBot.Rogue
 		public bool BloodFury (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return CastSelf ("BloodFury", () => Usable ("Blood Fury") && u.IsInCombatRangeAndLoS && (IsElite (u) || IsPlayer (u) || EnemyInRange (10) > 2));
+			return CastSelf ("BloodFury", () => Usable ("Blood Fury") && (IsElite (u) || IsPlayer (u) || EnemyInRange (10) > 2) && u.IsInLoS && u.CombatRange <= 5);
 		}
 
 		public bool Berserking (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return CastSelf ("Berserking", () => Usable ("Berserking") && u.IsInCombatRangeAndLoS && (IsElite (u) || IsPlayer (u) || EnemyInRange (10) > 2));
+			return CastSelf ("Berserking", () => Usable ("Berserking") && (IsElite (u) || IsPlayer (u) || EnemyInRange (10) > 2) && u.IsInLoS && u.CombatRange <= 5);
 		}
 
 		public bool ArcaneTorrent (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && u.IsInCombatRangeAndLoS && (IsElite (u) || IsPlayer (u) || EnemyInRange (10) > 2));
+			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && (IsElite (u) || IsPlayer (u) || EnemyInRange (10) > 2) && u.IsInLoS && u.CombatRange <= 5);
 		}
 
 		public bool BladeFlurry ()
@@ -411,12 +417,12 @@ namespace ReBot.Rogue
 		public bool ShadowReflection (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Shadow Reflection", () => Usable ("Shadow Reflection") && u.CombatRange <= 20 && (IsElite (u) || IsPlayer (u) || EnemyInRange (10) > 2));
+			return Cast ("Shadow Reflection", () => Usable ("Shadow Reflection") && u.IsInLoS && u.CombatRange <= 20 && (IsElite (u) || IsPlayer (u) || EnemyInRange (10) > 2));
 		}
 
 		public bool Vanish ()
 		{
-			return CastSelf ("Vanish", () => Usable ("Vanish"));
+			return CastSelf ("Vanish", () => Usable ("Vanish") && !MeInStealth);
 		}
 
 		public bool SliceandDice ()
@@ -433,25 +439,25 @@ namespace ReBot.Rogue
 		public bool AdrenalineRush (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return CastSelf ("Adrenaline Rush", () => Usable ("Adrenaline Rush") && (IsPlayer (u) || IsElite (u) || EnemyInRange (10) > 2) && u.IsInCombatRangeAndLoS);
+			return CastSelf ("Adrenaline Rush", () => Usable ("Adrenaline Rush") && (IsPlayer (u) || IsElite (u) || EnemyInRange (10) > 2) && u.IsInLoS && u.CombatRange <= 5);
 		}
 
 		public bool KillingSpree (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Killing Spree", () => Usable ("Killing Spree") && (IsPlayer (u) || IsElite (u) || EnemyInRange (10) > 2) && u.CombatRange <= 10, u);
+			return Cast ("Killing Spree", () => Usable ("Killing Spree") && (IsPlayer (u) || IsElite (u) || EnemyInRange (10) > 2) && u.IsInLoS && u.CombatRange <= 10, u);
 		}
 
 		public bool RevealingStrike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Revealing Strike", () => Usable ("Revealing Strike") && HasCost (40) && u.IsInCombatRangeAndLoS, u);
+			return Cast ("Revealing Strike", () => Usable ("Revealing Strike") && HasCost (40) && u.IsInLoS && u.CombatRange <= 5, u);
 		}
 
 		public bool SinisterStrike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Sinister Strike", () => Usable ("Sinister Strike") && HasCost (50) && u.IsInCombatRangeAndLoS, u);
+			return Cast ("Sinister Strike", () => Usable ("Sinister Strike") && HasCost (50) && u.IsInLoS && u.CombatRange <= 5, u);
 		}
 
 		public bool DeathfromAbove (UnitObject u = null)
@@ -463,19 +469,19 @@ namespace ReBot.Rogue
 		public bool Eviscerate (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Eviscerate", () => Usable ("Eviscerate") && HasCost (35) && ComboPoints > 0 && u.IsInCombatRangeAndLoS, u);
+			return Cast ("Eviscerate", () => Usable ("Eviscerate") && HasCost (35) && ComboPoints > 0 && u.IsInLoS && u.CombatRange <= 5, u);
 		}
 
 		public bool KidneyShot (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Kidney Shot", () => Usable ("Kidney Shot") && HasCost (25) && ComboPoints > 0 && !Me.HasAura ("Stealth") && !Me.HasAura ("Vanish") && !Me.HasAura ("Shadow Dance") && !Me.HasAura ("Subterfuge") && u.IsInCombatRangeAndLoS, u);
+			return Cast ("Kidney Shot", () => Usable ("Kidney Shot") && HasCost (25) && ComboPoints > 0 && !Me.HasAura ("Vanish") && !MeInStealth && u.IsInLoS && u.CombatRange <= 5, u);
 		}
 
 		public bool CrimsonTempest (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Crimson Tempest", () => Usable ("Crimson Tempest") && HasCost (35) && ComboPoints > 0 && u.IsInCombatRangeAndLoS, u);
+			return Cast ("Crimson Tempest", () => Usable ("Crimson Tempest") && HasCost (35) && ComboPoints > 0 && u.IsInLoS && u.CombatRange <= 5, u);
 		}
 
 		public bool Shadowstep (UnitObject u = null)
@@ -528,13 +534,13 @@ namespace ReBot.Rogue
 		public bool Backstab (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Backstab", () => Usable ("Backstab") && HasCost (35) && Me.IsNotInFront (u) && u.IsInCombatRangeAndLoS, u);
+			return Cast ("Backstab", () => Usable ("Backstab") && HasCost (35) && Me.IsNotInFront (u) && u.IsInLoS && u.CombatRange <= 5, u);
 		}
 
 		public bool Hemorrhage (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Hemorrhage", () => Usable ("Hemorrhage") && HasCost (30) && u.IsInCombatRangeAndLoS, u);
+			return Cast ("Hemorrhage", () => Usable ("Hemorrhage") && HasCost (30) && u.IsInLoS && u.CombatRange <= 5, u);
 		}
 
 		public bool ShurikenToss ()
@@ -545,7 +551,7 @@ namespace ReBot.Rogue
 		public  bool Rupture (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Rupture", () => Usable ("Rupture") && HasCost (25) && u.IsInCombatRangeAndLoS, u);
+			return Cast ("Rupture", () => Usable ("Rupture") && HasCost (25) && u.IsInLoS && u.CombatRange <= 5, u);
 		}
 
 		public  bool Freedom ()
@@ -570,7 +576,7 @@ namespace ReBot.Rogue
 
 		public  bool Premeditation ()
 		{
-			return CastSelf ("Premeditation", () => Usable ("Premeditation") && Me.HasAura ("Stealth"));
+			return CastSelf ("Premeditation", () => Usable ("Premeditation") && MeInStealth);
 		}
 
 		public  bool Feint ()
@@ -581,13 +587,13 @@ namespace ReBot.Rogue
 		public  bool CheapShot (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Cheap Shot", () => Usable ("Cheap Shot") && HasCost (40) && Me.HasAura ("Stealth") && u.IsInCombatRangeAndLoS, u);
+			return Cast ("Cheap Shot", () => Usable ("Cheap Shot") && HasCost (40) && MeInStealth && u.IsInLoS && (u.CombatRange <= 5 || (HasSpell ("Cloak and Dagger") && u.CombatRange <= 40)), u);
 		}
 
 		public  bool Blind (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Blind", () => Usable ("Blind") && HasCost (15) && u.IsInCombatRangeAndLoS, u);
+			return Cast ("Blind", () => Usable ("Blind") && HasCost (15) && u.IsInLoS && u.CombatRange <= 5, u);
 		}
 
 		public  bool ShadowDance ()
@@ -598,7 +604,7 @@ namespace ReBot.Rogue
 		public  bool Garrote (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Garrote", () => Usable ("Garrote") && HasCost (45) && u.IsInCombatRangeAndLoS, u);
+			return Cast ("Garrote", () => Usable ("Garrote") && HasCost (45) && u.IsInLoS && (u.CombatRange <= 5 || (HasSpell ("Cloak and Dagger") && u.CombatRange <= 40)), u);
 		}
 
 		public  bool Shadowmeld ()
@@ -626,25 +632,25 @@ namespace ReBot.Rogue
 		public bool Mutilate (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Mutilate", () => Usable ("Mutilate") && HasCost (55) && u.IsInCombatRangeAndLoS, u);
+			return Cast ("Mutilate", () => Usable ("Mutilate") && HasCost (55) && u.IsInLoS && u.CombatRange <= 5, u);
 		}
 
 		public  bool Vendetta (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Vendetta", () => Usable ("Vendetta") && u.IsInCombatRangeAndLoS && (IsPlayer (u) || IsElite (u)), u);
+			return Cast ("Vendetta", () => Usable ("Vendetta") && (IsPlayer (u) || IsElite (u)) && u.IsInLoS && u.CombatRange <= 5, u);
 		}
 
 		public  bool Envenom (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Envenom", () => Usable ("Envenom") && HasCost (35) && ComboPoints > 0 && u.IsInCombatRangeAndLoS, u);
+			return Cast ("Envenom", () => Usable ("Envenom") && HasCost (35) && ComboPoints > 0 && u.IsInLoS && u.CombatRange <= 5, u);
 		}
 
 		public bool Dispatch (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Dispatch", () => Usable ("Dispatch") && ((HasCost (30) && Health (u) < 0.35) || Me.HasAura ("Blindside")), u);
+			return Cast ("Dispatch", () => Usable ("Dispatch") && ((HasCost (30) && Health (u) < 0.35) || Me.HasAura ("Blindside")) && u.IsInLoS && u.CombatRange <= 5, u);
 		}
 
 		public bool Heal ()
@@ -740,9 +746,10 @@ namespace ReBot.Rogue
 			return ShurikenToss () || Throw ();
 		}
 
-		public bool Throw ()
+		public bool Throw (UnitObject u = null)
 		{
-			return Cast ("Throw", () => Usable ("Throw") && !Me.IsMoving && Target.IsInLoS && Target.CombatRange > 10 && Target.CombatRange <= 30);
+			u = u ?? Target;
+			return Cast ("Throw", () => Usable ("Throw") && !Me.IsMoving && u.IsInLoS && u.CombatRange > 10 && u.CombatRange <= 30);
 
 		}
 	}

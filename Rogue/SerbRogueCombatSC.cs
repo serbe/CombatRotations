@@ -82,12 +82,14 @@ namespace ReBot.Rogue
 			if (OraliusWhisperingCrystal ())
 				return true;
 
-			if (CurrentBotName == "Questing" && Target.CombatRange > 20 && Target.IsEnemy) {
-				if (Stealth ())
-					return true;
-			}
+//			if (CurrentBotName == "Quest" && Target.CombatRange > 20 && Target.IsEnemy) {
+//				if (Stealth ())
+//					return true;
+//			}
 
-			if (Target != null && Target.CombatRange > 10 && Target.IsEnemy) {
+//			API.Print (CurrentBotName);
+
+			if (Target != null && CurrentBotName == "Quest" && Target.CombatRange > 10 && Target.IsEnemy && Target.IsAttackable) {
 				if (Stealth ())
 					return true;
 			}
@@ -133,8 +135,10 @@ namespace ReBot.Rogue
 			if (HasGlobalCooldown () && Gcd)
 				return;
 
-			if (Cc ())
-				return;
+			if (InArena) {
+				if (Cc ())
+					return;
+			}
 
 			if (HasAura ("Blade Flurry") && !InRaid && !InInstance && IncapacitatedInRange (8) && EnemyInRange (8) < 3)
 				CancelAura ("Blade Flurry");

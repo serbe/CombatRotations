@@ -5,9 +5,9 @@ namespace ReBot.DeathKnight
 {
 	[Rotation ("Serb Unholy DeathKnight SC", "Serb", WoWClass.DeathKnight, Specialization.DeathknightUnholy, 5, 25)]
 
-	public class SerbDeathKnightUnholySc : DeathKnight
+	public class SerbDeathKnightUnholySc : SerbDeathKnight
 	{
-	    public override bool OutOfCombat ()
+		public override bool OutOfCombat ()
 		{
 			//	actions.precombat=flask,type=greater_draenic_strength_flask
 			//	actions.precombat+=/food,type=salty_squid_roll
@@ -28,7 +28,7 @@ namespace ReBot.DeathKnight
 
 		public override void Combat ()
 		{
-			if (Health < 0.9) {
+			if (Health (Me) < 0.9) {
 				if (Heal ())
 					return;
 			}
@@ -43,7 +43,7 @@ namespace ReBot.DeathKnight
 				if (ArmyoftheDead ())
 					return;
 			}
-			if (Cast ("Rune Tap", () => HasSpell ("Rune Tap") && Me.HasRune (RuneType.Blood) && Health < 0.5 && !Me.HasAura ("Army of the Dead") && !Me.HasAura ("Dancing Rune Weapon") && !Me.HasAura ("Bone Shield") && !Me.HasAura ("Vampiric Blood") && !Me.HasAura ("Icebound Fortitude")))
+			if (Cast ("Rune Tap", () => HasSpell ("Rune Tap") && Me.HasRune (RuneType.Blood) && Health (Me) < 0.5 && !Me.HasAura ("Army of the Dead") && !Me.HasAura ("Dancing Rune Weapon") && !Me.HasAura ("Bone Shield") && !Me.HasAura ("Vampiric Blood") && !Me.HasAura ("Icebound Fortitude")))
 				return;
 
 			var targets = Adds;
@@ -54,20 +54,20 @@ namespace ReBot.DeathKnight
 
 			if (HasSpell ("Anti-Magic Zone") && Cooldown ("Anti-Magic Zone") == 0 && !HasGlobalCooldown ()) {
 				var antiMagicZoneTarget = targets.Where (u => u.IsCasting && u.Target == Me && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CastOnTerrain ("Anti-Magic Zone", Me.Position, () => Health <= 0.5 && !Me.HasAura ("Anti-Magic Shell") && antiMagicZoneTarget != null))
+				if (CastOnTerrain ("Anti-Magic Zone", Me.Position, () => Health (Me) <= 0.5 && !Me.HasAura ("Anti-Magic Shell") && antiMagicZoneTarget != null))
 					return;
 			}
 
 			// Analysis disable once CompareOfFloatsByEqualityOperator
 			if (HasSpell ("Anti-Magic Shell") && Cooldown ("Anti-Magic Shell") == 0 && !HasGlobalCooldown ()) {
 				var antiMagicShellTarget = targets.Where (u => u.IsCasting && u.Target == Me && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CastSelf ("Anti-Magic Shell", () => antiMagicShellTarget != null && Health <= 0.8))
+				if (CastSelf ("Anti-Magic Shell", () => antiMagicShellTarget != null && Health (Me) <= 0.8))
 					return;
 			}
 
-			if (Cast ("Chains of Ice", () => HasSpell ("Chains of Ice") && IsPlayer && Target.IsFleeing && !Target.HasAura ("Chains of Ice") && Target.MovementSpeed >= 1))
+			if (Cast ("Chains of Ice", () => HasSpell ("Chains of Ice") && IsPlayer () && Target.IsFleeing && !Target.HasAura ("Chains of Ice") && Target.MovementSpeed >= 1))
 				return;
-			if (Cast ("Remorseless Winter", () => HasSpell ("Remorseless Winter") && (EnemyInRange (8) >= 2 || (IsPlayer && Target.CombatRange < 8))))
+			if (Cast ("Remorseless Winter", () => HasSpell ("Remorseless Winter") && (EnemyInRange (8) >= 2 || (IsPlayer () && Target.CombatRange < 8))))
 				return;
 
 			// if (CastSelf("Dark Simulacrum", () => Target.IsPlayer && Target.IsCasting && Me.GetPower(WoWPowerType.RunicPower) >= 20)) return;
@@ -163,7 +163,7 @@ namespace ReBot.DeathKnight
 					return true;
 			}
 			//actions.aoe+=/soul_reaper,if=target.health.pct-3*(target.health.pct%target.time_to_die)<=45
-			if (Target.HealthFraction * 100 - 3 * (Target.HealthFraction * 100 / TimeToDie (Target)) <= 45) {
+			if ((HasUnholy || HasDeath) && Target.HealthFraction * 100 - 3 * (Target.HealthFraction * 100 / TimeToDie (Target)) <= 45) {
 				if (SoulReaper ())
 					return true;
 			}
@@ -243,7 +243,7 @@ namespace ReBot.DeathKnight
 					return true;
 			}
 			//actions.single_target+=/soul_reaper,if=(target.health.pct-3*(target.health.pct%target.time_to_die))<=45
-			if (Target.HealthFraction * 100 - 3 * (Target.HealthFraction * 100 / TimeToDie (Target)) <= 45) {
+			if ((HasUnholy || HasDeath) && Target.HealthFraction * 100 - 3 * (Target.HealthFraction * 100 / TimeToDie (Target)) <= 45) {
 				if (SoulReaper ())
 					return true;
 			}
@@ -419,7 +419,7 @@ namespace ReBot.DeathKnight
 					return true;
 			}
 			//actions.bos_st+=/soul_reaper,if=(target.health.pct-3*(target.health.pct%target.time_to_die))<=45
-			if (Target.HealthFraction * 100 - 3 * (Target.HealthFraction * 100 / TimeToDie (Target)) <= 45) {
+			if ((HasUnholy || HasDeath) && Target.HealthFraction * 100 - 3 * (Target.HealthFraction * 100 / TimeToDie (Target)) <= 45) {
 				if (SoulReaper ())
 					return true;
 			}
