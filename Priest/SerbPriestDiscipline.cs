@@ -3,7 +3,7 @@ using ReBot.API;
 
 namespace ReBot.Priest
 {
-	[Rotation ("Serb Priest Discipline SC", "ReBot", WoWClass.Priest, Specialization.PriestDiscipline, 40, 25)]
+	[Rotation ("Priest Discipline SC", "Serb", WoWClass.Priest, Specialization.PriestDiscipline, 40, 25)]
 
 	public class SerbPriestDisciplineSc : SerbPriest
 	{
@@ -24,7 +24,8 @@ namespace ReBot.Priest
 				"Power Word: Fortitude"
 			};
 			PullSpells = new [] {
-				"Smite",
+				"Shadow Word: Pain",
+				"Smite"
 			};
 		}
 
@@ -53,17 +54,30 @@ namespace ReBot.Priest
 			if (Gcd && HasGlobalCooldown ())
 				return;
 
-			if (!InRaid && !InBg && !InArena && ((FightInInstance && InInstance) || !InInstance) && (Target == null || !Target.IsEnemy) && UseAutoTarget)
-				AutoTarget ();
+			if (Health (Me) < 1) {
+				if (PowerWordShield (Me))
+					return;
+			}
 
 			if (InArena) {
 				if (SetShieldAll ())
 					return;
 			}
 
-			PowerWordShield (Me);
+			if (Me.HealthFraction < 0.5) {
+				if (Healing (Me))
+					return;
+			}
+
+			if (CurrentBotName == "Quest") {
+				if (Damage (Target))
+					return;
+			}
 
 			if (GroupMembers.Count > 0) {
+				if (FightInInstance && InInstance && (Target == null || !Target.IsEnemy) && UseAutoTarget)
+					AutoTarget ();
+				
 				if (Target == null)
 					SetTarget ();
 			
@@ -85,17 +99,12 @@ namespace ReBot.Priest
 				}
 			}
 
-			if (Me.HealthFraction < 0.5) {
-				if (Healing (Me))
-					return;
-			}
-
 			if (Target == null) {
 				Me.SetTarget (Me);
 			}
 
 			if (Target != null) {
-				if (Target.IsFriendly && Target.HealthFraction < HealPr) {
+				if (Target.IsFriendly && Health (Target) < HealPr) {
 					if (Healing (Target))
 						return;
 				}

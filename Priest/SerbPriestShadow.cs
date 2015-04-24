@@ -343,7 +343,7 @@ namespace ReBot.Priest
 					return true;
 			}
 			//	actions.main+=/cascade,if=talent.cascade.enabled&(active_enemies>1|target.distance>=28)&target.distance<=40&target.distance>=11
-			if (HasSpell ("Cascade") && (EnemyInRange (40) > 1 || Range () >= 28) && Range <= 40 && Range () >= 11) {
+			if (HasSpell ("Cascade") && (EnemyInRange (40) > 1 || Range () >= 28) && Range () <= 40 && Range () >= 11) {
 				if (Cascade ())
 					return true;
 			}
