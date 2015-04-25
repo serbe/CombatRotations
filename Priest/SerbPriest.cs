@@ -43,7 +43,7 @@ namespace ReBot.Priest
 
 		public void AutoTarget ()
 		{
-			CycleTarget = API.CollectUnits (40).Where (u => u.IsEnemy && !u.IsDead && u.IsInLoS && u.IsAttackable).OrderByDescending (u => u.CombatRange).DefaultIfEmpty (null).FirstOrDefault ();
+			CycleTarget = API.CollectUnits (40).Where (u => u.IsEnemy && !u.IsDead && u.IsInLoS && u.IsAttackable && u.InCombat && Range (u) <= 40).OrderBy (u => u.CombatRange).DefaultIfEmpty (null).FirstOrDefault ();
 			if (CycleTarget != null)
 				Me.SetTarget (CycleTarget);
 		}
@@ -139,13 +139,13 @@ namespace ReBot.Priest
 
 		public PlayerObject Tank {
 			get {
-				return GroupMembers.Where (x => x.IsTank && x.IsInCombatRangeAndLoS && !x.IsDead).OrderByDescending (x => x.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
+				return GroupMembers.Where (x => x.IsTank && x.IsInLoS && Range (x) <= 40 && !x.IsDead).OrderBy (x => x.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
 		public IOrderedEnumerable<PlayerObject> HealGroups {
 			get {
-				return GroupMembers.Where (x => !x.IsDead && x.HealthFraction <= 0.9 && x.IsInCombatRangeAndLoS).OrderByDescending (x => x.HealthFraction);
+				return GroupMembers.Where (x => !x.IsDead && x.HealthFraction <= 0.9 && x.IsInLoS && Range (x) <= 40).OrderBy (x => x.HealthFraction);
 			}
 		}
 

@@ -41,6 +41,14 @@ namespace ReBot.Priest
 			//	actions.precombat+=/potion,name=draenic_intellect
 			//	actions.precombat+=/smite
 
+			if (HealTarget != null) {
+				if (HealTarget.HealthFraction < HealPr) {
+					if (Healing (HealTarget))
+						return true;
+				}
+			}
+
+
 			if (Me.FallingTime > 2) {
 				if (Levitate ())
 					return true;
