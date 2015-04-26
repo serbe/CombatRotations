@@ -93,19 +93,8 @@ namespace ReBot.Priest
 			if (SetShieldAll ())
 				return;
 
-			if (Solo) {
-				if (Health (Me) < 0.5) {
-					if (Heal (Me))
-						return;
-				}
-
-				if (DispelAll ())
-					return;
-				
-				if (Damage (Target))
-					return;
-			} else {
-				if (HealTarget != null && Tank != null && (Health (Tank) < 0.4 || HealTarget == Tank)) {
+			if (InGroup) {
+				if (HealTarget != null && Tank != null && Health (HealTarget) <= TankPr && (Health (Tank) < 0.4 || HealTarget == Tank)) {
 					if (HealTank (Tank))
 						return;
 				}
@@ -113,13 +102,26 @@ namespace ReBot.Priest
 				if (DispelAll ())
 					return;
 
-				if (Heal (HealTarget))
-					return;
+				if (HealTarget != null && Health (HealTarget) <= HealPr) {
+					if (Heal (HealTarget))
+						return;
+				}
 
 				if (FightInInstance && DamageTarget != null) {
 					if (Damage (DamageTarget))
 						return;
 				}
+			} else {
+				if (Health (Me) < 0.5) {
+					if (Heal (Me))
+						return;
+				}
+
+				if (DispelAll ())
+					return;
+
+				if (Damage (Target))
+					return;
 			}
 
 //			if (CurrentBotName == "Quest") {

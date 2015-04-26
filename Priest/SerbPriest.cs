@@ -18,9 +18,9 @@ namespace ReBot.Priest
 		public IEnumerable<UnitObject> MaxCycle;
 		public string Interrupt;
 
-		public bool Solo {
+		public bool InGroup {
 			get {
-				return Group.GetGroupMemberObjects ().Count == 0;
+				return Group.GetGroupMemberObjects ().Count > 0;
 			}
 		}
 
@@ -59,7 +59,7 @@ namespace ReBot.Priest
 				if (GroupMembers.Count > 0) {
 					if (Tank != null)
 						return Tank.GUID;
-					PartyTarget = GroupMembers.FindAll ().DefaultIfEmpty (null).FirstOrDefault;
+					PartyTarget = GroupMembers.Where (u => !u.IsDead).DefaultIfEmpty (null).FirstOrDefault ();
 					if (PartyTarget != null)
 						return PartyTarget.GUID;
 				}
@@ -164,7 +164,7 @@ namespace ReBot.Priest
 				if (InPG) {
 					var pgGroup = new List<PlayerObject> ();
 					var t = API.Units.Where (p => p != null && !p.IsDead && p.IsValid).ToList ();
-					if (t.Count () > 0) {
+					if (t.Any ()) {
 						foreach (var unit in t) {
 							if (pgUnits.Contains (unit.Name)) {
 								pgGroup.Add ((PlayerObject)unit);
@@ -173,11 +173,11 @@ namespace ReBot.Priest
 					}
 					pgGroup.Add (Me);
 					return pgGroup;
+				} else {
+					var allGroup = Group.GetGroupMemberObjects ();
+					allGroup.Add (Me);
+					return allGroup;
 				}
-			
-				var allGroup = Group.GetGroupMemberObjects ();
-				allGroup.Add (Me);
-				return allGroup;
 			}
 		}
 
@@ -190,15 +190,9 @@ namespace ReBot.Priest
 			}
 		}
 
-		public IOrderedEnumerable<PlayerObject> HealGroups {
+		public PlayerObject HealTarget {
 			get {
-				return GroupMembers.Where (x => !x.IsDead && x.HealthFraction <= 0.9 && x.IsInLoS && Range (x) <= 40).OrderBy (x => x.HealthFraction);
-			}
-		}
-
-		public UnitObject HealTarget {
-			get {
-				return HealGroups.DefaultIfEmpty (null).FirstOrDefault ();
+				return GroupMembers.Where (x => !x.IsDead && x.HealthFraction <= 0.9 && x.IsInLoS && Range (x) <= 40).OrderBy (x => x.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
