@@ -14,8 +14,15 @@ namespace ReBot.Priest
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
 		public UnitObject CycleTarget;
+		public PlayerObject PartyTarget;
 		public IEnumerable<UnitObject> MaxCycle;
 		public string Interrupt;
+
+		public bool Solo {
+			get {
+				return Group.GetGroupMemberObjects ().Count == 0;
+			}
+		}
 
 		public bool InRaid {
 			get {
@@ -40,6 +47,36 @@ namespace ReBot.Priest
 				return API.MapInfo.Type == MapType.Instance;
 			}
 		}
+
+		public bool InPG {
+			get {
+				return API.MapInfo.Name.Contains ("Proving Grounds");
+			}
+		}
+
+		public GUID AutoTarget {
+			get {
+				if (GroupMembers.Count > 0) {
+					if (Tank != null)
+						return Tank.GUID;
+					PartyTarget = GroupMembers.FindAll ().DefaultIfEmpty (null).FirstOrDefault;
+					if (PartyTarget != null)
+						return PartyTarget.GUID;
+				}
+				CycleTarget = API.CollectUnits (40).Where (u => u.IsEnemy && !u.IsDead && u.IsInLoS && u.IsAttackable && u.InCombat && Range (u) <= 40).OrderBy (u => u.CombatRange).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null)
+					return CycleTarget.GUID;
+
+				return Me.GUID;
+			}
+		}
+
+		public HashSet<string> pgUnits = new HashSet<string> () {
+			"Oto the Protector",
+			"Sooli the Survivalist",
+			"Kavan the Arcanist",
+			"Ki the Assassin"
+		};
 
 		public void SetTarget ()
 		{
@@ -124,12 +161,31 @@ namespace ReBot.Priest
 
 		public List<PlayerObject> GroupMembers {
 			get {
-				return Group.GetGroupMemberObjects ();
+				if (InPG) {
+					var pgGroup = new List<PlayerObject> ();
+					var t = API.Units.Where (p => p != null && !p.IsDead && p.IsValid).ToList ();
+					if (t.Count () > 0) {
+						foreach (var unit in t) {
+							if (pgUnits.Contains (unit.Name)) {
+								pgGroup.Add ((PlayerObject)unit);
+							}
+						}
+					}
+					pgGroup.Add (Me);
+					return pgGroup;
+				}
+			
+				var allGroup = Group.GetGroupMemberObjects ();
+				allGroup.Add (Me);
+				return allGroup;
 			}
 		}
 
 		public PlayerObject Tank {
 			get {
+				if (InPG) {
+					return (PlayerObject)API.Units.Where (p => p.Name == "Oto the Protector").DefaultIfEmpty (null).FirstOrDefault ();
+				}
 				return GroupMembers.Where (x => x.IsTank && x.IsInLoS && Range (x) <= 40 && !x.IsDead).OrderBy (x => x.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
@@ -265,7 +321,7 @@ namespace ReBot.Priest
 		public bool PrayerofMending (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Prayer of Mending", u, () => Usable ("Prayer of Mending") && u.IsInLoS && u.CombatRange <= 40 && !Me.IsMoving);
+			return Cast ("Prayer of Mending", u, () => Usable ("Prayer of Mending") && !u.HasAura ("Prayer of Mending") && u.IsInLoS && u.CombatRange <= 40 && !Me.IsMoving);
 		}
 
 		public bool ClarityofWill (UnitObject u = null)
@@ -352,7 +408,7 @@ namespace ReBot.Priest
 		public bool Cascade (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Cascade", () => Usable ("Cascade") && u.IsInLoS && u.CombatRange <= 40, u);
+			return Cast ("Cascade", () => Usable ("Cascade") && u.IsInLoS && Range (u) <= 40, u);
 		}
 
 		public bool DivineStar (UnitObject u = null)
@@ -395,6 +451,60 @@ namespace ReBot.Priest
 		{
 			u = u ?? Target;
 			return CastOnTerrain ("Purify", u.Position, () => Usable ("Purify") && u.IsInLoS && Range (u) <= 30);
+		}
+
+		public bool SavingGrace (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Saving Grace", () => Usable ("Saving Grace") && u.IsInLoS && Range (u) <= 40, u);
+		}
+
+		public bool PainSuppression (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Pain Suppression", () => Usable ("Pain Suppression") && u.IsInLoS && Range (u) <= 40, u);
+		}
+
+		public bool Healthstone ()
+		{
+			// Analysis disable once CompareOfFloatsByEqualityOperator
+			if (API.HasItem (5512) && API.ItemCooldown (5512) == 0)
+				return API.UseItem (5512);
+			return false;
+		}
+
+		public UnitObject CascadeTarget {
+			get {
+				var CascadeCounts = new List<PlayerObject> ();
+				if (GroupMembers.Count < 6) {
+					CascadeCounts = GroupMembers.Where (p => !p.IsDead && p.IsInLoS && Range (p) <= 40 && Health (p) <= 0.85).ToList ();
+					if (CascadeCounts.Count () >= 2)
+						return CascadeCounts.FirstOrDefault ();
+				}
+				if (GroupMembers.Count > 5) {
+					CascadeCounts = GroupMembers.Where (p => !p.IsDead && p.IsInLoS && Range (p) <= 40 && Health (p) <= 0.8).ToList ();
+					if (CascadeCounts.Count () >= 5)
+						return CascadeCounts.FirstOrDefault ();
+				}
+				return null;
+			}
+		}
+
+		public UnitObject HaloTarget {
+			get {
+				var HaloCounts = new List<PlayerObject> ();
+				if (GroupMembers.Count < 6) {
+					HaloCounts = GroupMembers.Where (p => !p.IsDead && p.IsInLoS && Range (p) <= 30 && Health (p) <= 0.85).ToList ();
+					if (HaloCounts.Count () >= 2)
+						return HaloCounts.FirstOrDefault ();
+				}
+				if (GroupMembers.Count > 5) {
+					HaloCounts = GroupMembers.Where (p => !p.IsDead && p.IsInLoS && Range (p) <= 30 && Health (p) <= 0.8).ToList ();
+					if (HaloCounts.Count () >= 5)
+						return HaloCounts.FirstOrDefault ();
+				}
+				return null;
+			}
 		}
 	}
 }

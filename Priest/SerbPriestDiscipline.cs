@@ -10,7 +10,7 @@ namespace ReBot.Priest
 	{
 		[JsonProperty ("Use GCD")]
 		public bool Gcd = true;
-		[JsonProperty ("Auto target enemy")]
+		[JsonProperty ("Auto target enemy or party membet")]
 		public bool UseAutoTarget = true;
 		[JsonProperty ("Fight in instance")]
 		public bool FightInInstance = true;
@@ -30,37 +30,15 @@ namespace ReBot.Priest
 			};
 		}
 
-		public bool AutoTarget ()
-		{
-			if (UseAutoTarget) {
-				if (GroupMembers.Count > 0) {
-					if (FightInInstance && InInstance && (Target == null || !Target.IsEnemy)) {
-						CycleTarget = API.CollectUnits (40).Where (u => u.IsEnemy && !u.IsDead && u.IsInLoS && u.IsAttackable && u.InCombat && Range (u) <= 40).OrderBy (u => u.CombatRange).DefaultIfEmpty (null).FirstOrDefault ();
-						if (CycleTarget != null) {
-							Me.SetTarget (CycleTarget);
-							return true;
-						}
-					}
-					if (Target == null) {
-						SetTarget ();
-						return true;
-					}
-				} else {
-					if ((Target == null || !Target.IsEnemy)) {
-						CycleTarget = API.CollectUnits (40).Where (u => u.IsEnemy && !u.IsDead && u.IsInLoS && u.IsAttackable && u.InCombat && Range (u) <= 40).OrderBy (u => u.CombatRange).DefaultIfEmpty (null).FirstOrDefault ();
-						if (CycleTarget != null) {
-							Me.SetTarget (CycleTarget);
-							return true;
-						}
-					}
+		public UnitObject DamageTarget {
+			get {
+				if (!Target.IsEnemy) {
+					CycleTarget = API.CollectUnits (40).Where (u => u.IsEnemy && !u.IsDead && u.IsInLoS && u.IsAttackable && u.InCombat && Range (u) <= 40).OrderBy (u => u.CombatRange).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null)
+						return CycleTarget;
 				}
-				if (Target == null) {
-					Me.SetTarget (Me);
-					return true;
-				}
+				return null;
 			}
-
-			return false;
 		}
 
 		public override bool OutOfCombat ()
@@ -105,7 +83,9 @@ namespace ReBot.Priest
 			//				Healer();
 			//			}
 
-			AutoTarget ();
+			if (UseAutoTarget && (Target == null || Target == Me)) {
+				Me.SetTarget (AutoTarget);
+			}
 
 			if (Gcd && HasGlobalCooldown ())
 				return;
@@ -113,62 +93,45 @@ namespace ReBot.Priest
 			if (SetShieldAll ())
 				return;
 
-			if (Tank != null && Health (Tank) < 0.4) {
-				HealTank (Tank);
-			}
+			if (Solo) {
+				if (Health (Me) < 0.5) {
+					if (Heal (Me))
+						return;
+				}
 
-			if (Me.HealthFraction < 0.5) {
-				if (Healing (Me))
+				if (DispelAll ())
 					return;
-			}
-
-			if (CurrentBotName == "Quest") {
+				
 				if (Damage (Target))
 					return;
-			}
-
-			if (GroupMembers.Count > 0) {
-
-			
-				if (Tank != null && Tank.HealthFraction <= 0.3) {
-					if (FlashHeal (Tank))
+			} else {
+				if (HealTarget != null && Tank != null && (Health (Tank) < 0.4 || HealTarget == Tank)) {
+					if (HealTank (Tank))
 						return;
 				}
 
-				if (HealTarget != null) {
-					if (Tank != null && Tank != HealTarget && Tank.HealthFraction < TankPr && Tank.HealthFraction < HealTarget.HealthFraction) {
-						if (Healing (Tank))
-							return;
-					}
+				if (DispelAll ())
+					return;
 
-					if (HealTarget.HealthFraction < HealPr) {
-						if (Healing (HealTarget))
-							return;
-					}
+				if (Heal (HealTarget))
+					return;
+
+				if (FightInInstance && DamageTarget != null) {
+					if (Damage (DamageTarget))
+						return;
 				}
 			}
 
-			if (DispelAll ())
-				return;
-
-			if (Target != null) {
-				if (Target.IsFriendly && Health (Target) < HealPr) {
-					if (Healing (Target))
-						return;
-				}
-
-				if (Target.IsEnemy) {
-					if (Damage (Target))
-						return;
-				}
-
-				if (Me.HealthFraction < 0.3)
-					FlashHeal (Me);
-			}
+//			if (CurrentBotName == "Quest") {
+//				if (Damage (Target))
+//					return;
+//			}
 		}
 
 		public bool Damage (UnitObject u)
 		{
+			u = u ?? Target;
+
 			var targets = Adds;
 			targets.Add (Target);
 
@@ -242,6 +205,8 @@ namespace ReBot.Priest
 
 		public bool Healing (UnitObject u)
 		{
+			u = u ?? Target;
+
 			if (Me.HasAura ("Evangelism"))
 				Archangel ();
 			//	actions=mana_potion,if=mana.pct<=75
@@ -304,6 +269,120 @@ namespace ReBot.Priest
 
 		public bool HealTank (UnitObject u)
 		{
+			if (PowerWordShield (u))
+				return true;
+			if (PrayerofMending (u))
+				return true;
+			if (ClarityofWill (u))
+				return true;
+			if (DivineStar (u))
+				return true;
+
+			if (Health (u) <= 0.3) {
+				if (FlashHeal (u))
+					return true;
+			}
+			if (Health (u) <= 0.7 && !Me.HasAura ("Saving Grace")) {						
+				if (SavingGrace (u))
+					return true;
+			}
+			if (Health (u) <= 0.7) {
+				if (PainSuppression (u))
+					return true;
+			}
+			if (Health (u) <= 0.8) {
+				if (Heal (u))
+					return true;
+			} 
+			if (Health (u) <= 0.9) {
+				if (Penance (u))
+					return true;
+			}
+				
+			return false;
+		}
+
+		public bool DungeonHealing (UnitObject u)
+		{
+			if (Health (Me) < 0.45) { 
+				if (Healthstone ())
+					return true;
+			}
+//			if (useHealTonic()) { HealTonic(); return; }
+//			if (useTrinket1) { Trinket1(); return; }
+//			if (useTrinket2) { Trinket2(); return; }
+		
+			u = u ?? Target;
+
+			if (Me.HasAura ("Evangelism") && AuraStackCount ("Evangelism") >= 5)
+				Archangel ();
+			//	actions=mana_potion,if=mana.pct<=75
+			//	actions+=/blood_fury
+			BloodFury ();
+			//	actions+=/berserking
+			Berserking ();
+			//	actions+=/arcane_torrent
+			ArcaneTorrent ();
+			//	actions+=/power_infusion,if=talent.power_infusion.enabled
+			PowerInfusion ();
+			//	actions+=/power_word_solace,if=talent.power_word_solace.enabled
+			if (Tank != null && Tank.Target != null) {
+				if (PowerWordSolace (Tank.Target))
+					return true;
+			}
+			//	actions+=/mindbender,if=talent.mindbender.enabled&mana.pct<80
+			if (HasSpell ("Mindbender") && Me.ManaFraction < 0.8) {
+				if (Mindbender (u))
+					return true;
+			}
+			//	actions+=/shadowfiend,if=!talent.mindbender.enabled
+			if (!HasSpell ("Mindbender")) {
+				if (Shadowfiend (u))
+					return true;
+			}
+			//	actions+=/power_word_shield
+			if (PowerWordShield (u))
+				return true;
+
+			if (CascadeTarget != null) {
+				if (Cascade (CascadeTarget))
+					return true;
+			}
+
+			if (HaloTarget != null) {
+				if (Halo (HaloTarget))
+					return true;
+			}
+
+			//	actions+=/penance_heal,if=buff.borrowed_time.up
+			if (Me.HasAura ("Borrowed Time")) {
+				if (Penance (u))
+					return true;
+			}
+			//	actions+=/penance_heal
+			if (Penance (u))
+				return true;
+			//	actions+=/flash_heal,if=buff.surge_of_light.react
+			if (Me.HasAura ("Surge of Light")) {
+				if (FlashHeal (u))
+					return true;
+			}
+			//	actions+=/prayer_of_mending
+			if (PrayerofMending (u))
+				return true;
+			//	actions+=/clarity_of_will
+			if (ClarityofWill (u))
+				return true;
+			//	actions+=/heal,if=buff.power_infusion.up|mana.pct>20
+			if (Me.HasAura ("Power Infusion") || Me.ManaFraction > 0.2) {
+				if (Heal (u))
+					return true;
+			}
+			//	actions+=/heal
+			if (Heal (u))
+				return true;
+			if (FlashHeal (u))
+				return true;
 
 			return false;
 		}
@@ -369,63 +448,6 @@ namespace ReBot.Priest
 //
 //
 //
-//
-//				// Shield Tank
-//				if (Tank1 != null)
-//				{
-//					if (Cast("Power Word: Shield", () => !Tank1.HasAura("Weakened Soul") && !Tank1.HasAura("Power Word: Shield") && Tank1.IsInCombatRange && !Tank1.IsDead, Tank1))
-//					{
-//						DebugWrite("Shielding " + Tank1);
-//					}
-//					if (Cast("Prayer of Mending", () => !Tank1.HasAura("Prayer of Mending") && Tank1.IsInCombatRange && !Tank1.IsDead, Tank1))
-//					{
-//						DebugWrite("POM on " + Tank1);
-//					}
-//					if (Clarity_of_Will == true)
-//					{
-//						ClarityOfWill();
-//					}
-//					if (Divine_Star == true)
-//					{
-//						DivineStar();
-//					}
-//
-//
-//				}
-//
-//				// Tank 1
-//				if (Tank1 != null)
-//				{
-//					if (Tank1.IsInCombatRange)
-//					{
-//						if (Tank1.HealthFraction <= 0.3)
-//						{
-//							Cast("Flash Heal", () => Tank1.IsInCombatRange && !Tank1.IsDead, Tank1);
-//							DebugWrite("Casting Flash Heal on " + Tank1);
-//						}
-//						else if (Tank1.HealthFraction <= 0.7 && !Me.HasAura("Saving Grace") && Saving_Grace == true && Tank1.IsInCombatRange)
-//						{
-//							Cast("Saving Grace",Tank1);
-//						}
-//						else if (Tank1.HealthFraction <= 0.7 && SpellCooldown("Pain Suppression") < 0)
-//						{
-//							Cast("Pain Suppression", () => Tank1.IsInCombatRange && !Tank1.IsDead && SpellCooldown("Pain Suppression") < 0, Tank1);
-//							DebugWrite("Casting Pain Suppression on " + Tank1);
-//						}
-//						else if (Tank1.HealthFraction <= 0.8)
-//						{
-//							Cast("Heal", () => Tank1.IsInCombatRange && !Tank1.IsDead, Tank1);
-//							DebugWrite("Casting Heal on " + Tank1);
-//
-//						}
-//						else if (Tank1.HealthFraction <= 0.9 && SpellCooldown("Penance") < 0)
-//						{
-//							Cast("Penance", () => Tank1.IsInCombatRange && !Tank1.IsDead, Tank1);
-//							DebugWrite("Casting Penance on " + Tank1);
-//						}
-//
-//					}
-//				}
 //
 //				// Tank 2
 //				if (Tanks.Count > 1)
@@ -724,5 +746,109 @@ namespace ReBot.Priest
 //		}
 //
 //	}
+//}
+//
+//
+//public void SoloRotation()
+//{
+//	if (useHealthstone()) { Healthstone(); return; }
+//	if (useHealTonic()) { HealTonic(); return; }
+//	if (useTrinket1) { Trinket1(); return; }
+//	if (useTrinket2) { Trinket2(); return; }
+//
+//	if (Cast(DISPEL_MAGIC, () => HasSpell(DISPEL_MAGIC)
+//		&& SpellCooldown(DISPEL_MAGIC) <= 0
+//		&& Me.Auras.Any(a => a.IsDebuff
+//			&& "Magic".Contains(a.DebuffType)))) return;
+//
+//	if (Cast(PURIFY, () => HasSpell(PURIFY)
+//		&& SpellCooldown(PURIFY) <= 0
+//		&& Me.Auras.Any(a => a.IsDebuff
+//			&& "Magic,Disease".Contains(a.DebuffType)))) return;
+//
+//	if (CastSelfPreventDouble(ARCHANGEL, () => HasSpell(ARCHANGEL) && Me.HasAura(EVANGELISM) && AuraStackCount(EVANGELISM) >= 5)) return;
+//	if (CastSelfPreventDouble(PAIN_SUPRESSION, () => HasSpell(PAIN_SUPRESSION) && Me.HealthFraction <= 0.45)) return;
+//	if (CastSelfPreventDouble(POWER_INFUSION, () => HasSpell(POWER_INFUSION) && Target.MaxHealth > Me.MaxHealth * 2)) return;
+//
+//
+//
+//	if (Cast(MANAFIEND, () => HasSpell(MANAFIEND) && Target.MaxHealth > Me.MaxHealth * 2 && SpellCooldown(MANAFIEND) <= 0)) return;
+//	if (Cast(MINDBENDER, () => HasSpell(MINDBENDER) && Me.ManaFraction <= MindbenderMana && SpellCooldown(MINDBENDER) <= 0)) return;
+//	if (CastSelfPreventDouble(PWS, () => Me.HealthFraction <= 90 && !Me.HasAura(PWS))) return;
+//	if (CastSelfPreventDouble(DESPERATE_PRAYER, () => HasSpell(DESPERATE_PRAYER) && Me.HealthFraction <= desperatePrayerHealth)) return;
+//	if (CastPreventDouble(HOLY_FIRE, () => HasSpell(HOLY_FIRE) && Target.Distance <= dpsRange && SpellCooldown(HOLY_FIRE) <= 0)) return;
+//	if (CastPreventDouble(PWSOLACE, () => HasSpell(PWSOLACE) && Target.Distance <= dpsRange && SpellCooldown(PWSOLACE) <= 0)) return;
+//	if (Cast(SWP, () => HasSpell(SWP) && noSWPTarget != null, noSWPTarget)) return;
+//	if (CastPreventDouble(PENANCE, () => HasSpell(PENANCE) && Target.Distance <= dpsRange && SpellCooldown(PENANCE) <= 0)) return;
+//	if (Cast(SMITE, () => HasSpell(SMITE) && Target.Distance <= dpsRange)) return;
+//
+//}
+//
+//
+//public void RaidHealing()
+//{
+//	if (useHealthstone()) { Healthstone(); return; }
+//	if (useHealTonic()) { HealTonic(); return; }
+//	if (useTrinket1) { Trinket1(); return; }
+//	if (useTrinket2) { Trinket2(); return; }
+//
+//	if (Cast(DISPEL_MAGIC, () => HasSpell(DISPEL_MAGIC) && dispelTarget != null && SpellCooldown(DISPEL_MAGIC) <= 0, dispelTarget)) return;
+//	if (Cast(PURIFY, () => HasSpell(PURIFY) && purifyTarget != null && SpellCooldown(PURIFY) <= 0, purifyTarget)) return;
+//
+//	if (CastSelfPreventDouble(ARCHANGEL, () => HasSpell(ARCHANGEL) && Me.HasAura(EVANGELISM) && AuraStackCount(EVANGELISM) >= 5)) return;
+//
+//	if (CastSelfPreventDouble(POWER_INFUSION, () => HasSpell(POWER_INFUSION) && SpellCooldown(POWER_INFUSION) <= 0 && needPowerInfusion)) return;
+//
+//	if (Cast(MANAFIEND, () => HasSpell(MANAFIEND) && tankTarget != null && SpellCooldown(MANAFIEND) <= 0, tankTarget)) return;
+//
+//	if (Cast(MINDBENDER, () => HasSpell(MINDBENDER)
+//		&& mindbenderTarget != null
+//		&& Me.ManaFraction <= MindbenderMana
+//		&& SpellCooldown(MINDBENDER) <= 0, mindbenderTarget)) return;
+//
+//	if (Cast(PWS, () => HasSpell(PWS) && pwsTarget != null, pwsTarget)) return;
+//
+//	if (Cast(CLARITY_OF_WILL, () => HasSpell(CLARITY_OF_WILL) && clarityTarget != null, clarityTarget)) return;
+//
+//	if (Cast(PAIN_SUPRESSION, () => HasSpell(PAIN_SUPRESSION) && tankPainSupTarget != null && SpellCooldown(PAIN_SUPRESSION) <= 0, tankPainSupTarget)) return;
+//
+//	if (Cast(PWSOLACE, () => HasSpell(PWSOLACE)
+//		&& tankTarget != null
+//		&& SpellCooldown(PWSOLACE) <= 0
+//		&& !Me.IsNotInFront(tankTarget), tankTarget)) return;
+//
+//	if (Cast(CASCADE, () => HasSpell(CASCADE) && cascadeTarget != null && SpellCooldown(CASCADE) <= 0, cascadeTarget)) return;
+//
+//	if (Cast(HALO, () => HasSpell(HALO) && haloTarget != null && SpellCooldown(HALO) <= 0, haloTarget)) return;
+//
+//	if (Cast(PENANCE, () => HasSpell(PENANCE)
+//		&& penanceTarget != null
+//		&& SpellCooldown(PENANCE) <= 0, penanceTarget)) return;
+//
+//	if (Cast(PRAYER_OF_MENDING, () => HasSpell(PRAYER_OF_MENDING)
+//		&& PomTarget != null
+//		&& SpellCooldown(PRAYER_OF_MENDING) <= 0, PomTarget)) return;
+//
+//	if (Cast(PRAYER_OF_HEALING, () => HasSpell(PRAYER_OF_HEALING)
+//		&& pohTarget != null
+//		&& SpellCooldown(PRAYER_OF_HEALING) <= 0, pohTarget)) return;
+//
+//	if (Cast(FLASH_HEAL, () => HasSpell(FLASH_HEAL)
+//		&& flashTarget != null, flashTarget)) return;
+//
+//	if (Cast(HEAL, () => HasSpell(HEAL)
+//		&& healTarget != null, healTarget)) return;
+//
+//	if (CastSelfPreventDouble(HOLY_NOVA, () => needHolyNova)) return;
+//
+//	if (Cast(HOLY_FIRE, () => HasSpell(HOLY_FIRE)
+//		&& tankTarget != null && SpellCooldown(HOLY_FIRE) <= 0
+//		&& tankTarget.Distance <= dpsRange
+//		&& !Me.IsNotInFront(tankTarget), tankTarget)) return;
+//
+//	if (Cast(SMITE, () => HasSpell(SMITE)
+//		&& Atonement
+//		&& Me.ManaFraction > AtonementMana && tankTarget != null
+//		&& !Me.IsNotInFront(tankTarget), tankTarget)) return;
 //}
 //
