@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using ReBot.API;
+using System.Linq;
 
 namespace ReBot.Priest
 {
@@ -9,7 +10,7 @@ namespace ReBot.Priest
 	{
 		[JsonProperty ("Use GCD")]
 		public bool Gcd = true;
-		[JsonProperty ("Auto target")]
+		[JsonProperty ("Auto target enemy")]
 		public bool UseAutoTarget = true;
 		[JsonProperty ("Fight in instance")]
 		public bool FightInInstance = true;
@@ -27,6 +28,39 @@ namespace ReBot.Priest
 				"Shadow Word: Pain",
 				"Smite"
 			};
+		}
+
+		public bool AutoTarget ()
+		{
+			if (UseAutoTarget) {
+				if (GroupMembers.Count > 0) {
+					if (FightInInstance && InInstance && (Target == null || !Target.IsEnemy)) {
+						CycleTarget = API.CollectUnits (40).Where (u => u.IsEnemy && !u.IsDead && u.IsInLoS && u.IsAttackable && u.InCombat && Range (u) <= 40).OrderBy (u => u.CombatRange).DefaultIfEmpty (null).FirstOrDefault ();
+						if (CycleTarget != null) {
+							Me.SetTarget (CycleTarget);
+							return true;
+						}
+					}
+					if (Target == null) {
+						SetTarget ();
+						return true;
+					}
+				} else {
+					if ((Target == null || !Target.IsEnemy)) {
+						CycleTarget = API.CollectUnits (40).Where (u => u.IsEnemy && !u.IsDead && u.IsInLoS && u.IsAttackable && u.InCombat && Range (u) <= 40).OrderBy (u => u.CombatRange).DefaultIfEmpty (null).FirstOrDefault ();
+						if (CycleTarget != null) {
+							Me.SetTarget (CycleTarget);
+							return true;
+						}
+					}
+				}
+				if (Target == null) {
+					Me.SetTarget (Me);
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		public override bool OutOfCombat ()
@@ -48,6 +82,13 @@ namespace ReBot.Priest
 				}
 			}
 
+			if (Health (Me) < 0.9 && !Me.IsMoving && !Me.IsMounted) {
+				if (Heal (Me))
+					return true;
+			}
+
+			if (DispelAll ())
+				return true;
 
 			if (Me.FallingTime > 2) {
 				if (Levitate ())
@@ -59,17 +100,21 @@ namespace ReBot.Priest
 
 		public override void Combat ()
 		{
+//			if (!Target.IsEnemy || (Me.InCombat && Me.IsTargetingMeOrPets == true) || (CombatRole.Equals(CombatRole.DPS) && Me.Target == Me) || Me.Target.DisplayId == 49312)
+			//			{
+			//				Healer();
+			//			}
+
+			AutoTarget ();
+
 			if (Gcd && HasGlobalCooldown ())
 				return;
 
-			if (Health (Me) < 1) {
-				if (PowerWordShield (Me))
-					return;
-			}
+			if (SetShieldAll ())
+				return;
 
-			if (InArena) {
-				if (SetShieldAll ())
-					return;
+			if (Tank != null && Health (Tank) < 0.4) {
+				HealTank (Tank);
 			}
 
 			if (Me.HealthFraction < 0.5) {
@@ -83,11 +128,7 @@ namespace ReBot.Priest
 			}
 
 			if (GroupMembers.Count > 0) {
-				if (FightInInstance && InInstance && (Target == null || !Target.IsEnemy) && UseAutoTarget)
-					AutoTarget ();
-				
-				if (Target == null)
-					SetTarget ();
+
 			
 				if (Tank != null && Tank.HealthFraction <= 0.3) {
 					if (FlashHeal (Tank))
@@ -107,9 +148,8 @@ namespace ReBot.Priest
 				}
 			}
 
-			if (Target == null) {
-				Me.SetTarget (Me);
-			}
+			if (DispelAll ())
+				return;
 
 			if (Target != null) {
 				if (Target.IsFriendly && Health (Target) < HealPr) {
@@ -129,6 +169,9 @@ namespace ReBot.Priest
 
 		public bool Damage (UnitObject u)
 		{
+			var targets = Adds;
+			targets.Add (Target);
+
 			//	actions=potion,name=draenic_intellect,if=buff.bloodlust.react|target.time_to_die<=40
 			if (IsBoss (u) && (Me.HasAura ("Bloodlust") || TimeToDie (u) <= 40)) {
 				if (DraenicIntellect ())
@@ -154,9 +197,12 @@ namespace ReBot.Priest
 			if (HasSpell ("Power Infusion"))
 				PowerInfusion ();
 			//	actions+=/shadow_word_pain,if=!ticking
-			if (!u.HasAura ("Shadow Word: Pain", true)) {
-				if (ShadowWordPain (u))
-					return true;
+			if (Usable ("Shadow Word: Pain")) {
+				CycleTarget = targets.Where (x => !u.IsDead && x.IsInLoS && Range (x) <= 40 && x.InCombat && x.IsAttackable && !x.HasAura ("Shadow Word: Pain", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (ShadowWordPain (CycleTarget))
+						return true;
+				}
 			}
 			//	actions+=/penance
 			if (Penance (u))
@@ -177,9 +223,12 @@ namespace ReBot.Priest
 					return true;
 			}
 			//	actions+=/shadow_word_pain,if=remains<(duration*0.3)
-			if (u.AuraTimeRemaining ("Shadow Word: Pain", true) < 5.4) {
-				if (ShadowWordPain ())
-					return true;
+			if (Usable ("Shadow Word: Pain")) {
+				CycleTarget = targets.Where (xu => !u.IsDead && u.IsInLoS && Range (u) <= 40 && u.InCombat && u.IsAttackable && u.AuraTimeRemaining ("Shadow Word: Pain", true) < 5.4).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (ShadowWordPain (CycleTarget))
+						return true;
+				}
 			}
 			//	actions+=/smite
 			if (Smite (u))
@@ -252,15 +301,18 @@ namespace ReBot.Priest
 
 			return false;
 		}
+
+		public bool HealTank (UnitObject u)
+		{
+
+			return false;
+		}
 	}
 }
 
 //		public override void Combat()
 //		{
-//			if (!Target.IsEnemy || (Me.InCombat && Me.IsTargetingMeOrPets == true) || (CombatRole.Equals(CombatRole.DPS) && Me.Target == Me) || Me.Target.DisplayId == 49312)
-//			{
-//				Healer();
-//			}
+//
 //			else
 //			{
 //				DPS();
@@ -315,21 +367,7 @@ namespace ReBot.Priest
 //				}
 //				Holy_Nova();
 //
-//				if (Dispel_Group == true)
-//				{
-//					List<PlayerObject> GrpCleanse = members.FindAll(m => m.IsInCombatRange && m.Auras.Any(a => a.IsDebuff && "Magic,Disease".Contains(a.DebuffType)));
-//					DebugWrite("" + GrpCleanse);
-//					if (GrpCleanse.Count > 3)
-//					{
-//						CastOnTerrain("Mass Dispel", GrpCleanse.First().Position);
-//						DebugWrite("" + GrpCleanse);
-//						return;
-//					}
-//					foreach (var emd in Group.GetGroupMemberObjects().Where(x => x.IsInCombatRange && x.Auras.Any(a => a.IsDebuff && "Magic,Disease".Contains(a.DebuffType))))
-//					{
-//						if (Cast("Purify", emd)) return;
-//					}
-//				}
+//
 //
 //
 //				// Shield Tank

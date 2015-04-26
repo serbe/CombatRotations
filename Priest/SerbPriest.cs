@@ -41,18 +41,9 @@ namespace ReBot.Priest
 			}
 		}
 
-		public void AutoTarget ()
-		{
-			CycleTarget = API.CollectUnits (40).Where (u => u.IsEnemy && !u.IsDead && u.IsInLoS && u.IsAttackable && u.InCombat && Range (u) <= 40).OrderBy (u => u.CombatRange).DefaultIfEmpty (null).FirstOrDefault ();
-			if (CycleTarget != null)
-				Me.SetTarget (CycleTarget);
-		}
-
 		public void SetTarget ()
 		{
 			if (Tank != null) {
-				if (Me.Focus == null)
-					Me.SetFocus (Tank);
 				Me.SetTarget (Tank);
 			}
 			if (Target == null && HealTarget != null) {
@@ -163,14 +154,14 @@ namespace ReBot.Priest
 			}
 		}
 
-		public UnitObject BestTarget (int SpellRange, int AoeRange, int MinCount)
+		public UnitObject BestTarget (int spellRange, int aoeRange, int minCount)
 		{
 			var targets = Adds;
 			targets.Add (Target);
 
-			var bestTarget = targets.Where (u => u.IsInLoS && u.CombatRange <= SpellRange).OrderByDescending (u => targets.Count (o => Vector3.Distance (u.Position, o.Position) <= AoeRange)).DefaultIfEmpty (null).FirstOrDefault ();
+			var bestTarget = targets.Where (u => u.IsInLoS && u.CombatRange <= spellRange).OrderByDescending (u => targets.Count (o => Vector3.Distance (u.Position, o.Position) <= aoeRange)).DefaultIfEmpty (null).FirstOrDefault ();
 			if (bestTarget != null) {
-				if (targets.Where (u => Vector3.Distance (u.Position, bestTarget.Position) <= AoeRange).ToList ().Count >= MinCount)
+				if (targets.Where (u => Vector3.Distance (u.Position, bestTarget.Position) <= aoeRange).ToList ().Count >= minCount)
 					return bestTarget;
 			}
 			return null;
@@ -296,11 +287,18 @@ namespace ReBot.Priest
 
 		public bool SetShieldAll ()
 		{
-			CycleTarget = GroupMembers.Where (m => !m.IsDead && m.IsInCombatRangeAndLoS && !m.HasAura ("Power Word: Shield")).DefaultIfEmpty (null).FirstOrDefault ();
-			if (CycleTarget != null) {
-				if (PowerWordShield (CycleTarget))
+			if (InArena) {
+				CycleTarget = GroupMembers.Where (m => !m.IsDead && m.IsInCombatRangeAndLoS && !m.HasAura ("Power Word: Shield")).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (PowerWordShield (CycleTarget))
+						return true;
+				}
+			}
+			if (Health (Me) < 0.99) {
+				if (PowerWordShield (Me))
 					return true;
 			}
+
 			return false;
 		}
 
@@ -368,7 +366,36 @@ namespace ReBot.Priest
 			u = u ?? Target;
 			return Cast ("Vampiric Touch", () => Usable ("Vampiric Touch") && u.IsInLoS && u.CombatRange <= 40, u);
 		}
-	
+
+		public bool DispelAll ()
+		{
+			var AllForDispel = GroupMembers.Where (u => u.IsInLoS && Range (u) <= 30 && u.Auras.Any (a => a.IsDebuff && "Magic,Disease".Contains (a.DebuffType)));
+			CycleTarget = AllForDispel.DefaultIfEmpty (null).FirstOrDefault ();
+			if (CycleTarget != null && AllForDispel.ToList ().Count > 3) {
+				if (MassDispel (CycleTarget))
+					return true;
+			}
+			CycleTarget = GroupMembers.Where (u => u.IsInLoS && Range (u) <= 30 && u.Auras.Any (a => a.IsDebuff && "Magic,Disease".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault (); 
+			if (CycleTarget != null) {
+				if (Purify (CycleTarget))
+					return true;
+			}
+
+
+			return false;
+		}
+
+		public bool MassDispel (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return CastOnTerrain ("Mass Dispel", u.Position, () => Usable ("Mass Dispel") && u.IsInLoS && Range (u) <= 30);
+		}
+
+		public bool Purify (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return CastOnTerrain ("Purify", u.Position, () => Usable ("Purify") && u.IsInLoS && Range (u) <= 30);
+		}
 	}
 }
 	
