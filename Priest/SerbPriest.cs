@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Geometry;
 using Newtonsoft.Json;
 using ReBot.API;
-using Geometry;
 
 namespace ReBot.Priest
 {

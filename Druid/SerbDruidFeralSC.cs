@@ -3,7 +3,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using ReBot.API;
 
-namespace ReBot.Druid
+namespace ReBot
 {
 	[Rotation ("Serb Feral Druid SC", "Serb", WoWClass.Druid, Specialization.DruidFeral, 5, 25)]
 

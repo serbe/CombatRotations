@@ -3,7 +3,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using ReBot.API;
 
-namespace ReBot.Druid
+namespace ReBot
 {
 	public abstract class SerbDruid : CombatRotation
 	{
@@ -127,6 +127,12 @@ namespace ReBot.Druid
 			}
 		}
 
+		public int Rage {
+			get {
+				return Me.GetPower (WoWPowerType.Rage);
+			}
+		}
+
 		public int ComboPoints {
 			get {
 				return Me.ComboPoints;
@@ -146,6 +152,11 @@ namespace ReBot.Druid
 			}
 		}
 
+		public double Range (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return u.CombatRange;
+		}
 
 		public double Time {
 			get {
@@ -236,6 +247,11 @@ namespace ReBot.Druid
 		public bool CatForm ()
 		{
 			return CastSelf ("Cat Form", () => !Me.HasAura ("Claws of Shirvallah") && !Me.HasAura ("Cat Form"));
+		}
+
+		public bool BearForm ()
+		{
+			return CastSelf ("Bear Form", () => !Me.HasAura ("Bear Form"));
 		}
 
 		public double TimeToDie (UnitObject o)
@@ -409,7 +425,12 @@ namespace ReBot.Druid
 
 		public bool Barkskin ()
 		{
-			return CastSelf ("Barkskin", () => Usable ("Barkskin"));
+			return CastSelf ("Barkskin", () => Usable ("Barkskin") && Health (Me) < 0.9);
+		}
+
+		public bool BristlingFur ()
+		{
+			return CastSelf ("Bristling Fur", () => Usable ("Bristling Fur"));
 		}
 
 		public bool MoonkinForm ()
@@ -578,6 +599,12 @@ namespace ReBot.Druid
 		{
 			u = u ?? Target;
 			return Cast ("Rip", () => Usable ("Rip") && HasEnergy (30) && ComboPoints > 0 && u.IsInCombatRangeAndLoS, u);
+		}
+
+		public bool SavageDefense (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return CastSelf ("Savage Defense", () => Usable ("Savage Defense") && Rage > 60 && u.IsInLoS && Range (u) < 20);
 		}
 
 		public bool Freedom ()
