@@ -2,7 +2,7 @@
 using ReBot.API;
 using System.Linq;
 
-namespace ReBot.Priest
+namespace ReBot
 {
 	[Rotation ("Priest Discipline SC", "Serb", WoWClass.Priest, Specialization.PriestDiscipline, 40, 25)]
 

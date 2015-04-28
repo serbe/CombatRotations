@@ -1,9 +1,8 @@
 ﻿using ReBot.API;
 using System.Linq;
-using Geometry;
 using Newtonsoft.Json;
 
-namespace ReBot.Priest
+namespace ReBot
 {
 	[Rotation ("Serb Priest Shadow SC", "ReBot", WoWClass.Priest, Specialization.PriestShadow, 40, 25)]
 

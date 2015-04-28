@@ -4,7 +4,7 @@ using Geometry;
 using Newtonsoft.Json;
 using ReBot.API;
 
-namespace ReBot.Priest
+namespace ReBot
 {
 	public abstract class SerbPriest : CombatRotation
 	{
