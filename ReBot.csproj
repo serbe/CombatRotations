@@ -63,10 +63,10 @@
     <Compile Include="Priest\SerbPriestDiscipline.cs" />
     <Compile Include="Monk\SerbMonk.cs" />
     <Compile Include="Priest\SerbPriestShadow.cs" />
-    <Compile Include="DeathKnight\DeathknightFrost.cs" />
     <Compile Include="Druid\SerbDruidGuardian.cs" />
     <Compile Include="Warrior\SerbWarrior.cs" />
     <Compile Include="Warrior\SerbWarriorProtection.cs" />
+    <Compile Include="DeathKnight\SerbDeathknightFrost.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
