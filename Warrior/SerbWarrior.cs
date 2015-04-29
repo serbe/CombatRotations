@@ -1,4 +1,5 @@
 ﻿using ReBot.API;
+using Newtonsoft.Json;
 
 namespace ReBot
 {
@@ -6,6 +7,10 @@ namespace ReBot
 	{
 		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
 		public int Ttd = 10;
+		[JsonProperty ("Use GCD")]
+		public bool Gcd = true;
+		[JsonProperty ("Max rage")]
+		public int RageMax = 100;
 
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
@@ -122,6 +127,37 @@ namespace ReBot
 		//		end
 		//
 
+		public double Health (UnitObject u = null)
+		{
+			u = u ?? Me;
+			return u.HealthFraction;
+		}
+
+
+		// -----------
+
+		public bool Heal ()
+		{
+			
+			if (Health () < 0.9 && Me.Level < 100) {
+				if (VictoryRush ())
+					return true;
+			}
+			if (Health () < 0.6 && Me.Level < 100) {
+				if (ImpendingVictory ())
+					return true;
+			}
+//			if (CastSelf ("Rallying Cry", () => Health <= 0.25))
+//				return;
+//			if (CastSelf ("Enraged Regeneration", () => Health <= 0.5))
+//				return;
+			if (Health () < 0.6) {
+				if (Healthstone ())
+					return true;
+			}
+			return true;
+		}
+
 
 
 		// ------- Spells
@@ -129,7 +165,7 @@ namespace ReBot
 		public bool Charge (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Charge", () => Usable ("Charge") && u.IsInLoS && Range (u) >= 8 && (Range (u) <= 25 || (HasGlyph (58097) && Range (u) <= 30)), u);
+			return Cast ("Charge", () => Usable ("Charge") && u.IsInLoS && Range (u) >= 8 && (Range (u) <= 25 || (HasGlyph (58097) && Range (u) <= 30)) && u.InCombat, u);
 		}
 
 		public bool BloodFury ()
@@ -182,10 +218,128 @@ namespace ReBot
 			return CastSelf ("Last Stand", () => Usable ("Last Stand"));
 		}
 
-		//		public bool DraenicArmor ()
-		//		{
-		//			return CastSelf ("Last Stand", () => Usable ("Last Stand"));
-		//		}
+		public bool DraenicArmor ()
+		{
+			if (API.HasItem (109220) && API.ItemCooldown (109220) == 0 && !Me.HasAura ("Draenic Armor Potion"))
+				return API.UseItem (109220);
+			return false;
+		}
+
+		public bool Healthstone ()
+		{
+			if (API.HasItem (5512) && API.ItemCooldown (5512) == 0)
+				return API.UseItem (5512);
+			return false;
+		}
+
+		public bool Stoneform ()
+		{
+			return CastSelf ("Stoneform", () => Usable ("Stoneform"));
+		}
+
+		public bool HeroicStrike (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Heroic Strike", () => Usable ("Heroic Strike") && HasRage (30) && u.IsInCombatRangeAndLoS, u);
+		}
+
+		public bool Bloodbath ()
+		{
+			return CastSelf ("Bloodbath", () => Usable ("Bloodbath"));
+		}
+
+		public bool Avatar ()
+		{
+			return CastSelf ("Avatar", () => Usable ("Avatar"));
+		}
+
+		public bool ShieldSlam (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Shield Slam", () => Usable ("Shield Slam") && u.IsInCombatRangeAndLoS, u);
+		}
+
+		public bool Revenge (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Revenge", () => Usable ("Revenge") && u.IsInCombatRangeAndLoS, u);
+		}
+
+		public bool Ravager (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Ravager", () => Usable ("Ravager") && u.IsInCombatRangeAndLoS, u);
+		}
+
+		public bool StormBolt (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Storm Bolt", () => Usable ("Storm Bolt") && u.IsInLoS && Range (u) <= 30, u);
+		}
+
+		public bool DragonRoar ()
+		{
+			return CastSelf ("Dragon Roar", () => Usable ("Dragon Roar") && Target.IsInCombatRangeAndLoS);
+		}
+
+		public bool ImpendingVictory (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Impending Victory", () => Usable ("Impending Victory") && HasRage (10) && u.IsInCombatRangeAndLoS, u);
+		}
+
+		public bool VictoryRush (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Victory Rush", () => Usable ("Victory Rush") && u.IsInCombatRangeAndLoS && Me.HasAura ("Victorious"), u);
+		}
+
+		public bool Execute (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Execute", () => Usable ("Execute") && u.IsInLoS && Range (u) <= 5 && ((HasRage (30) && Health (u) <= 0.2) || Me.HasAura ("Sudden Death")), u);
+		}
+
+		public bool Devastate (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Devastate", () => Usable ("Devastate") && u.IsInCombatRangeAndLoS, u);
+		}
+
+		public bool ThunderClap (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return CastSelf ("Thunder Clap", () => Usable ("Thunder Clap") && u.IsInLoS && Range (u) <= 8);
+		}
+
+		public bool Bladestorm (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return CastSelf ("Bladestorm", () => Usable ("Bladestorm") && u.IsInCombatRangeAndLoS);
+		}
+
+		public bool Shockwave (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Shockwave", () => Usable ("Shockwave") && u.IsInLoS && Range (u) <= 10, u);
+		}
+
+		public bool ShieldCharge (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Shield Charge", () => Usable ("Shield Charge") && HasRage (20) && u.IsInLoS && Range (u) <= 10, u);
+		}
+
+		public bool HeroicLeap (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return CastOnTerrain ("Heroic Leap", u.Position, () => Usable ("Heroic Leap") && u.IsInLoS && Range (u) >= 8 && ((HasGlyph (63325) && Range (u) <= 25) || Range (u) <= 40));
+		}
+
+		public bool HeroicThrow (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Heroic Throw", () => Usable ("Heroic Throw") && u.IsInLoS && Range (u) >= 8 && Range (u) <= 30, u);
+		}
 	}
 }
-

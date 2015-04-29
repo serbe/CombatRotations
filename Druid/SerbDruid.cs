@@ -46,6 +46,11 @@ namespace ReBot
 		// 	}
 		// }
 
+		public double DamageTaken ()
+		{
+			return API.ExecuteLua<double> ("local ResolveName = GetSpellInfo(158300);local n,_,_,_,_,dur,expi,_,_,_,id,_,_,_,val1,val2,val3 = UnitAura(\"player\", ResolveName, nil, \"HELPFUL\");return val2");
+		}
+
 		public bool InRaid {
 			get {
 				return API.MapInfo.Type == MapType.Raid;
@@ -727,5 +732,13 @@ namespace ReBot
 			// if (Cast(RangedAtk, () => Energy >= 40 && !HasAura("Stealth") && Target.IsInLoS)) return;
 			return false;
 		}
+
+		public bool Maul (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Maul", () => Usable ("Maul") && (Rage >= 20 || (Rage >= 10 && Me.HasAura ("Tooth and Claw"))) && u.IsInLoS && u.CombatRange <= 5, u);
+		}
+
+	
 	}
 }

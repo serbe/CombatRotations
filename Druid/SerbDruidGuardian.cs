@@ -49,8 +49,8 @@ namespace ReBot
 			if (!Me.HasAura ("Barkskin") && !Me.HasAura ("Savage Defense"))
 				BristlingFur ();
 			//	actions+=/maul,if=buff.tooth_and_claw.react&incoming_damage_1s
-			if (Me.HasAura("Tooth and Claw") && ){
-				if (Maul()) return;}
+			if (Me.HasAura ("Tooth and Claw") && (DamageTaken () / 10) > 0)
+				Maul ();
 			//	actions+=/berserk,if=buff.pulverize.remains>10
 			//	actions+=/frenzied_regeneration,if=rage>=80
 			//	actions+=/cenarion_ward
@@ -71,4 +71,3 @@ namespace ReBot
 		}
 	}
 }
-	
