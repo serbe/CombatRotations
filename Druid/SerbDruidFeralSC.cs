@@ -147,8 +147,8 @@ namespace ReBot
 					if (ForceofNature ())
 						return;
 				}
-				//	actions+=/berserk,sync=tigers_fury,if=buff.king_of_the_jungle.up|!talent.incarnation.enabled
-				if (Me.HasAura ("Tiger's Fury") && (!HasSpell ("Incarnation: King of the Jungle") || Me.HasAura ("Incarnation: King of the Jungle"))) {
+				//	actions+=/berserk,if=((!t18_class_trinket&buff.tigers_fury.up)|(t18_class_trinket&energy.time_to_max<2))&(buff.incarnation.up|!talent.incarnation_king_of_the_jungle.enabled)
+				if (Me.HasAura ("Tiger's Fury") && (Me.HasAura ("Incarnation: King of the Jungle") || !HasSpell ("Incarnation: King of the Jungle"))) {
 					if (Berserk ())
 						return;
 				}
@@ -264,6 +264,14 @@ namespace ReBot
 			var targets = Adds;
 			targets.Add (Target);
 
+			//	actions.finisher=rip,cycle_targets=1,if=remains<2&target.time_to_die-remains>18&(target.health.pct>25|!dot.rip.ticking)
+			if (Usable ("Rip")) {
+				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Rip", true) < 2 && TimeToDie () - u.AuraTimeRemaining ("Rip", true) > 18 && (u.HealthFraction > 0.25 || !u.HasAura ("Rip", true))).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (Rip (CycleTarget))
+						return true;
+				}
+			}		
 			//	actions.finisher=ferocious_bite,cycle_targets=1,max_energy=1,if=target.health.pct<25&dot.rip.ticking
 			if (Usable ("Ferocious Bite") && Energy >= 50) {
 				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && u.HealthFraction < 0.25 && u.HasAura ("Rip", true)).DefaultIfEmpty (null).FirstOrDefault ();
@@ -283,14 +291,6 @@ namespace ReBot
 			//	actions.finisher+=/rip,cycle_targets=1,if=remains<7.2&persistent_multiplier=dot.rip.pmultiplier&(energy.time_to_max<=1|!talent.bloodtalons.enabled)&target.time_to_die-remains>18
 			if (Usable ("Rip") && HasEnergy (30)) {
 				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Rip", true) < 7.2 && (EnergyTimeToMax <= 1 || !HasSpell ("Bloodtalons")) && TimeToDie (u) - u.AuraTimeRemaining ("Rip", true) > 18).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Rip (CycleTarget))
-						return true;
-				}
-			}
-			//	actions.finisher+=/rip,cycle_targets=1,if=remains<2&target.time_to_die-remains>18
-			if (Usable ("Rip") && HasEnergy (30)) {
-				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Rip", true) < 2 && TimeToDie (u) - u.AuraTimeRemaining ("Rip", true) > 18).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CycleTarget != null) {
 					if (Rip (CycleTarget))
 						return true;

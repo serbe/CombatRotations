@@ -10,6 +10,7 @@ namespace ReBot.Shaman
 
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
+		public UnitObject CycleTarget;
 
 		public double Health (UnitObject u = null)
 		{

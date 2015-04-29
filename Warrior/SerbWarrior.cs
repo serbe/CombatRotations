@@ -11,9 +11,13 @@ namespace ReBot
 		public bool Gcd = true;
 		[JsonProperty ("Max rage")]
 		public int RageMax = 100;
+		[JsonProperty ("Auto change stance")]
+		public bool UseStance = true;
+
 
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
+		public UnitObject CycleTarget;
 
 		public double TimeToDie (UnitObject u = null)
 		{
@@ -340,6 +344,16 @@ namespace ReBot
 		{
 			u = u ?? Target;
 			return Cast ("Heroic Throw", () => Usable ("Heroic Throw") && u.IsInLoS && Range (u) >= 8 && Range (u) <= 30, u);
+		}
+
+		public bool DefensiveStance ()
+		{
+			return CastSelf ("Defensive Stance", () => Usable ("Defensive Stance") && !(Me.HasAura ("Defensive Stance") || Me.HasAura ("Improved Defensive Stance")));
+		}
+
+		public bool BattleStance ()
+		{
+			return CastSelf ("Battle Stance", () => Usable ("Battle Stance") && !Me.HasAura ("Battle Stance"));
 		}
 	}
 }

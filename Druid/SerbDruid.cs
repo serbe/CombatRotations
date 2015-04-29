@@ -259,11 +259,10 @@ namespace ReBot
 			return CastSelf ("Bear Form", () => !Me.HasAura ("Bear Form"));
 		}
 
-		public double TimeToDie (UnitObject o)
+		public double TimeToDie (UnitObject u = null)
 		{
-			if (o != null)
-				return o.Health / Ttd;
-			return 0;
+			u = u ?? Target;
+			return u.Health / Ttd;
 		}
 
 		public double EclipseChange {

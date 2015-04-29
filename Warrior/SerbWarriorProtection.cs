@@ -1,4 +1,5 @@
 ﻿using ReBot.API;
+using System.Linq;
 
 namespace ReBot
 {
@@ -41,15 +42,25 @@ namespace ReBot
 					return;
 			}
 
-			if (Me.HasAura ("Defensive Stance") || Me.HasAura ("Improved Defensive Stance")) {
-				if (Protection ())
-					return;
-			}
+//			if (UseStance && !(Me.HasAura ("Defensive Stance") || Me.HasAura ("Improved Defensive Stance")) && (CombatRole == CombatRole.Tank || Health () < 0.4)) {
+//				if (DefensiveStance ())
+//					return;
+//			}
+//
+//			if (UseStance && !Me.HasAura ("Battle Stance") && (CombatRole == CombatRole.DPS || Health () >= 0.4)) {
+//				if (BattleStance ())
+//					return;
+//			}
 
-			if (Me.HasAura ("Battle Stance")) {
-				if (Gladiator ())
-					return;
-			}
+//			if (Me.HasAura ("Defensive Stance") || Me.HasAura ("Improved Defensive Stance")) {
+			if (Protection ())
+				return;
+//			}
+
+//			if (Me.HasAura ("Battle Stance")) {
+//				if (Gladiator ())
+//					return;
+//			}
 
 		}
 
@@ -78,10 +89,10 @@ namespace ReBot
 			if (Prot ())
 				return true;
 			// --- My 
-			if (!Target.HasAura ("Thunder Clap", true) && Me.Level < 100) {
-				if (ThunderClap ())
-					return true;
-			}
+//			if (Me.Level >= 32 & !Target.HasAura ("Deep Wounds", true)) {
+//				if (ThunderClap ())
+//					return true;
+//			}
 			if (Execute () && Me.Level < 100)
 				return true;
 
@@ -117,7 +128,7 @@ namespace ReBot
 			if (DamageTaken () / 4 > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
 				Stoneform ();
 			//	actions.prot+=/call_action_list,name=prot_aoe,if=active_enemies>3
-			if (EnemyInRange (10) > 3) {
+			if (EnemyInRange (8) > 3) {
 				if (Prot_aoe ())
 					return true;
 			}
@@ -168,14 +179,14 @@ namespace ReBot
 			return false;
 		}
 
-		bool Prot_aoe ()
+		public bool Prot_aoe ()
 		{
 			//	actions.prot_aoe=bloodbath
 			Bloodbath ();
 			//	actions.prot_aoe+=/avatar
 			Avatar ();
 			//	actions.prot_aoe+=/thunder_clap,if=!dot.deep_wounds.ticking
-			if (!Target.HasAura ("Deep Wounds")) {
+			if (Me.Level >= 32 & !Target.HasAura ("Deep Wounds", true)) {
 				if (ThunderClap ())
 					return true;
 			}
@@ -315,6 +326,10 @@ namespace ReBot
 		public bool GladSingle ()
 		{
 			//	actions.single=devastate,if=buff.unyielding_strikes.stack>0&buff.unyielding_strikes.stack<6&buff.unyielding_strikes.remains<1.5
+			if (Me.GetAura ("Unyielding Strikes").StackCount > 0 && Me.GetAura ("Unyielding Strikes").StackCount < 6 && Me.AuraTimeRemaining ("Unyielding Strikes") < 1.5) {
+				if (Devastate ())
+					return true;
+			}
 			//	actions.single+=/shield_slam
 			if (ShieldSlam ())
 				return true;
@@ -322,10 +337,16 @@ namespace ReBot
 			if (Revenge ())
 				return true;
 			//	actions.single+=/execute,if=buff.sudden_death.react
+			if (Me.HasAura ("Sudden Death")) {
+				if (Execute ())
+					return true;
+			}
 			//	actions.single+=/storm_bolt
 			if (StormBolt ())
 				return true;
 			//	actions.single+=/dragon_roar,if=buff.unyielding_strikes.stack>=4&buff.unyielding_strikes.stack<6
+			if (Me.GetAura ("Unyielding Strikes").StackCount >= 4 && Me.GetAura ("Unyielding Strikes").StackCount < 6)
+				DragonRoar ();
 			//	actions.single+=/execute,if=rage>60&target.health.pct<20
 			if (Execute ())
 				return true;
@@ -338,6 +359,9 @@ namespace ReBot
 
 		public bool GladAoe ()
 		{
+			var targets = Adds;
+			targets.Add (Target);
+
 			//	actions.aoe=revenge
 			if (Revenge ())
 				return true;
@@ -345,21 +369,47 @@ namespace ReBot
 			if (ShieldSlam ())
 				return true;
 			//	actions.aoe+=/dragon_roar,if=(buff.bloodbath.up|cooldown.bloodbath.remains>10)|!talent.bloodbath.enabled
+			if ((Me.HasAura ("Bloodbath") || Cooldown ("Bloodbath") > 10) || !HasSpell ("Bloodbath"))
+				DragonRoar ();
 			//	actions.aoe+=/storm_bolt,if=(buff.bloodbath.up|cooldown.bloodbath.remains>7)|!talent.bloodbath.enabled
+			if ((Me.HasAura ("Bloodbath") || Cooldown ("Bloodbath") > 7) || !HasSpell ("Bloodbath")) {
+				if (StormBolt ())
+					return true;
+			}
 			//	actions.aoe+=/thunder_clap,cycle_targets=1,if=dot.deep_wounds.remains<3&active_enemies>4
+			if (EnemyInRange (8) > 4) {
+				CycleTarget = targets.Where (u => Me.Level >= 32 & u.AuraTimeRemaining ("Deep Wounds", true) < 3).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (ThunderClap ())
+						return true;
+				}
+			}
 			//	actions.aoe+=/bladestorm,if=buff.shield_charge.down
+			if (!Me.HasAura ("Shield Charge")) {
+				if (Bladestorm ())
+					return true;
+			}
 			//	actions.aoe+=/execute,if=buff.sudden_death.react
 			if (Me.HasAura ("Sudden Death")) {
 				if (Execute ())
 					return true;
 			}
 			//	actions.aoe+=/thunder_clap,if=active_enemies>6
-			if (EnemyInRange (10) > 6) {
+			if (EnemyInRange (8) > 6) {
 				if (ThunderClap ())
 					return true;
 			}
 			//	actions.aoe+=/devastate,cycle_targets=1,if=dot.deep_wounds.remains<5&cooldown.shield_slam.remains>execute_time*0.4
+			CycleTarget = targets.Where (u => Me.Level >= 32 && u.AuraTimeRemaining ("Deep Wounds", true) < 5 && Cooldown ("Shield Slam") > 1.5 * 0.4).DefaultIfEmpty (null).FirstOrDefault ();
+			if (CycleTarget != null) {
+				if (Devastate (CycleTarget))
+					return true;
+			}
 			//	actions.aoe+=/devastate,if=cooldown.shield_slam.remains>execute_time*0.4
+			if (Cooldown ("Shield Slam") > 1.5 * 0.4) {
+				if (Devastate ())
+					return true;
+			}
 
 			return false;
 		}
