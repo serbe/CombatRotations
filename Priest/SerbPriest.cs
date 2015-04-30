@@ -245,9 +245,17 @@ namespace ReBot
 			return Cast ("Devouring Plague", () => Usable ("Devouring Plague") && Orb >= 3 && u.IsInLoS && u.CombatRange <= 40, u);
 		}
 
+		public bool SearingInsanity (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Searing Insanity", () => Usable ("Searing Insanity") && u.IsInLoS && u.CombatRange <= 40 && !Me.IsMoving, u);
+		}
 
-
-
+		public bool Insanity (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Insanity", () => Usable ("Insanity") && u.IsInLoS && u.CombatRange <= 40 && !Me.IsMoving, u);
+		}
 
 
 

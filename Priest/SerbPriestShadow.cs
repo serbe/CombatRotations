@@ -165,8 +165,10 @@ namespace ReBot
 			targets.Add (Target);
 
 			//	actions.main=mindbender,if=talent.mindbender.enabled
-			if (Mindbender ())
-				return true;
+			if (HasSpell ("Mindbender")) {
+				if (Mindbender ())
+					return true;
+			}
 			//	actions.main+=/shadowfiend,if=!talent.mindbender.enabled
 			if (!HasSpell ("Mindbender")) {
 				if (Shadowfiend ())
@@ -174,7 +176,7 @@ namespace ReBot
 			} 
 			//	actions.main+=/shadow_word_death,if=natural_shadow_word_death_range&shadow_orb<=4,cycle_targets=1
 			if (Orb <= 4) {
-				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && u.HealthFraction < 0.2).DefaultIfEmpty (null).FirstOrDefault ();
+				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CycleTarget != null) {
 					if (ShadowWordDeath (CycleTarget))
 						return true;
@@ -228,7 +230,7 @@ namespace ReBot
 			}
 			//	actions.main+=/devouring_plague,if=shadow_orb>=3&!talent.auspicious_spirits.enabled&((cooldown.mind_blast.remains<gcd&!set_bonus.tier17_2pc)|(natural_shadow_word_death_range&cooldown.shadow_word_death.remains<gcd))&!target.dot.devouring_plague_tick.ticking&talent.surge_of_darkness.enabled,cycle_targets=1
 			if (Orb >= 3 && !HasSpell ("Auspicious Spirits") && HasSpell ("Surge of Darkness")) {
-				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && ((Cooldown ("Mind Blast") < 1.5 && !HasSpell ("Mental Instinct")) || (u.HealthFraction < 0.2 && Cooldown ("Shadow Word: Death") < 1.5)) && !u.HasAura ("Devouring Plague", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && ((Cooldown ("Mind Blast") < 1.5 && !HasSpell ("Mental Instinct")) || (Health (u) < 0.2 && Cooldown ("Shadow Word: Death") < 1.5)) && !u.HasAura ("Devouring Plague", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CycleTarget != null) {
 					if (DevouringPlague (CycleTarget))
 						return true;
@@ -272,7 +274,7 @@ namespace ReBot
 			if (Me.HasAura ("Insanity") && Me.AuraTimeRemaining ("Insanity") < 0.5 * 1.5 && EnemyInRange (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
 				var bestTarget = BestTarget (40, 10, 3);
 				if (bestTarget != null) {
-					if (MindSear (bestTarget)) {
+					if (SearingInsanity (bestTarget)) {
 						Interrupt = "ChainMS";
 						return true;
 					}
@@ -282,7 +284,7 @@ namespace ReBot
 			if (Me.HasAura ("Insanity") && EnemyInRange (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
 				var bestTarget = BestTarget (40, 10, 3);
 				if (bestTarget != null) {
-					if (MindSear (bestTarget)) {
+					if (SearingInsanity (bestTarget)) {
 						Interrupt = "ChainMS";
 						return true;
 					}
@@ -290,14 +292,14 @@ namespace ReBot
 			}
 			//	actions.main+=/insanity,if=buff.insanity.remains<0.5*gcd&active_enemies<=2,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1|shadow_orb=5)
 			if (Me.HasAura ("Insanity") && Me.AuraTimeRemaining ("Insanity") < 0.5 * 1.5 && EnemyInRange (40) <= 2) {
-				if (MindFlay ()) {
+				if (Insanity ()) {
 					Interrupt = "ChainMSO";
 					return true;
 				}
 			}
 			//	actions.main+=/insanity,chain=1,if=active_enemies<=2,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1|shadow_orb=5)
 			if (Me.HasAura ("Insanity") && EnemyInRange (40) <= 2) {
-				if (MindFlay ()) {
+				if (Insanity ()) {
 					Interrupt = "ChainMSO";
 					return true;
 				}
@@ -579,7 +581,7 @@ namespace ReBot
 			if (Me.HasAura ("Insanity") && Me.AuraTimeRemaining ("Insanity") < 0.5 * 1.5 && EnemyInRange (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
 				var bestTarget = BestTarget (40, 10, 3);
 				if (bestTarget != null) {
-					if (MindSear (bestTarget)) {
+					if (SearingInsanity (bestTarget)) {
 						Interrupt = "ChainMS";
 						return true;
 					}
@@ -589,7 +591,7 @@ namespace ReBot
 			if (Me.HasAura ("Insanity") && EnemyInRange (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
 				var bestTarget = BestTarget (40, 10, 3);
 				if (bestTarget != null) {
-					if (MindSear (bestTarget)) {
+					if (SearingInsanity (bestTarget)) {
 						Interrupt = "ChainMS";
 						return true;
 					}
@@ -602,14 +604,14 @@ namespace ReBot
 			}
 			//	actions.vent+=/insanity,if=buff.insanity.remains<0.5*gcd&active_enemies<=3&cooldown.mind_blast.remains>0.5*gcd,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Me.HasAura ("Insanity") && Me.AuraTimeRemaining ("Insanity") < (0.5 * 1.5) && EnemyInRange (40) <= 3 && Cooldown ("Mind Blast") > (0.5 * 1.5)) {
-				if (MindFlay ()) {
+				if (Insanity ()) {
 					Interrupt = "ChainMS";
 					return true;
 				}
 			}
 			//	actions.vent+=/insanity,chain=1,if=active_enemies<=3&cooldown.mind_blast.remains>0.5*gcd,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Me.HasAura ("Insanity") && EnemyInRange (40) <= 3 && Cooldown ("Mind Blast") > (0.5 * 1.5)) {
-				if (MindFlay ()) {
+				if (Insanity ()) {
 					Interrupt = "ChainMS";
 					return true;
 				}
@@ -770,7 +772,7 @@ namespace ReBot
 			if (Me.HasAura ("Insanity") && Me.AuraTimeRemaining ("Insanity") < 0.5 * 1.5 && EnemyInRange (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
 				var bestTarget = BestTarget (40, 10, 3);
 				if (bestTarget != null) {
-					if (MindSear (bestTarget)) {
+					if (SearingInsanity (bestTarget)) {
 						Interrupt = "ChainMS";
 						return true;
 					}
@@ -780,7 +782,7 @@ namespace ReBot
 			if (Me.HasAura ("Insanity") && EnemyInRange (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
 				var bestTarget = BestTarget (40, 10, 3);
 				if (bestTarget != null) {
-					if (MindSear (bestTarget)) {
+					if (SearingInsanity (bestTarget)) {
 						Interrupt = "ChainMS";
 						return true;
 					}
@@ -802,21 +804,120 @@ namespace ReBot
 					return true;
 			}
 			//	actions.cop_dotweave+=/shadow_word_pain,if=shadow_orb=5&!target.dot.devouring_plague.ticking&!target.dot.shadow_word_pain.ticking
+			if (Orb == 5 && !Target.HasAura ("Devouring Plague", true) && !Target.HasAura ("Shadow Word: Pain", true)) {
+				if (ShadowWordPain ())
+					return true;
+			}
 			//	actions.cop_dotweave+=/vampiric_touch,if=shadow_orb=5&!target.dot.devouring_plague.ticking&!target.dot.vampiric_touch.ticking
+			if (Orb == 5 && !Target.HasAura ("Devouring Plague", true) && !Target.HasAura ("Vampiric Touch", true)) {
+				if (VampiricTouch ())
+					return true;
+			}
 			//	actions.cop_dotweave+=/insanity,if=buff.insanity.remains,chain=1,interrupt_if=cooldown.mind_blast.remains<=0.1
+			if (Me.HasAura ("Insanity")) {
+				if (Insanity ()) {
+					Interrupt = "ChainM";
+					return true;
+				}
+			}
 			//	actions.cop_dotweave+=/shadow_word_pain,if=shadow_orb>=2&target.dot.shadow_word_pain.remains>=6&cooldown.mind_blast.remains>0.5*gcd&target.dot.vampiric_touch.remains&buff.bloodlust.up&!set_bonus.tier17_2pc
+			if (Orb >= 2 && Target.AuraTimeRemaining ("Shadow Word: Pain", true) >= 6 && Cooldown ("Mind Blast") > 0.5 * 1.5 && Target.HasAura ("Vampiric Touch", true) && Me.HasAura ("Bloodlust") && !HasSpell (165628)) {
+				if (ShadowWordPain ())
+					return true;
+			}
 			//	actions.cop_dotweave+=/vampiric_touch,if=shadow_orb>=2&target.dot.vampiric_touch.remains>=5&cooldown.mind_blast.remains>0.5*gcd&buff.bloodlust.up&!set_bonus.tier17_2pc
+			if (Orb >= 2 && Target.AuraTimeRemaining ("Vampiric Touch", true) >= 5 && Cooldown ("Mind Blast") > 0.5 * 1.5 && Me.HasAura ("Bloodlust") && !HasSpell (165628)) {
+				if (VampiricTouch ())
+					return true;
+			}
 			//	actions.cop_dotweave+=/halo,if=cooldown.mind_blast.remains>0.5*gcd&talent.halo.enabled&target.distance<=30&target.distance>=17
+			if (HasSpell ("Halo") && (IsBoss () || IsPlayer ()) && Cooldown ("Mind Blast") > 0.5 * 1.5 && Range () <= 30 && Range () >= 17) {
+				if (Halo ())
+					return true;
+			}
 			//	actions.cop_dotweave+=/cascade,if=cooldown.mind_blast.remains>0.5*gcd&talent.cascade.enabled&((active_enemies>1|target.distance>=28)&target.distance<=40&target.distance>=11)
+			if (HasSpell ("Cascade") && (IsBoss () || IsPlayer ()) && Cooldown ("Mind Blast") > 0.5 * 1.5 && ((EnemyInRange (40) > 1 || Range () >= 28) && Range () <= 40 && Range () >= 11)) {
+				if (Cascade ())
+					return true;
+			}
 			//	actions.cop_dotweave+=/divine_star,if=talent.divine_star.enabled&cooldown.mind_blast.remains>0.5*gcd&active_enemies>3&target.distance<=24
+			if (HasSpell ("Divine Star") && Cooldown ("Mind Blast") > 0.5 * 1.5 && EnemyInRange (24) > 3 && Range () <= 24) {
+				if (DivineStar ())
+					return true;
+			}
 			//	actions.cop_dotweave+=/shadow_word_pain,if=primary_target=0&!ticking,cycle_targets=1,max_cycle_targets=5
+			if (Usable ("Shadow Word: Pain")) {
+				MaxCycle = Adds.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Shadow Word: Pain", true) && u != Target);
+				if (MaxCycle.ToList ().Count <= 5) {
+					CycleTarget = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (ShadowWordPain (CycleTarget))
+							return true;
+					}
+				}
+			}
 			//	actions.cop_dotweave+=/vampiric_touch,if=primary_target=0&!ticking,cycle_targets=1,max_cycle_targets=5
+			if (Usable ("Vampiric Touch")) {
+				MaxCycle = Adds.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Vampiric Touch", true) && u != Target);
+				if (MaxCycle.ToList ().Count <= 5) {
+					CycleTarget = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (VampiricTouch (CycleTarget))
+							return true;
+					}
+				}
+			}
 			//	actions.cop_dotweave+=/divine_star,if=talent.divine_star.enabled&cooldown.mind_blast.remains>0.5*gcd&active_enemies=3&target.distance<=24
+			if (HasSpell ("Divine Star") && Cooldown ("Mind Blast") > 0.5 * 1.5 && EnemyInRange (24) == 3 && Range () <= 24) {
+				if (DivineStar ())
+					return true;
+			}
 			//	actions.cop_dotweave+=/shadow_word_pain,if=primary_target=0&(!ticking|remains<=18*0.3)&target.time_to_die>(18*0.75),cycle_targets=1,max_cycle_targets=5
+			if (Usable ("Shadow Word: Pain")) {
+				MaxCycle = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && (!u.HasAura ("Shadow Word: Pain", true) || u.AuraTimeRemaining ("Shadow Word: Pain", true) <= 18 * 0.3) && TimeToDie (u) > (18 * 0.75));
+				if (MaxCycle.ToList ().Count <= 5) {
+					CycleTarget = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (ShadowWordPain (CycleTarget))
+							return true;
+					}
+				}
+			}
 			//	actions.cop_dotweave+=/vampiric_touch,if=primary_target=0&(!ticking|remains<=15*0.3+cast_time)&target.time_to_die>(15*0.75+cast_time),cycle_targets=1,max_cycle_targets=5
+			if (Usable ("Vampiric Touch")) {			
+				MaxCycle = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && (!u.HasAura ("Vampiric Touch", true) || u.AuraTimeRemaining ("Vampiric Touch", true) <= 15 * 0.3 + CastTime (34914)) && TimeToDie (u) > (15 * 0.75 + CastTime (34914)));
+				if (MaxCycle.ToList ().Count <= 5) {
+					CycleTarget = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (VampiricTouch (CycleTarget))
+							return true;
+					}
+				}
+			}
 			//	actions.cop_dotweave+=/mind_sear,if=active_enemies>=8,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
+			if (Usable ("Mind Sear") && EnemyInRange (40) >= 8) {
+				var bestTarget = BestTarget (40, 10, 8);
+				if (bestTarget != null) {
+					if (bestTarget != null) {
+						if (MindSear (bestTarget)) {
+							Interrupt = "ChainMS";
+							return true;
+						}
+					}
+				}
+			}
 			//	actions.cop_dotweave+=/mind_spike
+			if (MindSpike ())
+				return true;
 			//	actions.cop_dotweave+=/shadow_word_death,moving=1,if=!target.dot.shadow_word_pain.ticking&!target.dot.vampiric_touch.ticking,cycle_targets=1
+			if (Usable ("Shadow Word: Death")) {
+				CycleTarget = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2 && !Target.HasAura ("Shadow Word: Pain", true) && !Target.HasAura ("Vampiric Touch", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (ShadowWordDeath (CycleTarget))
+						return true;
+				}
+			}
+
 			if (Me.IsMoving) {
 				//	actions.cop_dotweave+=/shadow_word_death,moving=1,if=movement.remains>=1*gcd
 				if (Health (Target) < 0.2) {
@@ -834,99 +935,27 @@ namespace ReBot
 						return true;
 				}
 				//	actions.cop_dotweave+=/divine_star,if=talent.divine_star.enabled&target.distance<=28,moving=1
+				if (HasSpell ("Divine Star") && (IsBoss () || IsPlayer ()) && Range () <= 24) {
+					if (DivineStar ())
+						return true;
+				}
 				//	actions.cop_dotweave+=/cascade,if=talent.cascade.enabled&target.distance<=40,moving=1
+				if (HasSpell ("Cascade") && (IsBoss () || IsPlayer ()) && Range () <= 40) {
+					if (Cascade ())
+						return true;
+				}
 				//	actions.cop_dotweave+=/devouring_plague,moving=1
 				if (DevouringPlague ())
 					return true;
 				//	actions.cop_dotweave+=/shadow_word_pain,if=primary_target=0,moving=1,cycle_targets=1
-
+				if (Usable ("Shadow Word: Pain")) {
+					CycleTarget = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && !u.HasAura ("Shadow Word: Pain", true)).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (ShadowWordPain (CycleTarget))
+							return true;
+					}
+				}
 			}
-
-
-
-
-
-
-//			// actions.cop_dotweave+=/shadow_word_pain,if=shadow_orb=5&!target.dot.devouring_plague.ticking&!target.dot.shadow_word_pain.ticking
-//			if (Cast("Shadow Word: Pain", () => Orb == 5 && !Target.HasAura("Devouring Plague", true) && !Target.HasAura("Shadow Word: Pain", true))) return;
-//			// actions.cop_dotweave+=/vampiric_touch,if=shadow_orb=5&!target.dot.devouring_plague.ticking&!target.dot.vampiric_touch.ticking
-//			if (Cast("Vampiric Touch", () => Orb == 5 && !Target.HasAura("Devouring Plague", true) && !Target.HasAura("Vampiric Touch", true))) return;
-//			// actions.cop_dotweave+=/insanity,if=buff.insanity.remains,chain=1,interrupt_if=cooldown.mind_blast.remains<=0.1
-//			if (Cast("Mind Flay", () => Me.HasAura("Insanity"))) {
-//				ChainM = true;
-//				return;
-//			}
-//			// actions.cop_dotweave+=/shadow_word_pain,if=shadow_orb>=2&target.dot.shadow_word_pain.remains>=6&cooldown.mind_blast.remains>0.5*gcd&target.dot.vampiric_touch.remains&buff.bloodlust.up&!set_bonus.tier17_2pc
-//			if (Cast("Shadow Word: Pain", () => Orb >= 2 && Target.AuraTimeRemaining("Shadow Word: Pain", true) >= 6 && Cooldown("Mind Blast") > 0.5 * 1.5 && Target.HasAura("Vampiric Touch", true) && Me.HasAura("Bloodlust") && !HasSpell(165628))) return;
-//			// actions.cop_dotweave+=/vampiric_touch,if=shadow_orb>=2&target.dot.vampiric_touch.remains>=5&cooldown.mind_blast.remains>0.5*gcd&buff.bloodlust.up&!set_bonus.tier17_2pc
-//			if (Cast("Vampiric Touch", () => Orb >= 2 && Target.AuraTimeRemaining("Vampiric Touch", true) >= 5 && Cooldown("Mind Blast") > 0.5 * 1.5 && Me.HasAura("Bloodlust") && !HasSpell(165628))) return;
-//			// actions.cop_dotweave+=/halo,if=cooldown.mind_blast.remains>0.5*gcd&talent.halo.enabled&target.distance<=30&target.distance>=17
-//			if (Cast("Halo", () => HasSpell("Halo") && IsBoss(Target) && Cooldown("Mind Blast") > 0.5 * 1.5 && Range <= 30 && Range >= 17)) return;
-//			// actions.cop_dotweave+=/cascade,if=cooldown.mind_blast.remains>0.5*gcd&talent.cascade.enabled&((active_enemies>1|target.distance>=28)&target.distance<=40&target.distance>=11)
-//			if (Cast("Cascade", () => HasSpell("Cascade") && Cooldown("Mind Blast") > 0.5 * 1.5 && ((EnemyInRange(40) > 1 || Range >= 28) && Range <= 40 && Range >= 11))) return;
-//			// actions.cop_dotweave+=/divine_star,if=talent.divine_star.enabled&cooldown.mind_blast.remains>0.5*gcd&active_enemies>3&target.distance<=24
-//			if (Cast("Divine Star", () => HasSpell("Divine Star") && Cooldown("Mind Blast") > 0.5 * 1.5 && EnemyInRange(24) > 3 && Range <= 24)) return;
-//			// actions.cop_dotweave+=/shadow_word_pain,if=primary_target=0&!ticking,cycle_targets=1,max_cycle_targets=5
-//			MaxCycle = Adds.Where(u => u.IsInCombatRangeAndLoS && !u.HasAura("Shadow Word: Pain", true));
-//			if (MaxCycle.ToList().Count <= 5) {
-//				CycleTarget = MaxCycle.DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Shadow Word: Pain", CycleTarget, () => CycleTarget != null)) return;
-//			}
-//			// actions.cop_dotweave+=/vampiric_touch,if=primary_target=0&!ticking,cycle_targets=1,max_cycle_targets=5
-//			MaxCycle = Adds.Where(u => u.IsInCombatRangeAndLoS && !u.HasAura("Vampiric Touch", true) && u != Target);
-//			if (MaxCycle.ToList().Count <= 5) {
-//				CycleTarget = MaxCycle.DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Vampiric Touch", CycleTarget, () => CycleTarget != null)) return;
-//			}
-//			// actions.cop_dotweave+=/divine_star,if=talent.divine_star.enabled&cooldown.mind_blast.remains>0.5*gcd&active_enemies=3&target.distance<=24
-//			if (Cast("Divine Star", () => HasSpell("Divine Star") && Cooldown("Mind Blast") > 0.5 * 1.5 && EnemyInRange(24) == 3 && Range <= 24)) return;
-//			// actions.cop_dotweave+=/shadow_word_pain,if=primary_target=0&(!ticking|remains<=18*0.3)&target.time_to_die>(18*0.75),cycle_targets=1,max_cycle_targets=5
-//			MaxCycle = Adds.Where(u => u.IsInCombatRangeAndLoS && (!u.HasAura("Shadow Word: Pain", true) || u.AuraTimeRemaining("Shadow Word: Pain", true) <= 18 * 0.75));
-//			if (MaxCycle.ToList().Count <= 5) {
-//				CycleTarget = MaxCycle.DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Shadow Word: Pain", CycleTarget, () => CycleTarget != null)) return;
-//			}
-//			// actions.cop_dotweave+=/vampiric_touch,if=primary_target=0&(!ticking|remains<=15*0.3+cast_time)&target.time_to_die>(15*0.75+cast_time),cycle_targets=1,max_cycle_targets=5
-			//			MaxCycle = Adds.Where(u => u.IsInCombatRangeAndLoS && u != Target && (!u.HasAura("Vampiric Touch", true) || u.AuraTimeRemaining("Vampiric Touch", true) <= 15 * 0.3 + CastTime(34914)));
-//			if (MaxCycle.ToList().Count <= 5) {
-//				CycleTarget = MaxCycle.DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Vampiric Touch", CycleTarget, () => CycleTarget != null)) return;
-//			}
-//			// actions.cop_dotweave+=/mind_sear,if=active_enemies>=8,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
-//			if (EnemyInRange(40) >= 8) {
-//				var bestTarget = targets
-//					.Where(u => u.IsInCombatRangeAndLoS && u.DistanceSquared <= SpellMaxRangeSq("Mind Sear"))
-//					.OrderByDescending(u => targets.Count(o => Vector3.DistanceSquared(u.Position, o.Position) <= 10 * 10)).DefaultIfEmpty(null).FirstOrDefault();
-//				if (bestTarget != null) {
-//					if (targets.Where(u => Vector3.DistanceSquared(u.Position, bestTarget.Position) <= 10 * 10).ToList().Count >= 3) {
-//						if (Cast("Mind Sear", bestTarget, () => bestTarget != null)) {
-//							ChainMS = true;
-//							return;
-//						}
-//					}
-//				}
-//			}
-//			// actions.cop_dotweave+=/mind_spike
-//			if (Cast("Mind Spike")) return;
-//			if (Me.IsMoving) {
-//				// actions.cop_dotweave+=/shadow_word_death,moving=1,if=!target.dot.shadow_word_pain.ticking&!target.dot.vampiric_touch.ticking,cycle_targets=1
-//				CycleTarget = targets.Where(u => u.IsInCombatRangeAndLoS && u.HealthFraction < 0.2 && !Target.HasAura("Shadow Word: Pain", true) && !Target.HasAura("Vampiric Touch", true)).DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Shadow Word: Death", CycleTarget, () => CycleTarget != null)) return;
-
-
-
-
-
-
-//				// actions.cop_dotweave+=/divine_star,if=talent.divine_star.enabled&target.distance<=28,moving=1
-//				if (Cast("Divine Star", () => HasSpell("Divine Star") && Range <= 24)) return;
-//				// actions.cop_dotweave+=/cascade,if=talent.cascade.enabled&target.distance<=40,moving=1
-//				if (Cast("Cascade", () => HasSpell("Cascade") && Range <= 40)) return;
-
-//				// actions.cop_dotweave+=/shadow_word_pain,if=primary_target=0,moving=1,cycle_targets=1
-//				CycleTarget = Adds.Where(u => u.IsInCombatRangeAndLoS && !u.HasAura("Shadow Word: Pain", true)).DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Shadow Word: Pain", CycleTarget, () => CycleTarget != null)) return;
-//			}
 
 			return false;
 		}
@@ -935,8 +964,17 @@ namespace ReBot
 		{
 			var targets = Adds;
 			targets.Add (Target);
+
 			//	actions.cop_insanity=devouring_plague,if=shadow_orb=5|(active_enemies>=5&!buff.insanity.remains)
+			if (Orb == 5 || (EnemyInRange (40) >= 5 && !Me.HasAura ("Insanity"))) {
+				if (DevouringPlague ())
+					return true;
+			}
 			//	actions.cop_insanity+=/devouring_plague,if=buff.mental_instinct.remains<(gcd*1.7)&buff.mental_instinct.remains>(gcd*0.7)&buff.mental_instinct.remains
+			if (Me.AuraTimeRemaining ("Mental Instinct") < (1.5 * 1.7) && Me.AuraTimeRemaining ("Mental Instinct") > (1.5 * 0.7) && Me.HasAura ("Mental Instinct")) {
+				if (DevouringPlague ())
+					return true;
+			}
 			//	actions.cop_insanity+=/mind_blast,if=glyph.mind_harvest.enabled&mind_harvest=0,cycle_targets=1
 			if (HasGlyph (162532)) {
 				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Glyph of Mind Blast", true)).DefaultIfEmpty (null).FirstOrDefault ();
@@ -946,6 +984,10 @@ namespace ReBot
 				}
 			}
 			//	actions.cop_insanity+=/mind_blast,if=active_enemies<=5&cooldown_react
+			if (EnemyInRange (40) <= 5 && Usable ("Mind Blast")) {
+				if (MindBlast ())
+					return true;
+			}
 			//	actions.cop_insanity+=/shadow_word_death,if=natural_shadow_word_death_range&!target.dot.shadow_word_pain.ticking&!target.dot.vampiric_touch.ticking,cycle_targets=1
 			if (Usable ("Shadow Word: Death")) {
 				CycleTarget = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2 && !Target.HasAura ("Shadow Word: Pain", true) && !Target.HasAura ("Vampiric Touch", true)).DefaultIfEmpty (null).FirstOrDefault ();
@@ -963,34 +1005,120 @@ namespace ReBot
 				}
 			}
 			//	actions.cop_insanity+=/devouring_plague,if=shadow_orb>=3&!set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<gcd|(natural_shadow_word_death_range&cooldown.shadow_word_death.remains<gcd)),cycle_targets=1
+			if (Orb >= 3 && !HasSpell (165628) && !HasSpell (165629)) {
+				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && (Cooldown ("Mind Blast") < 1.5 || (Health (u) < 0.2 && Cooldown ("Shadow Word: Death") < 1.5))).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (DevouringPlague (CycleTarget))
+						return true;
+				}
+			}
 			//	actions.cop_insanity+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=2|(natural_shadow_word_death_range&cooldown.shadow_word_death.remains<gcd)),cycle_targets=1
+			if (Orb >= 3 && HasSpell (165628) && !HasSpell (165629)) {
+				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && (Cooldown ("Mind Blast") <= 2 || (Health (u) < 0.2 && Cooldown ("Shadow Word: Death") < 1.5))).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (DevouringPlague (CycleTarget))
+						return true;
+				}
+			}
 			//	actions.cop_insanity+=/searing_insanity,if=buff.insanity.remains<0.5*gcd&active_enemies>=3&cooldown.mind_blast.remains>0.5*gcd,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Me.HasAura ("Insanity") && Me.AuraTimeRemaining ("Insanity") < 0.5 * 1.5 && EnemyInRange (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
 				var bestTarget = BestTarget (40, 10, 3);
 				if (bestTarget != null) {
-					if (MindSear (bestTarget)) {
+					if (SearingInsanity (bestTarget)) {
 						Interrupt = "ChainMS";
 						return true;
 					}
 				}
 			}
 			//	actions.cop_insanity+=/searing_insanity,if=active_enemies>=5,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
+			if (Usable ("Mind Sear") && Me.HasAura ("Insanity") && EnemyInRange (40) >= 5) {
+				var bestTarget = BestTarget (40, 10, 5);
+				if (bestTarget != null) {
+					if (SearingInsanity (bestTarget)) {
+						Interrupt = "ChainMS";
+						return  true;
+					}
+				}
+			}
 			//	actions.cop_insanity+=/mindbender,if=talent.mindbender.enabled
+			if (HasSpell ("Mindbender")) {
+				if (Mindbender ())
+					return true;
+			}
 			//	actions.cop_insanity+=/shadowfiend,if=!talent.mindbender.enabled
+			if (!HasSpell ("Mindbender")) {
+				if (Shadowfiend ())
+					return true;
+			} 
 			//	actions.cop_insanity+=/shadow_word_pain,if=remains<(18*0.3)&target.time_to_die>(18*0.75)&miss_react&active_enemies<=5&primary_target=0,cycle_targets=1,max_cycle_targets=5
+			if (EnemyInRange (40) <= 5) {
+				CycleTarget = Adds.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Shadow Word: Pain", true) < (18 * 0.3) && TimeToDie (u) > (18 * 0.75)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (ShadowWordPain (CycleTarget))
+						return true;
+				}
+			}
 			//	actions.cop_insanity+=/vampiric_touch,if=remains<(15*0.3+cast_time)&target.time_to_die>(15*0.75+cast_time)&miss_react&active_enemies<=5&primary_target=0,cycle_targets=1,max_cycle_targets=5
+			if (EnemyInRange (40) <= 5) {
+				CycleTarget = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && u.AuraTimeRemaining ("Vampiric Touch", true) < (15 * 0.3 + CastTime (34914)) && TimeToDie (u) > (15 * 0.75 + CastTime (34914))).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (VampiricTouch (CycleTarget))
+						return true;
+				}
+			}
 			//	actions.cop_insanity+=/insanity,if=buff.insanity.remains<0.5*gcd&active_enemies<=2,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|(cooldown.shadow_word_death.remains<=0.1&target.health.pct<20))
+			if (Me.HasAura ("Insanity") && Me.AuraTimeRemaining ("Insanity") < 0.5 * 1.5 && EnemyInRange (40) <= 2) {
+				if (Insanity ()) {
+					Interrupt = "ChainMSH";
+					return true;
+				}
+			}
 			//	actions.cop_insanity+=/insanity,if=active_enemies<=2,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|(cooldown.shadow_word_death.remains<=0.1&target.health.pct<20))
+			if (Me.HasAura ("Insanity") && EnemyInRange (40) <= 2) {
+				if (Insanity ()) {
+					Interrupt = "ChainMSH";
+					return true;
+				}
+			}
 			//	actions.cop_insanity+=/halo,if=talent.halo.enabled&target.distance<=30&target.distance>=17
 			if (HasSpell ("Halo") && Range () <= 30 && Range () >= 17) {
 				if (Halo ())
 					return true;
 			}
 			//	actions.cop_insanity+=/cascade,if=talent.cascade.enabled&((active_enemies>1|target.distance>=28)&target.distance<=40&target.distance>=11)
+			if (HasSpell ("Cascade") && (IsBoss () || IsPlayer ()) && ((EnemyInRange (40) > 1 || Range () >= 28) && Range () <= 40 && Range () >= 11)) {
+				if (Cascade ())
+					return true;
+			}
 			//	actions.cop_insanity+=/divine_star,if=talent.divine_star.enabled&active_enemies>2&target.distance<=24
+			if (HasSpell ("Divine Star") && (IsBoss () || IsPlayer ()) && EnemyInRange (24) > 2 && Range () <= 24) {
+				if (DivineStar ())
+					return true;
+			}
 			//	actions.cop_insanity+=/mind_sear,if=active_enemies>=8,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
+			if (Usable ("Mind Sear") && EnemyInRange (40) >= 8) {
+				var bestTarget = BestTarget (40, 10, 8);
+				if (bestTarget != null) {
+					if (bestTarget != null) {
+						if (MindSear (bestTarget)) {
+							Interrupt = "ChainMS";
+							return true;
+						}
+					}
+				}
+			}
 			//	actions.cop_insanity+=/mind_spike
+			if (MindSpike ())
+				return true;
 			//	actions.cop_insanity+=/shadow_word_death,moving=1,if=!target.dot.shadow_word_pain.ticking&!target.dot.vampiric_touch.ticking,cycle_targets=1
+			if (Usable ("Shadow Word: Death")) {
+				CycleTarget = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2 && !Target.HasAura ("Shadow Word: Pain", true) && !Target.HasAura ("Vampiric Touch", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (ShadowWordDeath (CycleTarget))
+						return true;
+				}
+			}
+
 			if (Me.IsMoving) {
 				//	actions.cop_insanity+=/shadow_word_death,moving=1,if=movement.remains>=1*gcd
 				if (Health (Target) < 0.2) {
@@ -1008,133 +1136,52 @@ namespace ReBot
 						return true;
 				}
 				//	actions.cop_insanity+=/divine_star,if=talent.divine_star.enabled&target.distance<=28,moving=1
+				if (HasSpell ("Divine Star") && (IsBoss () || IsPlayer ()) && Range () <= 24) {
+					if (DivineStar ())
+						return true;
+				}
 				//	actions.cop_insanity+=/cascade,if=talent.cascade.enabled&target.distance<=40,moving=1
+				if (HasSpell ("Cascade") && (IsBoss () || IsPlayer ()) && Range () <= 40) {
+					if (Cascade ())
+						return true;
+				}
 				//	actions.cop_insanity+=/devouring_plague,moving=1
 				if (DevouringPlague ())
 					return true;
 				//	actions.cop_insanity+=/shadow_word_pain,if=primary_target=0,moving=1,cycle_targets=1
+				if (Usable ("Shadow Word: Pain")) {
+					CycleTarget = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && !u.HasAura ("Shadow Word: Pain", true)).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (ShadowWordPain (CycleTarget))
+							return true;
+					}
+				}
 			}
-
-//			// actions.cop_insanity=devouring_plague,if=shadow_orb=5|(active_enemies>=5&!buff.insanity.remains)
-//			if (Cast("Devouring Plague", () => Orb == 5 || (EnemyInRange(40) >= 5 && !Me.HasAura("Insanity")))) return;
-//			// actions.cop_insanity+=/devouring_plague,if=buff.mental_instinct.remains<(gcd*1.7)&buff.mental_instinct.remains>(gcd*0.7)&buff.mental_instinct.remains
-//			if (Cast("Devouring Plague", () => Me.AuraTimeRemaining("Mental Instinct") < (1.5 * 1.7) && Me.AuraTimeRemaining("Mental Instinct") > (1.5 * 0.7) && Me.HasAura("Mental Instinct", true))) return;
-
-//			// actions.cop_insanity+=/mind_blast,if=active_enemies<=5&cooldown_react
-//			if (Cast("Mind Blast", () => EnemyInRange(40) <= 5 && Cooldown("Mind Blast") == 0)) return;
-
-
-//			// actions.cop_insanity+=/devouring_plague,if=shadow_orb>=3&!set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<gcd|(natural_shadow_word_death_range&cooldown.shadow_word_death.remains<gcd)),cycle_targets=1
-//			if (Orb >= 3 && !HasSpell(165628) && !HasSpell(165629)) {
-//				CycleTarget = targets.Where(u => u.IsInCombatRangeAndLoS && (Cooldown("Mind Blast") < 1.5 || (u.HealthFraction < 0.2 && Cooldown("Shadow Word: Death") < 1.5))).DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Devouring Plague", CycleTarget, () => CycleTarget != null)) return;
-//			}			
-//			// actions.cop_insanity+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=2|(natural_shadow_word_death_range&cooldown.shadow_word_death.remains<gcd)),cycle_targets=1
-//			if (Orb >= 3 && HasSpell(165628) && !HasSpell(165629)) {
-//				CycleTarget = targets.Where(u => u.IsInCombatRangeAndLoS && (Cooldown("Mind Blast") < 2 || (u.HealthFraction < 0.2 && Cooldown("Shadow Word: Death") < 1.5))).DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Devouring Plague", CycleTarget, () => CycleTarget != null)) return;
-//			}			
-//			// actions.cop_insanity+=/searing_insanity,if=buff.shadow_word_insanity.remains<0.5*gcd&active_enemies>=3&cooldown.mind_blast.remains>0.5*gcd,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
-//			if (Me.HasAura("Insanity") && EnemyInRange(40) >= 3 && Me.AuraTimeRemaining("Shadow Word: Insanity") < 0.5 * 1.5 && Cooldown("Mind Blast") > 0.5 * 1.5) {
-//				var bestTarget = targets
-//					.Where(u => u.IsInCombatRangeAndLoS && u.DistanceSquared <= SpellMaxRangeSq("Mind Sear"))
-//					.OrderByDescending(u => targets.Count(o => Vector3.DistanceSquared(u.Position, o.Position) <= 10 * 10)).DefaultIfEmpty(null).FirstOrDefault();
-//				if (bestTarget != null) {
-//					if (targets.Where(u => Vector3.DistanceSquared(u.Position, bestTarget.Position) <= 10 * 10).ToList().Count >= 3) {
-//						if (Cast("Mind Sear", bestTarget, () => bestTarget != null)) {
-//							ChainMS = true;
-//							return;
-//						}
-//					}
-//				}
-//			}
-//			// actions.cop_insanity+=/searing_insanity,if=active_enemies>=5,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
-//			if (Me.HasAura("Insanity") && EnemyInRange(40) >= 5) {
-//				var bestTarget = targets
-//					.Where(u => u.IsInCombatRangeAndLoS && u.DistanceSquared <= SpellMaxRangeSq("Mind Sear"))
-//					.OrderByDescending(u => targets.Count(o => Vector3.DistanceSquared(u.Position, o.Position) <= 10 * 10)).DefaultIfEmpty(null).FirstOrDefault();
-//				if (bestTarget != null) {
-//					if (targets.Where(u => Vector3.DistanceSquared(u.Position, bestTarget.Position) <= 10 * 10).ToList().Count >= 3) {
-//						if (Cast("Mind Sear", bestTarget, () => bestTarget != null)) {
-//							ChainMS = true;
-//							return;
-//						}
-//					}
-//				}
-//			}
-//			// actions.cop_insanity+=/mindbender,if=talent.mindbender.enabled
-//			if (Cast("Mindbender", () => HasSpell("Mindbender"))) return;
-//			// actions.cop_insanity+=/shadowfiend,if=!talent.mindbender.enabled
-//			if (Cast("Shadowfiend", () => !HasSpell("Mindbender"))) return;
-//			// actions.cop_insanity+=/shadow_word_pain,if=remains<(18*0.3)&target.time_to_die>(18*0.75)&miss_react&active_enemies<=5&primary_target=0,cycle_targets=1,max_cycle_targets=5
-//			if (EnemyInRange(40) <= 5) {
-//				CycleTarget = Adds.Where(u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining("Shadow Word: Pain", true) < (18 * 0.3)).DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Shadow Word: Pain", CycleTarget, () => CycleTarget != null)) return;
-//			}
-//			// actions.cop_insanity+=/vampiric_touch,if=remains<(15*0.3+cast_time)&target.time_to_die>(15*0.75+cast_time)&miss_react&active_enemies<=5&primary_target=0,cycle_targets=1,max_cycle_targets=5
-//			if (EnemyInRange(40) <= 5) {
-//				CycleTarget = Adds.Where(u => u.IsInCombatRangeAndLoS && u != Target && u.AuraTimeRemaining("Vampiric Touch", true) < (15 * 0.3 + 1.5)).DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Vampiric Touch", CycleTarget, () => CycleTarget != null)) return;
-//			}
-//			// actions.cop_insanity+=/insanity,if=buff.insanity.remains<0.5*gcd&active_enemies<=2,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|(cooldown.shadow_word_death.remains<=0.1&target.health.pct<20))
-//			if (Cast("Mind Flay", () => Me.HasAura("Insanity") && Me.AuraTimeRemaining("Insanity") < 0.5 * 1.5 && EnemyInRange(40) <= 2)) {
-//				ChainMSH = true;
-//				return;
-//			}
-//			// actions.cop_insanity+=/insanity,if=active_enemies<=2,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|(cooldown.shadow_word_death.remains<=0.1&target.health.pct<20))
-//			if (Cast("Mind Flay", () => Me.HasAura("Insanity") && EnemyInRange(40) <= 2)) {
-//				ChainMSH = true;
-//				return;
-//			}
-
-
-//			// actions.cop_insanity+=/cascade,if=talent.cascade.enabled&((active_enemies>1|target.distance>=28)&target.distance<=40&target.distance>=11)
-//			if (Cast("Cascade", () => HasSpell("Cascade") && IsBoss(Target) && ((EnemyInRange(40) > 1 || Range >= 28) && Range <= 40 && Range >= 11))) return;
-//			// actions.cop_insanity+=/divine_star,if=talent.divine_star.enabled&active_enemies>2&target.distance<=24
-//			if (Cast("Divine Star", () => HasSpell("Divine Star") && EnemyInRange(24) > 2 && Range <= 24)) return;
-//			// actions.cop_insanity+=/mind_sear,if=active_enemies>=8,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
-//			if (EnemyInRange(40) >= 8) {
-//				var bestTarget = targets
-//					.Where(u => u.IsInCombatRangeAndLoS && u.DistanceSquared <= SpellMaxRangeSq("Mind Sear"))
-//					.OrderByDescending(u => targets.Count(o => Vector3.DistanceSquared(u.Position, o.Position) <= 10 * 10)).DefaultIfEmpty(null).FirstOrDefault();
-//				if (bestTarget != null) {
-//					if (targets.Where(u => Vector3.DistanceSquared(u.Position, bestTarget.Position) <= 10 * 10).ToList().Count >= 3) {
-//						if (Cast("Mind Sear", bestTarget, () => bestTarget != null)) {
-//							ChainMS = true;
-//							return;
-//						}
-//					}
-//				}
-//			}
-//			// actions.cop_insanity+=/mind_spike
-//			if (Cast("Mind Spike")) return;
-//			if (Me.IsMoving) {
-//				// actions.cop_insanity+=/shadow_word_death,moving=1,if=!target.dot.shadow_word_pain.ticking&!target.dot.vampiric_touch.ticking,cycle_targets=1
-//				CycleTarget = targets.Where(u => u.IsInCombatRangeAndLoS && u.HealthFraction < 0.2 && !Target.HasAura("Shadow Word: Pain", true) && !Target.HasAura("Vampiric Touch", true)).DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Shadow Word: Death", CycleTarget, () => CycleTarget != null)) return;
-
-
-
-
-
-
-//				// actions.cop_insanity+=/divine_star,if=talent.divine_star.enabled&target.distance<=28,moving=1
-//				if (Cast("Divine Star", () => HasSpell("Divine Star") && Range <= 24)) return;
-//				// actions.cop_insanity+=/cascade,if=talent.cascade.enabled&target.distance<=40,moving=1
-//				if (Cast("Cascade", () => HasSpell("Cascade") && Range <= 40)) return;
-
-//				// actions.cop_insanity+=/shadow_word_pain,if=primary_target=0,moving=1,cycle_targets=1
-//				CycleTarget = Adds.Where(u => u.IsInCombatRangeAndLoS && !u.HasAura("Shadow Word: Pain", true)).DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Shadow Word: Pain", CycleTarget, () => CycleTarget != null)) return;
-//			}
 
 			return false;
 		}
 
 		public bool COP ()
 		{
+			var targets = Adds;
+			targets.Add (Target);
+
 			//	actions.cop=devouring_plague,if=shadow_orb=5&primary_target=0&!target.dot.devouring_plague_dot.ticking&target.time_to_die>=(gcd*4*7%6),cycle_targets=1
+			if (Orb == 5) {
+				CycleTarget = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && !u.HasAura ("Devouring Plague", true) && TimeToDie (u) >= (1.5 * 4 * 7 / 6)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (DevouringPlague (CycleTarget))
+						return true;
+				}
+			}
 			//	actions.cop+=/devouring_plague,if=shadow_orb=5&primary_target=0&target.time_to_die>=(gcd*4*7%6)&(cooldown.mind_blast.remains<=gcd|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20)),cycle_targets=1
+			if (Orb == 5) {
+				CycleTarget = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && TimeToDie (u) >= (1.5 * 4 * 7 / 6) && (Cooldown ("Mind Blast") <= 1.5 || Cooldown ("Shadow Word: Death") <= 1.5 && Health (u) < 0.2)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (DevouringPlague (CycleTarget))
+						return true;
+				}
+			}
 			//	actions.cop+=/devouring_plague,if=shadow_orb=5&!set_bonus.tier17_2pc&(cooldown.mind_blast.remains<=gcd|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))
 			//	actions.cop+=/devouring_plague,if=shadow_orb=5&set_bonus.tier17_2pc&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))
 			//	actions.cop+=/devouring_plague,if=primary_target=0&buff.mental_instinct.remains<gcd&buff.mental_instinct.remains>(gcd*0.7)&buff.mental_instinct.remains&active_enemies>1,cycle_targets=1
@@ -1151,6 +1198,13 @@ namespace ReBot
 			//	actions.cop+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&talent.mindbender.enabled&!target.dot.devouring_plague_dot.ticking&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&active_enemies=1
 			//	actions.cop+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&talent.surge_of_darkness.enabled&buff.mental_instinct.remains<(gcd*1.4)&buff.mental_instinct.remains>(gcd*0.7)&buff.mental_instinct.remains&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&primary_target=0&target.time_to_die>=(gcd*4*7%6)&active_enemies=1,cycle_targets=1
 			//	actions.cop+=/mind_blast,if=mind_harvest=0,cycle_targets=1
+			if (HasGlyph (162532)) {
+				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Glyph of Mind Blast", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (MindBlast (CycleTarget))
+						return true;
+				}
+			}
 			//	actions.cop+=/mind_blast,if=cooldown_react
 			if (Cooldown ("Mind Blast") == 0) {
 				if (MindBlast ())
@@ -1173,7 +1227,15 @@ namespace ReBot
 				}
 			}
 			//	actions.cop+=/mindbender,if=talent.mindbender.enabled
+			if (HasSpell ("Mindbender")) {
+				if (Mindbender ())
+					return true;
+			}
 			//	actions.cop+=/shadowfiend,if=!talent.mindbender.enabled
+			if (!HasSpell ("Mindbender")) {
+				if (Shadowfiend ())
+					return true;
+			}
 			//	actions.cop+=/halo,if=talent.halo.enabled&target.distance<=30&target.distance>=17
 			if (HasSpell ("Halo") && Range () <= 30 && Range () >= 17) {
 				if (Halo ())
@@ -1187,8 +1249,23 @@ namespace ReBot
 			//	actions.cop+=/divine_star,if=talent.divine_star.enabled&active_enemies>3&target.distance<=24
 			//	actions.cop+=/shadow_word_pain,if=remains<(18*0.3)&target.time_to_die>(18*0.75)&miss_react&!ticking&active_enemies<=5&primary_target=0,cycle_targets=1,max_cycle_targets=5
 			//	actions.cop+=/vampiric_touch,if=remains<(15*0.3+cast_time)&target.time_to_die>(15*0.75+cast_time)&miss_react&active_enemies<=5&primary_target=0,cycle_targets=1,max_cycle_targets=5
+			if (EnemyInRange (40) <= 5) {
+				CycleTarget = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && u.AuraTimeRemaining ("Vampiric Touch", true) < (15 * 0.3 + CastTime (34914)) && TimeToDie (u) > (15 * 0.75 + CastTime (34914))).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (VampiricTouch (CycleTarget))
+						return true;
+				}
+			}
 			//	actions.cop+=/divine_star,if=talent.divine_star.enabled&active_enemies=3&target.distance<=24
+			if (HasSpell ("Divine Star") && EnemyInRange (24) == 3 && Range () <= 24) {
+				if (DivineStar ())
+					return true;
+			}
 			//	actions.cop+=/mind_spike,if=active_enemies<=4&buff.surge_of_darkness.react
+			if (EnemyInRange (40) <= 4 && Me.HasAura ("Surge of Darkness")) {
+				if (MindSpike ())
+					return true;
+			}
 			//	actions.cop+=/mind_sear,if=active_enemies>=8,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (EnemyInRange (40) >= 8) {
 				var bestTarget = BestTarget (40, 10, 3);
@@ -1200,9 +1277,23 @@ namespace ReBot
 				}
 			}
 			//	actions.cop+=/mind_spike,if=target.dot.devouring_plague_tick.remains&target.dot.devouring_plague_tick.remains<cast_time
+			if (Target.HasAura ("Devouring Plague", true) && Target.AuraTimeRemaining ("Devouring Plague") < 1.5) {
+				if (MindSpike ())
+					return true;
+			}
 			//	actions.cop+=/mind_flay,if=target.dot.devouring_plague_tick.ticks_remain>1&active_enemies>1,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			//	actions.cop+=/mind_spike
+			if (MindSpike ())
+				return true;
 			//	actions.cop+=/shadow_word_death,moving=1,if=!target.dot.shadow_word_pain.ticking&!target.dot.vampiric_touch.ticking,cycle_targets=1
+			if (Usable ("Shadow Word: Death")) {
+				CycleTarget = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2 && !Target.HasAura ("Shadow Word: Pain", true) && !Target.HasAura ("Vampiric Touch", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (ShadowWordDeath (CycleTarget))
+						return true;
+				}
+			}
+
 			if (Me.IsMoving) {
 				//	actions.cop+=/shadow_word_death,moving=1,if=movement.remains>=1*gcd
 				if (Health (Target) < 0.2) {
@@ -1220,26 +1311,26 @@ namespace ReBot
 						return true;
 				}
 				//	actions.cop+=/divine_star,if=talent.divine_star.enabled&target.distance<=28,moving=1
+				if (HasSpell ("Divine Star") && (IsBoss () || IsPlayer ()) && Range () <= 24) {
+					if (DivineStar ())
+						return true;
+				}
 				//	actions.cop+=/cascade,if=talent.cascade.enabled&target.distance<=40,moving=1
+				if (HasSpell ("Cascade") && (IsBoss () || IsPlayer ()) && Range () <= 40) {
+					if (Cascade ())
+						return true;
+				}
 				//	actions.cop+=/devouring_plague,moving=1
 				if (DevouringPlague ())
 					return true;
 			}
 
-//			var targets = Adds;
-//			targets.Add(Target);
-//			// actions.cop=devouring_plague,if=shadow_orb=5&primary_target=0&!target.dot.devouring_plague_dot.ticking&target.time_to_die>=(gcd*4*7%6),cycle_targets=1
-//			if (Orb == 5) {
-//				CycleTarget = Adds.Where(u => u.IsInCombatRangeAndLoS && !u.HasAura("Devouring Plague", true)).DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Devouring Plague", CycleTarget, () => CycleTarget != null)) return;
-//			}
+
+
 //			// actions.cop+=/devouring_plague,if=shadow_orb=5&!target.dot.devouring_plague_dot.ticking
 //			if (Cast("Devouring Plague", () => Orb == 5 && !Target.HasAura("Devouring Plague", true))) return;
-//			// actions.cop+=/devouring_plague,if=shadow_orb=5&primary_target=0&target.time_to_die>=(gcd*4*7%6)&(cooldown.mind_blast.remains<=gcd|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20)),cycle_targets=1
-//			if (Orb == 5) {
-//				CycleTarget = Adds.Where(u => u.IsInCombatRangeAndLoS && (Cooldown("Mind Blast") <= 1.5 || Cooldown("Shadow Word: Death") <= 1.5 && u.HealthFraction < 0.2)).DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Devouring Plague", CycleTarget, () => CycleTarget != null)) return;
-//			}
+
+
 //			// actions.cop+=/devouring_plague,if=shadow_orb=5&(cooldown.mind_blast.remains<=gcd|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))
 //			if (Cast("Devouring Plague", () => Orb == 5 && (Cooldown("Mind Blast") <= 1.5 || (Cooldown("Shadow Word: Death") <= 1.5 && TargetHealth < 0.2)))) return;
 //			// actions.cop+=/devouring_plague,if=primary_target=0&buff.mental_instinct.remains<gcd&buff.mental_instinct.remains>(gcd*0.7)&buff.mental_instinct.remains,cycle_targets=1
@@ -1251,31 +1342,23 @@ namespace ReBot
 //			if (Cast("Devouring Plague", () => Me.AuraTimeRemaining("Mental Instinct") < 1.5 && Me.AuraTimeRemaining("Mental Instinct") > 1.5 * 0.7 && Me.HasAura("Mental Instinct", true))) return;
 //			// actions.cop+=/devouring_plague,if=shadow_orb>=3&!set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=gcd|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&primary_target=0&target.time_to_die>=(gcd*4*7%6),cycle_targets=1
 //			if (Orb >= 3 && !HasSpell(165628) && !HasSpell(165629)) {
-//				CycleTarget = Adds.Where(u => u.IsInCombatRangeAndLoS && (Cooldown("Mind Blast") <= 1.5 || (Cooldown("Shadow Word: Death") <= 1.5 && u.HealthFraction < 0.2))).DefaultIfEmpty(null).FirstOrDefault();
+//				CycleTarget = Adds.Where(u => u.IsInCombatRangeAndLoS && (Cooldown("Mind Blast") <= 1.5 || (Cooldown("Shadow Word: Death") <= 1.5 && Health(u) < 0.2))).DefaultIfEmpty(null).FirstOrDefault();
 //				if (Cast("Devouring Plague", CycleTarget, () => CycleTarget != null)) return;
 //			}
 //			// actions.cop+=/devouring_plague,if=shadow_orb>=3&!set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=gcd|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))
 //			if (Cast("Devouring Plague", () => Orb >= 3 && !HasSpell(165628) && !HasSpell(165629) && (Cooldown("Mind Blast") <= 1.5 || (Cooldown("Shadow Word: Death") <= 1.5 && Target.HealthFraction < 0.2)))) return;
 //			// actions.cop+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&primary_target=0&target.time_to_die>=(gcd*4*7%6),cycle_targets=1
 //			if (Orb >= 3 && HasSpell(165628) && !HasSpell(165629)) {
-//				CycleTarget = Adds.Where(u => u.IsInCombatRangeAndLoS && (Cooldown("Mind Blast") <= 2 * 1.5 || (Cooldown("Shadow Word: Death") <= 1.5 && u.HealthFraction < 0.2))).DefaultIfEmpty(null).FirstOrDefault();
+//				CycleTarget = Adds.Where(u => u.IsInCombatRangeAndLoS && (Cooldown("Mind Blast") <= 2 * 1.5 || (Cooldown("Shadow Word: Death") <= 1.5 && Health(u) < 0.2))).DefaultIfEmpty(null).FirstOrDefault();
 //				if (Cast("Devouring Plague", CycleTarget, () => CycleTarget != null)) return;
 //			}
 //			// actions.cop+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))
 //			if (Cast("Devouring Plague", () => Orb >= 3 && HasSpell(165628) && !HasSpell(165629) && (Cooldown("Mind Blast") <= 2 * 1.5 || (Cooldown("Shadow Word: Death") <= 1.5 && Target.HealthFraction < 0.2)))) return;
-//			// actions.cop+=/mind_blast,if=mind_harvest=0,cycle_targets=1
-//			if (HasGlyph(162532)) {
-//				CycleTarget = targets.Where(u => u.IsInCombatRangeAndLoS && !u.HasAura("Glyph of Mind Blast", true)).DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Mind Blast", CycleTarget, () => CycleTarget != null)) return;
-//			}
 
 
 
 
-//			// actions.cop+=/mindbender,if=talent.mindbender.enabled
-//			if (Cast("Mindbender", () => HasSpell("Mindbender"))) return;
-//			// actions.cop+=/shadowfiend,if=!talent.mindbender.enabled
-//			if (Cast("Shadowfiend", () => !HasSpell("Mindbender"))) return;
+
 
 
 			// actions.cop+=/divine_star,if=talent.divine_star.enabled&active_enemies>3&target.distance<=24
@@ -1285,37 +1368,17 @@ namespace ReBot
 //				CycleTarget = Adds.Where(u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining("Shadow Word: Pain", true) < (18 * 0.3)).DefaultIfEmpty(null).FirstOrDefault();
 //				if (Cast("Shadow Word: Pain", CycleTarget, () => CycleTarget != null)) return;
 //			}
-//			// actions.cop+=/vampiric_touch,if=remains<(15*0.3+cast_time)&target.time_to_die>(15*0.75+cast_time)&miss_react&active_enemies<=5&primary_target=0,cycle_targets=1,max_cycle_targets=5
-//			if (EnemyInRange(40) <= 5) {
-//				CycleTarget = Adds.Where(u => u.IsInCombatRangeAndLoS && u != Target && u.AuraTimeRemaining("Vampiric Touch", true) < (15 * 0.3 + 1.5)).DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Vampiric Touch", CycleTarget, () => CycleTarget != null)) return;
-//			}
-//			// actions.cop+=/divine_star,if=talent.divine_star.enabled&active_enemies=3&target.distance<=24
-//			if (Cast("Divine Star", () => HasSpell("Divine Star") && EnemyInRange(24) == 3 && Range <= 24)) return;
-//			// actions.cop+=/mind_spike,if=active_enemies<=4&buff.surge_of_darkness.react
-//			if (Cast("Mind Spike", () => EnemyInRange(40) <= 4 && Me.HasAura("Surge of Darkness"))) return;
-//			// actions.cop+=/mind_spike,if=target.dot.devouring_plague_tick.remains&target.dot.devouring_plague_tick.remains<cast_time
-//			if (Cast("Mind Sear", () => Target.HasAura("Devouring Plague", true) && Target.AuraTimeRemaining("Devouring Plague") < 5)) return;
+
+
+
 //			// actions.cop+=/mind_flay,if=target.dot.devouring_plague_tick.ticks_remain>1&active_enemies=1,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 //			if (Cast("Mind Flay", () => Target.HasAura("Devouring Plague", true) && EnemyInRange(40) == 1)) {
 //				ChainMS = true;
 //				return;
 //			}
-//			// actions.cop+=/mind_spike
-//			if (Cast("Mind Spike")) return;
-//			if (Me.IsMoving) {
-//				// actions.cop+=/shadow_word_death,moving=1,if=!target.dot.shadow_word_pain.ticking&!target.dot.vampiric_touch.ticking,cycle_targets=1
-//				CycleTarget = targets.Where(u => u.IsInCombatRangeAndLoS && u.HealthFraction < 0.2 && !Target.HasAura("Shadow Word: Pain", true) && !Target.HasAura("Vampiric Touch", true)).DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Shadow Word: Death", CycleTarget, () => CycleTarget != null)) return;
 
 
 
-
-
-//				// actions.cop+=/divine_star,if=talent.divine_star.enabled&target.distance<=28,moving=1
-//				if (Cast("Divine Star", () => HasSpell("Divine Star") && Range <= 24)) return;
-//				// actions.cop+=/cascade,if=talent.cascade.enabled&target.distance<=40,moving=1
-//				if (Cast("Cascade", () => HasSpell("Cascade") && Range <= 40)) return;
 
 //			}
 
