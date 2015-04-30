@@ -74,6 +74,8 @@ namespace ReBot
 //				return true;
 //			}
 
+			spell = "";
+
 			return false;
 		}
 
@@ -82,6 +84,17 @@ namespace ReBot
 			if (ShadowApparitions > 0) {
 				API.Print (ShadowApparitions);
 			}
+
+			if (spell != "") {
+				if (Cooldown (spell) != 0)
+					return;
+				else {
+					CastSpell (spell);
+					spell = "";
+					return;
+				}
+			}
+
 
 			//	actions=shadowform,if=!buff.shadowform.up
 			if (Shadowform ())
@@ -347,8 +360,20 @@ namespace ReBot
 					return true;
 			}
 			//	actions.main+=/divine_star,if=talent.divine_star.enabled&(active_enemies>1&target.distance<=24)
+			if (HasSpell ("Divine Star") && EnemyInRange (24) > 1 && Range () <= 24) {
+				if (Halo ())
+					return true;
+			}
 			//	actions.main+=/wait,sec=cooldown.shadow_word_death.remains,if=natural_shadow_word_death_range&cooldown.shadow_word_death.remains<0.5&active_enemies<=1,cycle_targets=1
+			if (Health (Target) <= 0.2 && Cooldown ("Shadow Word: Death") < 0.5 && EnemyInRange (40) <= 1) {
+				spell = "Shadow Word: Death";
+				return true;
+			}
 			//	actions.main+=/wait,sec=cooldown.mind_blast.remains,if=cooldown.mind_blast.remains<0.5&cooldown.mind_blast.remains&active_enemies<=1
+			if (Cooldown ("Mind Blast") < 0.5 && Cooldown ("Mind Blast") > 0 && EnemyInRange (40) <= 1) {
+				spell = "Mind Blast";
+				return true;
+			}
 			//	actions.main+=/mind_spike,if=buff.surge_of_darkness.react&active_enemies<=5
 			//	actions.main+=/divine_star,if=talent.divine_star.enabled&target.distance<=28&active_enemies>1
 			//	actions.main+=/mind_sear,chain=1,if=active_enemies>=4,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1|shadow_orb=5)
@@ -371,8 +396,6 @@ namespace ReBot
 //				goto Skill_2;
 //			}
 //
-//			// actions.main+=/divine_star,if=talent.divine_star.enabled&(active_enemies>1&target.distance<=24)
-//			if (Cast("Divine Star", () => HasSpell("Divine Star") && EnemyInRange(24) > 1 && Range <= 24)) return;
 //			// actions.main+=/wait,sec=cooldown.shadow_word_death.remains,if=natural_shadow_word_death_range&cooldown.shadow_word_death.remains<0.5&active_enemies<=1,cycle_targets=1
 //			// wait
 //			if (TargetHealth < 0.2 && Cooldown("Shadow Word: Death") < 0.5 && Cooldown("Shadow Word: Death") > 0 && EnemyInRange(40) == 1) {

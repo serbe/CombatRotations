@@ -17,6 +17,7 @@ namespace ReBot
 		public PlayerObject PartyTarget;
 		public IEnumerable<UnitObject> MaxCycle;
 		public string Interrupt;
+		public string spell;
 
 		public bool InGroup {
 			get {
@@ -499,6 +500,19 @@ namespace ReBot
 				}
 				return null;
 			}
+		}
+
+		public bool CastSpell (string s)
+		{
+			if (s == "Shadow Word: Death") {
+				if (ShadowWordDeath ())
+					return true;
+			}
+			if (s == "Mind Blast") {
+				if (MindBlast ())
+					return true;
+			}
+			return false;
 		}
 	}
 }
