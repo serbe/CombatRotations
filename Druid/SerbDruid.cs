@@ -389,13 +389,13 @@ namespace ReBot
 			return Cast ("Rejuvenation", () => Usable ("Rejuvenation") && !u.HasAura ("Rejuvenation", true) && u.IsInLoS && u.CombatRange <= 40, u);
 		}
 
-		public virtual bool HealingTouch (UnitObject u = null)
+		public bool HealingTouch (UnitObject u = null)
 		{
 			u = u ?? Me;
 			return Cast ("Healing Touch", () => Usable ("Healing Touch") && u.IsInLoS && u.CombatRange <= 40, u);
 		}
 
-		public virtual bool RemoveCorruption (UnitObject u = null)
+		public bool RemoveCorruption (UnitObject u = null)
 		{
 			u = u ?? Me;
 			return Cast ("Remove Corruption", () => Usable ("Remove Corruption") && u.IsInLoS && u.CombatRange <= 40, u);

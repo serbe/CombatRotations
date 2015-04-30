@@ -3,6 +3,7 @@ using System.Linq;
 using Geometry;
 using Newtonsoft.Json;
 using ReBot.API;
+using System;
 
 namespace ReBot
 {
@@ -110,7 +111,13 @@ namespace ReBot
 		public bool IsBoss (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return(u.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || u.Level >= Me.Level + BossLevelIncrease;
+			return (u.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || u.Level >= Me.Level + BossLevelIncrease;
+		}
+
+		public bool IsPlayer (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return u.IsPlayer;
 		}
 
 		public int Orb {
@@ -219,6 +226,32 @@ namespace ReBot
 		}
 			
 		// Spell
+
+		public bool VampiricTouch (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Vampiric Touch", () => Usable ("Vampiric Touch") && u.IsInLoS && u.CombatRange <= 40 && !Me.IsMoving, u);
+		}
+
+		public bool VoidEntropy (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Void Entropy", () => Usable ("Void Entropy") && Orb >= 3 && u.IsInLoS && u.CombatRange <= 40 && !Me.IsMoving, u);
+		}
+
+		public bool DevouringPlague (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Devouring Plague", () => Usable ("Devouring Plague") && Orb >= 3 && u.IsInLoS && u.CombatRange <= 40, u);
+		}
+
+
+
+
+
+
+
+
 
 		public bool BloodFury ()
 		{
@@ -370,12 +403,6 @@ namespace ReBot
 			return Cast ("Mind Blast", () => Usable ("Mind Blast") && u.IsInLoS && u.CombatRange <= 40, u);
 		}
 
-		public bool DevouringPlague (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Devouring Plague", () => Usable ("Devouring Plague") && u.IsInLoS && u.CombatRange <= 40, u);
-		}
-
 		public bool MindSear (UnitObject u = null)
 		{
 			u = u ?? Target;
@@ -410,12 +437,6 @@ namespace ReBot
 		{
 			u = u ?? Target;
 			return Cast ("Divine Star", () => Usable ("Divine Star") && u.IsInLoS && u.CombatRange <= 30, u);
-		}
-
-		public bool VampiricTouch (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Vampiric Touch", () => Usable ("Vampiric Touch") && u.IsInLoS && u.CombatRange <= 40, u);
 		}
 
 		public bool DispelAll ()
@@ -513,6 +534,11 @@ namespace ReBot
 					return true;
 			}
 			return false;
+		}
+
+		public double CastTime (Int32 i)
+		{
+			return API.ExecuteLua<double> ("local _, _, _, castTime, _, _ = GetSpellInfo(" + i + "); return castTime;");
 		}
 	}
 }
