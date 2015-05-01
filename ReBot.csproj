@@ -67,6 +67,7 @@
     <Compile Include="Warrior\SerbWarrior.cs" />
     <Compile Include="Warrior\SerbWarriorProtection.cs" />
     <Compile Include="DeathKnight\SerbDeathknightFrost.cs" />
+    <Compile Include="Priest\SerbPriestShadowIV.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

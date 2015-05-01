@@ -19,7 +19,7 @@ namespace ReBot
 		public IEnumerable<UnitObject> MaxCycle;
 		public string IfInterrupt;
 		public UnitObject InterruptTarget;
-		public string Spell;
+		public string Spell = "";
 
 		public bool InGroup {
 			get {
@@ -365,18 +365,58 @@ namespace ReBot
 		{
 			u = u ?? Target;
 			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && u.IsInCombatRangeAndLoS && (IsElite (u) || IsPlayer (u)));
+			// GCD = 0
 		}
 
 		public bool Berserking (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return CastSelf ("Berserking", () => Usable ("Berserking") && u.IsInCombatRangeAndLoS && (IsElite (u) || IsPlayer (u)));
+			// GCD = 0
 		}
 
 		public bool ArcaneTorrent (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && u.IsInCombatRangeAndLoS && (u.IsElite () || u.IsPlayer));
+			// GCD = 0
+		}
+
+		public bool PowerInfusion (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return CastSelf ("Power Infusion", () => Usable ("Power Infusion") && u.IsInCombatRangeAndLoS && (u.IsElite () || u.IsPlayer));
+			// GCD = 0
+		}
+
+		public bool PowerWordFortitude (UnitObject u = null)
+		{
+			u = u ?? Me;
+			return Cast ("Power Word: Fortitude", () => Usable ("Power Word: Fortitude") && u.AuraTimeRemaining ("Power Word: Fortitude") < 300 && u.IsInLoS && u.CombatRange <= 40, u);
+		}
+
+		public bool Mindbender (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Mindbender", () => Usable ("Mindbender") && u.IsInLoS && u.CombatRange <= 40, u);
+		}
+
+		public bool Shadowfiend (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Shadowfiend", () => Usable ("Shadowfiend") && u.IsInLoS && u.CombatRange <= 40 && (u.IsPlayer || u.IsElite ()), u);
+		}
+
+		public bool ShadowWordPain (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Shadow Word: Pain", () => Usable ("Shadow Word: Pain") && u.IsInLoS && u.CombatRange <= 40, u);
+		}
+
+		public bool Penance (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Penance", () => Usable ("Penance") && u.IsInLoS && u.CombatRange <= 40 && (HasGlyph (119866) || !Me.IsMoving), u);
 		}
 
 
@@ -431,46 +471,13 @@ namespace ReBot
 
 
 
-		public bool PowerInfusion (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return CastSelf ("Power Infusion", () => Usable ("Power Infusion") && u.IsInCombatRangeAndLoS && (u.IsElite () || u.IsPlayer));
-		}
-
-		public bool PowerWordFortitude (UnitObject u = null)
-		{
-			u = u ?? Me;
-			return Cast ("Power Word: Fortitude", u, () => Usable ("Power Word: Fortitude") && u.AuraTimeRemaining ("Power Word: Fortitude") < 300 && u.IsInLoS && u.CombatRange <= 40);
-		}
-
 		public bool DraenicIntellect ()
 		{
 			return API.HasItem (109218) && API.ItemCooldown (109218) <= 0 && API.UseItem (109218);
 		}
 
-		public bool Mindbender (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Mindbender", u, () => Usable ("Mindbender") && u.IsInLoS && u.CombatRange <= 40);
-		}
 
-		public bool Shadowfiend (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Shadowfiend", u, () => Usable ("Shadowfiend") && u.IsInLoS && u.CombatRange <= 40 && (u.IsPlayer || u.IsElite ()));
-		}
 
-		public bool ShadowWordPain (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Shadow Word: Pain", u, () => Usable ("Shadow Word: Pain") && u.IsInLoS && u.CombatRange <= 40);
-		}
-
-		public bool Penance (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Penance", u, () => Usable ("Penance") && u.IsInLoS && u.CombatRange <= 40 && (HasGlyph (119866) || !Me.IsMoving));
-		}
 
 		public bool PowerWordSolace (UnitObject u = null)
 		{
@@ -574,13 +581,13 @@ namespace ReBot
 		public bool MindFlay (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Mind Flay", () => Usable ("Mind Flay") && u.IsInLoS && u.CombatRange <= 40, u);
+			return Cast ("Mind Flay", () => Usable ("Mind Flay") && u.IsInLoS && u.CombatRange <= 40 && !Me.IsMoving, u);
 		}
 
 		public bool MindSpike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Mind Spike", () => Usable ("Mind Spike") && u.IsInLoS && u.CombatRange <= 40, u);
+			return Cast ("Mind Spike", () => Usable ("Mind Spike") && u.IsInLoS && u.CombatRange <= 40 && !Me.IsMoving, u);
 		}
 
 		public bool Halo (UnitObject u = null)

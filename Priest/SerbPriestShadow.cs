@@ -93,7 +93,7 @@ namespace ReBot
 			}
 
 			if (Spell != "") {
-				if (Cooldown (Spell) != 0)
+				if (HasSpell (Spell) && Cooldown (Spell) != 0)
 					return;
 				CastSpell (Spell);
 				Spell = "";
@@ -122,8 +122,10 @@ namespace ReBot
 			}
 
 			//	actions=shadowform,if=!buff.shadowform.up
-			if (Shadowform ())
-				return;
+			if (!Me.HasAura ("Shadowform")) {
+				if (Shadowform ())
+					return;
+			}
 			//	actions+=/potion,name=draenic_intellect,if=buff.bloodlust.react|target.time_to_die<=40
 			//	actions+=/power_infusion,if=talent.power_infusion.enabled
 			PowerInfusion ();
