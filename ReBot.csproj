@@ -68,11 +68,13 @@
     <Compile Include="Warrior\SerbWarriorProtection.cs" />
     <Compile Include="DeathKnight\SerbDeathknightFrost.cs" />
     <Compile Include="Priest\SerbPriestShadowIV.cs" />
+    <Compile Include="Paladin\SerbPaladinProtiction.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Monk\" />
     <Folder Include="Warrior\" />
+    <Folder Include="Paladin\" />
   </ItemGroup>
 </Project>

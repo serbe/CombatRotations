@@ -32,6 +32,7 @@ namespace ReBot
 
 		public override bool OutOfCombat ()
 		{
+			return false;
 		}
 
 		public override void Combat ()

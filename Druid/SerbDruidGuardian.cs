@@ -7,6 +7,19 @@ namespace ReBot
 
 	public class SerbDruidGuardianSC : SerbDruid
 	{
+		public 	SerbDruidGuardianSC ()
+		{
+			GroupBuffs = new[] {
+				"Mark of the Wild"
+			};
+			PullSpells = new[] {
+				"Maul",
+				"Mangle",
+				"Faerie Swarm",
+				"Faerie Fire"
+			};
+		}
+
 		public override bool OutOfCombat ()
 		{
 			//	actions.precombat=flask,type=greater_draenic_agility_flask
@@ -52,21 +65,63 @@ namespace ReBot
 			if (Me.HasAura ("Tooth and Claw") && (DamageTaken () / 10) > 0)
 				Maul ();
 			//	actions+=/berserk,if=buff.pulverize.remains>10
+			if (Me.AuraTimeRemaining ("Pulverize") > 10)
+				Berserk ();
 			//	actions+=/frenzied_regeneration,if=rage>=80
+			if (Rage >= 80)
+				FrenziedRegeneration ();
 			//	actions+=/cenarion_ward
+			if (CenarionWard (Me))
+				return;
 			//	actions+=/renewal,if=health.pct<30
+			if (Health (Me) < 0.3)
+				Renewal ();
 			//	actions+=/heart_of_the_wild
+			HeartoftheWild ();
 			//	actions+=/rejuvenation,if=buff.heart_of_the_wild.up&remains<=3.6
+			if (Me.HasAura ("Heart of the Wild") && Me.AuraTimeRemaining ("Rejuvenation") <= 3.6) {
+				if (Rejuvenation (Me))
+					return;
+			}
 			//	actions+=/natures_vigil
+			NaturesVigil ();
 			//	actions+=/healing_touch,if=buff.dream_of_cenarius.react&health.pct<30
+			if (Me.HasAura ("Dream of Cenarius") && Health (Me) < 0.3) {
+				if (HealingTouch (Me))
+					return;
+			}
 			//	actions+=/pulverize,if=buff.pulverize.remains<=3.6
+			if (Me.AuraTimeRemaining ("Pulverize") <= 3.6)
+				Pulverize ();
 			//	actions+=/lacerate,if=talent.pulverize.enabled&buff.pulverize.remains<=(3-dot.lacerate.stack)*gcd&buff.berserk.down
+			if (HasSpell ("Pulverize") && Me.AuraTimeRemaining ("Pulverize") <= (3 - Target.GetAura ("Lacerate", true).StackCount) * 1.5 && !Me.HasAura ("Berserk")) {
+				if (Lacerate ())
+					return;
+			}
 			//	actions+=/incarnation
+			if (IncarnationSonofUrsoc ())
+				return;
 			//	actions+=/lacerate,if=!ticking
+			if (Target.HasAura ("Lacerate")) {
+				if (Lacerate ())
+					return;
+			}
 			//	actions+=/thrash_bear,if=!ticking
+			if (!Target.HasAura ("Thrash")) {
+				if (Thrash ())
+					return;
+			}
 			//	actions+=/mangle
+			if (Mangle ())
+				return;
 			//	actions+=/thrash_bear,if=remains<=4.8
+			if (Target.AuraTimeRemaining ("Thrash") <= 4.8) {
+				if (Thrash ())
+					return;
+			}
 			//	actions+=/lacerate
+			if (Lacerate ())
+				return;
 
 		}
 	}

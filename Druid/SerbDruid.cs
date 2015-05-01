@@ -738,6 +738,50 @@ namespace ReBot
 			return Cast ("Maul", () => Usable ("Maul") && (Rage >= 20 || (Rage >= 10 && Me.HasAura ("Tooth and Claw"))) && u.IsInLoS && u.CombatRange <= 5, u);
 		}
 
+		public bool Pulverize (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Pulverize", () => Usable ("Pulverize") && u.IsInLoS && u.CombatRange <= 5, u);
+		}
+
+		public bool Lacerate (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Lacerate", () => Usable ("Lacerate") && u.IsInLoS && u.CombatRange <= 5, u);
+		}
+
+		public bool Mangle (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Mangle", () => Usable ("Mangle") && u.IsInLoS && u.CombatRange <= 5, u);
+		}
+
+		public bool FrenziedRegeneration ()
+		{
+			return CastSelf ("Frenzied Regeneration", () => Usable ("Frenzied Regeneration"));
+		}
+
+		public bool Renewal ()
+		{
+			return CastSelf ("Renewal", () => Usable ("Renewal"));
+		}
+
+		public bool HeartoftheWild (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return CastSelf ("Heart of the Wild", () => Usable ("Heart of the Wild") && (IsPlayer (u) || IsBoss (u) || Health (Me) < 0.3));
+		}
+
+		public bool IncarnationSonofUrsoc (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return CastSelf ("Incarnation: Son of Ursoc", () => Usable ("Incarnation: Son of Ursoc") && (IsPlayer (u) || IsBoss (u) || Health (Me) < 0.3));
+		}
+
+		public bool NaturesVigil ()
+		{
+			return CastSelf ("Nature's Vigil", () => Usable ("Nature's Vigil"));
+		}
 	
 	}
 }
