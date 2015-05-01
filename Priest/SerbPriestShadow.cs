@@ -1183,15 +1183,41 @@ namespace ReBot
 				}
 			}
 			//	actions.cop+=/devouring_plague,if=shadow_orb=5&!set_bonus.tier17_2pc&(cooldown.mind_blast.remains<=gcd|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))
+			if (Orb == 5 && !HasSpell (165628) && (Cooldown ("Mind Blast") <= 1.5 || (Cooldown ("Shadow Word: Death") <= 1.5 && Health (Target) < 0.2))) {
+				if (DevouringPlague ())
+					return true;
+			}
 			//	actions.cop+=/devouring_plague,if=shadow_orb=5&set_bonus.tier17_2pc&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))
+			if (Orb == 5 && HasSpell (165628) && (Cooldown ("Mind Blast") <= 1.5 * 2 || (Cooldown ("Shadow Word: Death") <= 1.5 && Health (Target) < 0.2))) {
+				if (DevouringPlague ())
+					return true;
+			}
 			//	actions.cop+=/devouring_plague,if=primary_target=0&buff.mental_instinct.remains<gcd&buff.mental_instinct.remains>(gcd*0.7)&buff.mental_instinct.remains&active_enemies>1,cycle_targets=1
+			if (Me.AuraTimeRemaining ("Mental Instinct") < 1.5 && Me.AuraTimeRemaining ("Mental Instinct") > (1.5 * 0.7) && Me.HasAura ("Mental Instinct") && EnemyInRange (40) > 1) {
+				CycleTarget = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (DevouringPlague (CycleTarget))
+						return true;
+				}
+			}
 			//	actions.cop+=/devouring_plague,if=buff.mental_instinct.remains<gcd&buff.mental_instinct.remains>(gcd*0.7)&buff.mental_instinct.remains&active_enemies>1
 			if (Me.AuraTimeRemaining ("Mental Instinct") < 1.5 && Me.AuraTimeRemaining ("Mental Instinct") > (1.5 * 0.7) && Me.HasAura ("Mental Instinct", true) && EnemyInRange (40) > 1) {
 				if (DevouringPlague ())
 					return true;
 			}
 			//	actions.cop+=/devouring_plague,if=shadow_orb>=3&!set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=gcd|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&primary_target=0&target.time_to_die>=(gcd*4*7%6),cycle_targets=1
+			if (Orb >= 3 && !HasSpell (165628) && !HasSpell (165629)) {
+				CycleTarget = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && (Cooldown ("Mind Blast") <= 1.5 || (Cooldown ("Shadow Word: Death") <= 1.5 && Health (u) < 0.2))).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (DevouringPlague (CycleTarget))
+						return true;
+				}
+			}
 			//	actions.cop+=/devouring_plague,if=shadow_orb>=3&!set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=gcd|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))
+			if (Orb >= 3 && !HasSpell (165628) && !HasSpell (165629) && (Cooldown ("Mind Blast") <= 1.5 || (Cooldown ("Shadow Word: Death") <= 1.5 && Health (Target) < 0.2))) {
+				if (DevouringPlague ())
+					return true;
+			}
 			//	actions.cop+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&primary_target=0&target.time_to_die>=(gcd*4*7%6)&active_enemies>1,cycle_targets=1
 			//	actions.cop+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&active_enemies>1
 			//	actions.cop+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&talent.mindbender.enabled&!target.dot.devouring_plague_dot.ticking&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&primary_target=0&target.time_to_die>=(gcd*4*7%6)&active_enemies=1,cycle_targets=1
@@ -1237,17 +1263,28 @@ namespace ReBot
 					return true;
 			}
 			//	actions.cop+=/halo,if=talent.halo.enabled&target.distance<=30&target.distance>=17
-			if (HasSpell ("Halo") && Range () <= 30 && Range () >= 17) {
+			if (HasSpell ("Halo") && (IsBoss () || IsPlayer ()) && Range () <= 30 && Range () >= 17) {
 				if (Halo ())
 					return true;
 			}
 			//	actions.cop+=/cascade,if=talent.cascade.enabled&(active_enemies>1|target.distance>=28)&target.distance<=40&target.distance>=11
-			if (HasSpell ("Cascade") && (EnemyInRange (40) > 1 || Range () >= 28) && Range () <= 40 && Range () >= 11) {
+			if (HasSpell ("Cascade") && (IsBoss () || IsPlayer ()) && (EnemyInRange (40) > 1 || Range () >= 28) && Range () <= 40 && Range () >= 11) {
 				if (Cascade ())
 					return true;
 			}
 			//	actions.cop+=/divine_star,if=talent.divine_star.enabled&active_enemies>3&target.distance<=24
+			if (HasSpell ("Divine Star") && EnemyInRange (24) > 3 && Range () <= 24) {
+				if (DivineStar ())
+					return true;
+			}
 			//	actions.cop+=/shadow_word_pain,if=remains<(18*0.3)&target.time_to_die>(18*0.75)&miss_react&!ticking&active_enemies<=5&primary_target=0,cycle_targets=1,max_cycle_targets=5
+			if (EnemyInRange (40) <= 5) {
+				CycleTarget = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && u.AuraTimeRemaining ("Shadow Word: Pain", true) < (18 * 0.3) && TimeToDie (u) > (18 * 0.75)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (ShadowWordPain (CycleTarget))
+						return true;
+				}
+			}
 			//	actions.cop+=/vampiric_touch,if=remains<(15*0.3+cast_time)&target.time_to_die>(15*0.75+cast_time)&miss_react&active_enemies<=5&primary_target=0,cycle_targets=1,max_cycle_targets=5
 			if (EnemyInRange (40) <= 5) {
 				CycleTarget = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && u.AuraTimeRemaining ("Vampiric Touch", true) < (15 * 0.3 + CastTime (34914)) && TimeToDie (u) > (15 * 0.75 + CastTime (34914))).DefaultIfEmpty (null).FirstOrDefault ();
@@ -1340,13 +1377,10 @@ namespace ReBot
 //			}
 //			// actions.cop+=/devouring_plague,if=buff.mental_instinct.remains<gcd&buff.mental_instinct.remains>(gcd*0.7)&buff.mental_instinct.remains
 //			if (Cast("Devouring Plague", () => Me.AuraTimeRemaining("Mental Instinct") < 1.5 && Me.AuraTimeRemaining("Mental Instinct") > 1.5 * 0.7 && Me.HasAura("Mental Instinct", true))) return;
-//			// actions.cop+=/devouring_plague,if=shadow_orb>=3&!set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=gcd|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&primary_target=0&target.time_to_die>=(gcd*4*7%6),cycle_targets=1
-//			if (Orb >= 3 && !HasSpell(165628) && !HasSpell(165629)) {
-//				CycleTarget = Adds.Where(u => u.IsInCombatRangeAndLoS && (Cooldown("Mind Blast") <= 1.5 || (Cooldown("Shadow Word: Death") <= 1.5 && Health(u) < 0.2))).DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Devouring Plague", CycleTarget, () => CycleTarget != null)) return;
-//			}
-//			// actions.cop+=/devouring_plague,if=shadow_orb>=3&!set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=gcd|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))
-//			if (Cast("Devouring Plague", () => Orb >= 3 && !HasSpell(165628) && !HasSpell(165629) && (Cooldown("Mind Blast") <= 1.5 || (Cooldown("Shadow Word: Death") <= 1.5 && Target.HealthFraction < 0.2)))) return;
+
+
+
+
 //			// actions.cop+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&primary_target=0&target.time_to_die>=(gcd*4*7%6),cycle_targets=1
 //			if (Orb >= 3 && HasSpell(165628) && !HasSpell(165629)) {
 //				CycleTarget = Adds.Where(u => u.IsInCombatRangeAndLoS && (Cooldown("Mind Blast") <= 2 * 1.5 || (Cooldown("Shadow Word: Death") <= 1.5 && Health(u) < 0.2))).DefaultIfEmpty(null).FirstOrDefault();
@@ -1358,16 +1392,6 @@ namespace ReBot
 
 
 
-
-
-
-			// actions.cop+=/divine_star,if=talent.divine_star.enabled&active_enemies>3&target.distance<=24
-//			if (Cast("Divine Star", () => HasSpell("Divine Star") && EnemyInRange(24) > 3 && Range <= 24)) return;
-//			// actions.cop+=/shadow_word_pain,if=remains<(18*0.3)&target.time_to_die>(18*0.75)&miss_react&!ticking&active_enemies<=5&primary_target=0,cycle_targets=1,max_cycle_targets=5
-//			if (EnemyInRange(40) <= 5) {
-//				CycleTarget = Adds.Where(u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining("Shadow Word: Pain", true) < (18 * 0.3)).DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Shadow Word: Pain", CycleTarget, () => CycleTarget != null)) return;
-//			}
 
 
 
