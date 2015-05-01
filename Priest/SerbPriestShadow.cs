@@ -21,10 +21,10 @@ namespace ReBot
 
 		public SerbPriestShadowSc ()
 		{
-			GroupBuffs = new string[] {
+			GroupBuffs = new [] {
 				"Power Word: Fortitude"
 			};
-			PullSpells = new string[] {
+			PullSpells = new [] {
 				"Shadow Word: Pain",
 			};
 
@@ -47,6 +47,11 @@ namespace ReBot
 
 			if (Me.FallingTime > 2) {
 				if (Levitate ())
+					return true;
+			}
+
+			if (Health (Me) < 0.9) {
+				if (FlashHeal (Me))
 					return true;
 			}
 
@@ -74,7 +79,9 @@ namespace ReBot
 //				return true;
 //			}
 
-			spell = "";
+			Spell = "";
+			IfInterrupt = "";
+			InterruptTarget = null;
 
 			return false;
 		}
@@ -85,16 +92,34 @@ namespace ReBot
 				API.Print (ShadowApparitions);
 			}
 
-			if (spell != "") {
-				if (Cooldown (spell) != 0)
+			if (Spell != "") {
+				if (Cooldown (Spell) != 0)
 					return;
-				else {
-					CastSpell (spell);
-					spell = "";
-					return;
-				}
+				CastSpell (Spell);
+				Spell = "";
+				return;
 			}
 
+			if (Gcd && HasGlobalCooldown ())
+				return;
+			
+			if (Interrupt ())
+				return;
+
+			if (Health (Me) < 0.8) {
+				if (ShadowHeal ())
+					return;
+			}
+
+			if (IfInterrupt != "") {
+				if (!CaseInterrupt (InterruptTarget))
+					return;
+			}
+
+			if (Mana () < 0.1) {
+				if (Dispersion ())
+					return;
+			}
 
 			//	actions=shadowform,if=!buff.shadowform.up
 			if (Shadowform ())
@@ -144,7 +169,7 @@ namespace ReBot
 			return false;
 		}
 
-		public bool PVP_Dispersion ()
+		public bool PVPDispersion ()
 		{
 			//	actions.pvp_dispersion=call_action_list,name=decision,if=cooldown.dispersion.remains>0
 			if (Cooldown ("Dispersion") > 0) {
@@ -275,7 +300,8 @@ namespace ReBot
 				var bestTarget = BestTarget (40, 10, 3);
 				if (bestTarget != null) {
 					if (SearingInsanity (bestTarget)) {
-						Interrupt = "ChainMS";
+						IfInterrupt = "ChainMS";
+						InterruptTarget = bestTarget;
 						return true;
 					}
 				}
@@ -285,7 +311,8 @@ namespace ReBot
 				var bestTarget = BestTarget (40, 10, 3);
 				if (bestTarget != null) {
 					if (SearingInsanity (bestTarget)) {
-						Interrupt = "ChainMS";
+						IfInterrupt = "ChainMS";
+						InterruptTarget = bestTarget;
 						return true;
 					}
 				}
@@ -293,14 +320,16 @@ namespace ReBot
 			//	actions.main+=/insanity,if=buff.insanity.remains<0.5*gcd&active_enemies<=2,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1|shadow_orb=5)
 			if (Me.HasAura ("Insanity") && Me.AuraTimeRemaining ("Insanity") < 0.5 * 1.5 && EnemyInRange (40) <= 2) {
 				if (Insanity ()) {
-					Interrupt = "ChainMSO";
+					IfInterrupt = "ChainMSO";
+					InterruptTarget = Target;
 					return true;
 				}
 			}
 			//	actions.main+=/insanity,chain=1,if=active_enemies<=2,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1|shadow_orb=5)
 			if (Me.HasAura ("Insanity") && EnemyInRange (40) <= 2) {
 				if (Insanity ()) {
-					Interrupt = "ChainMSO";
+					IfInterrupt = "ChainMSO";
+					InterruptTarget = Target;
 					return true;
 				}
 			}
@@ -368,12 +397,12 @@ namespace ReBot
 			}
 			//	actions.main+=/wait,sec=cooldown.shadow_word_death.remains,if=natural_shadow_word_death_range&cooldown.shadow_word_death.remains<0.5&active_enemies<=1,cycle_targets=1
 			if (Health (Target) <= 0.2 && Cooldown ("Shadow Word: Death") < 0.5 && EnemyInRange (40) <= 1) {
-				spell = "Shadow Word: Death";
+				Spell = "Shadow Word: Death";
 				return true;
 			}
 			//	actions.main+=/wait,sec=cooldown.mind_blast.remains,if=cooldown.mind_blast.remains<0.5&cooldown.mind_blast.remains&active_enemies<=1
 			if (Cooldown ("Mind Blast") < 0.5 && Cooldown ("Mind Blast") > 0 && EnemyInRange (40) <= 1) {
-				spell = "Mind Blast";
+				Spell = "Mind Blast";
 				return true;
 			}
 			//	actions.main+=/mind_spike,if=buff.surge_of_darkness.react&active_enemies<=5
@@ -391,7 +420,8 @@ namespace ReBot
 				var bestTarget = BestTarget (40, 10, 4);
 				if (bestTarget != null) {
 					if (MindSear (bestTarget)) {
-						Interrupt = "ChainMSO";
+						IfInterrupt = "ChainMSO";
+						InterruptTarget = bestTarget;
 						return true;
 					}
 				}
@@ -408,7 +438,8 @@ namespace ReBot
 			}
 			//	actions.main+=/mind_flay,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1|shadow_orb=5)
 			if (MindFlay ()) {
-				Interrupt = "ChainMSO";
+				IfInterrupt = "ChainMSO";
+				InterruptTarget = Target;
 				return true;
 			}
 			if (Me.IsMoving) {
@@ -582,7 +613,8 @@ namespace ReBot
 				var bestTarget = BestTarget (40, 10, 3);
 				if (bestTarget != null) {
 					if (SearingInsanity (bestTarget)) {
-						Interrupt = "ChainMS";
+						IfInterrupt = "ChainMS";
+						InterruptTarget = bestTarget;
 						return true;
 					}
 				}
@@ -592,7 +624,8 @@ namespace ReBot
 				var bestTarget = BestTarget (40, 10, 3);
 				if (bestTarget != null) {
 					if (SearingInsanity (bestTarget)) {
-						Interrupt = "ChainMS";
+						IfInterrupt = "ChainMS";
+						InterruptTarget = bestTarget;
 						return true;
 					}
 				}
@@ -605,14 +638,16 @@ namespace ReBot
 			//	actions.vent+=/insanity,if=buff.insanity.remains<0.5*gcd&active_enemies<=3&cooldown.mind_blast.remains>0.5*gcd,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Me.HasAura ("Insanity") && Me.AuraTimeRemaining ("Insanity") < (0.5 * 1.5) && EnemyInRange (40) <= 3 && Cooldown ("Mind Blast") > (0.5 * 1.5)) {
 				if (Insanity ()) {
-					Interrupt = "ChainMS";
+					IfInterrupt = "ChainMS";
+					InterruptTarget = Target;
 					return true;
 				}
 			}
 			//	actions.vent+=/insanity,chain=1,if=active_enemies<=3&cooldown.mind_blast.remains>0.5*gcd,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Me.HasAura ("Insanity") && EnemyInRange (40) <= 3 && Cooldown ("Mind Blast") > (0.5 * 1.5)) {
 				if (Insanity ()) {
-					Interrupt = "ChainMS";
+					IfInterrupt = "ChainMS";
+					InterruptTarget = Target;
 					return true;
 				}
 			}
@@ -668,7 +703,8 @@ namespace ReBot
 				var bestTarget = BestTarget (40, 10, 3);
 				if (bestTarget != null) {
 					if (MindSear (bestTarget)) {
-						Interrupt = "ChainMS";
+						IfInterrupt = "ChainMS";
+						InterruptTarget = bestTarget;
 						return true;
 					}
 				}
@@ -676,7 +712,8 @@ namespace ReBot
 			//	actions.vent+=/mind_flay,if=cooldown.mind_blast.remains>0.5*gcd,interrupt=1,chain=1
 			if (Cooldown ("Mind Blast") > 0.5 * 1.5) {
 				if (MindFlay ()) {
-					Interrupt = "ChainM";
+					IfInterrupt = "ChainM";
+					InterruptTarget = Target;
 					return true;
 				}
 			}
@@ -773,7 +810,8 @@ namespace ReBot
 				var bestTarget = BestTarget (40, 10, 3);
 				if (bestTarget != null) {
 					if (SearingInsanity (bestTarget)) {
-						Interrupt = "ChainMS";
+						IfInterrupt = "ChainMS";
+						InterruptTarget = bestTarget;
 						return true;
 					}
 				}
@@ -783,7 +821,8 @@ namespace ReBot
 				var bestTarget = BestTarget (40, 10, 3);
 				if (bestTarget != null) {
 					if (SearingInsanity (bestTarget)) {
-						Interrupt = "ChainMS";
+						IfInterrupt = "ChainMS";
+						InterruptTarget = bestTarget;
 						return true;
 					}
 				}
@@ -816,7 +855,8 @@ namespace ReBot
 			//	actions.cop_dotweave+=/insanity,if=buff.insanity.remains,chain=1,interrupt_if=cooldown.mind_blast.remains<=0.1
 			if (Me.HasAura ("Insanity")) {
 				if (Insanity ()) {
-					Interrupt = "ChainM";
+					IfInterrupt = "ChainM";
+					InterruptTarget = Target;
 					return true;
 				}
 			}
@@ -900,7 +940,8 @@ namespace ReBot
 				if (bestTarget != null) {
 					if (bestTarget != null) {
 						if (MindSear (bestTarget)) {
-							Interrupt = "ChainMS";
+							IfInterrupt = "ChainMS";
+							InterruptTarget = bestTarget;
 							return true;
 						}
 					}
@@ -1025,7 +1066,8 @@ namespace ReBot
 				var bestTarget = BestTarget (40, 10, 3);
 				if (bestTarget != null) {
 					if (SearingInsanity (bestTarget)) {
-						Interrupt = "ChainMS";
+						IfInterrupt = "ChainMS";
+						InterruptTarget = bestTarget;
 						return true;
 					}
 				}
@@ -1035,7 +1077,8 @@ namespace ReBot
 				var bestTarget = BestTarget (40, 10, 5);
 				if (bestTarget != null) {
 					if (SearingInsanity (bestTarget)) {
-						Interrupt = "ChainMS";
+						IfInterrupt = "ChainMS";
+						InterruptTarget = bestTarget;
 						return  true;
 					}
 				}
@@ -1069,14 +1112,16 @@ namespace ReBot
 			//	actions.cop_insanity+=/insanity,if=buff.insanity.remains<0.5*gcd&active_enemies<=2,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|(cooldown.shadow_word_death.remains<=0.1&target.health.pct<20))
 			if (Me.HasAura ("Insanity") && Me.AuraTimeRemaining ("Insanity") < 0.5 * 1.5 && EnemyInRange (40) <= 2) {
 				if (Insanity ()) {
-					Interrupt = "ChainMSH";
+					IfInterrupt = "ChainMSH";
+					InterruptTarget = Target;
 					return true;
 				}
 			}
 			//	actions.cop_insanity+=/insanity,if=active_enemies<=2,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|(cooldown.shadow_word_death.remains<=0.1&target.health.pct<20))
 			if (Me.HasAura ("Insanity") && EnemyInRange (40) <= 2) {
 				if (Insanity ()) {
-					Interrupt = "ChainMSH";
+					IfInterrupt = "ChainMSH";
+					InterruptTarget = Target;
 					return true;
 				}
 			}
@@ -1101,7 +1146,8 @@ namespace ReBot
 				if (bestTarget != null) {
 					if (bestTarget != null) {
 						if (MindSear (bestTarget)) {
-							Interrupt = "ChainMS";
+							IfInterrupt = "ChainMS";
+							InterruptTarget = bestTarget;
 							return true;
 						}
 					}
@@ -1219,10 +1265,39 @@ namespace ReBot
 					return true;
 			}
 			//	actions.cop+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&primary_target=0&target.time_to_die>=(gcd*4*7%6)&active_enemies>1,cycle_targets=1
+			if (Orb >= 3 && HasSpell (165628) && !HasSpell (165629) && EnemyInRange (40) > 1) {
+				CycleTarget = Adds.Where (u => u != Target && Cooldown ("Mind Blast") <= 1.5 * 2 || (Cooldown ("Shadow Word: Death") <= 1.5 && Health (u) < 0.2) && TimeToDie (u) >= (1.5 * 4 * 7 / 6)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (DevouringPlague (CycleTarget))
+						return true;
+				}
+			}
 			//	actions.cop+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&active_enemies>1
+			if (Orb >= 3 && HasSpell (165628) && !HasSpell (165629) && (Cooldown ("Mind Blast") <= 1.5 * 2 || (Cooldown ("Shadow Word: Death") <= 1.5 && Health (Target) < 0.2)) && EnemyInRange (40) > 1) {
+				if (DevouringPlague ())
+					return true;
+			}
 			//	actions.cop+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&talent.mindbender.enabled&!target.dot.devouring_plague_dot.ticking&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&primary_target=0&target.time_to_die>=(gcd*4*7%6)&active_enemies=1,cycle_targets=1
+			if (Orb >= 3 && HasSpell (165628) && HasSpell ("Mindbender") && EnemyInRange (40) == 2) {
+				CycleTarget = Adds.Where (u => u != Target && !u.HasAura ("Devouring Plague") && (Cooldown ("Mind Blast") <= 1.5 * 2 || (Cooldown ("Shadow Word: Death") <= 1.5 && Health (u) < 0.2)) && TimeToDie (u) >= (1.5 * 4 * 7 / 6)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (DevouringPlague (CycleTarget))
+						return true;
+				}
+			}
 			//	actions.cop+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&talent.mindbender.enabled&!target.dot.devouring_plague_dot.ticking&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&active_enemies=1
+			if (Orb >= 3 && HasSpell (165628) && HasSpell ("Mindbender") && !Target.HasAura ("Devouring Plague") && (Cooldown ("Mind Blast") <= 1.5 * 2 || (Cooldown ("Shadow Word: Death") <= 1.5 && Health (Target) < 0.2))) {
+				if (DevouringPlague ())
+					return true;
+			}
 			//	actions.cop+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&talent.surge_of_darkness.enabled&buff.mental_instinct.remains<(gcd*1.4)&buff.mental_instinct.remains>(gcd*0.7)&buff.mental_instinct.remains&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&primary_target=0&target.time_to_die>=(gcd*4*7%6)&active_enemies=1,cycle_targets=1
+			if (Orb >= 3 && HasSpell (165628) && HasSpell ("Surge of Darkness") && EnemyInRange (40) == 2 && Me.AuraTimeRemaining ("Mental Instinct") < (1.5 * 1.4) && Me.AuraTimeRemaining ("Mental Instinct") > (1.5 * 0.7) && Me.HasAura ("Mental Instinct")) {
+				CycleTarget = Adds.Where (u => u != Target && (Cooldown ("Mind Blast") <= 1.5 * 2 || (Cooldown ("Shadow Word: Death") <= 1.5 && Health (u) < 0.2)) && TimeToDie (u) >= (1.5 * 4 * 7 / 6)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (DevouringPlague (CycleTarget))
+						return true;
+				}
+			}
 			//	actions.cop+=/mind_blast,if=mind_harvest=0,cycle_targets=1
 			if (HasGlyph (162532)) {
 				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Glyph of Mind Blast", true)).DefaultIfEmpty (null).FirstOrDefault ();
@@ -1308,7 +1383,8 @@ namespace ReBot
 				var bestTarget = BestTarget (40, 10, 3);
 				if (bestTarget != null) {
 					if (MindSear (bestTarget)) {
-						Interrupt = "ChainMS";
+						IfInterrupt = "ChainMS";
+						InterruptTarget = bestTarget;
 						return true;
 					}
 				}
@@ -1319,6 +1395,13 @@ namespace ReBot
 					return true;
 			}
 			//	actions.cop+=/mind_flay,if=target.dot.devouring_plague_tick.ticks_remain>1&active_enemies>1,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
+			if (Target.AuraTimeRemaining ("Devouring Plague", true) > 1 && EnemyInRange (40) > 1) {
+				if (MindFlay ()) {
+					IfInterrupt = "ChainMS";
+					InterruptTarget = Target;
+					return true;
+				}
+			}
 			//	actions.cop+=/mind_spike
 			if (MindSpike ())
 				return true;
@@ -1362,130 +1445,7 @@ namespace ReBot
 					return true;
 			}
 
-
-
-//			// actions.cop+=/devouring_plague,if=shadow_orb=5&!target.dot.devouring_plague_dot.ticking
-//			if (Cast("Devouring Plague", () => Orb == 5 && !Target.HasAura("Devouring Plague", true))) return;
-
-
-//			// actions.cop+=/devouring_plague,if=shadow_orb=5&(cooldown.mind_blast.remains<=gcd|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))
-//			if (Cast("Devouring Plague", () => Orb == 5 && (Cooldown("Mind Blast") <= 1.5 || (Cooldown("Shadow Word: Death") <= 1.5 && TargetHealth < 0.2)))) return;
-//			// actions.cop+=/devouring_plague,if=primary_target=0&buff.mental_instinct.remains<gcd&buff.mental_instinct.remains>(gcd*0.7)&buff.mental_instinct.remains,cycle_targets=1
-//			if (Me.AuraTimeRemaining("Mental Instinct") < 1.5 && Me.AuraTimeRemaining("Mental Instinct") > (1.5 * 0.7) && Me.HasAura("Mental Instinct", true)) {
-//				CycleTarget = Adds.Where(u => u.IsInCombatRangeAndLoS).DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Devouring Plague", CycleTarget, () => CycleTarget != null)) return;
-//			}
-//			// actions.cop+=/devouring_plague,if=buff.mental_instinct.remains<gcd&buff.mental_instinct.remains>(gcd*0.7)&buff.mental_instinct.remains
-//			if (Cast("Devouring Plague", () => Me.AuraTimeRemaining("Mental Instinct") < 1.5 && Me.AuraTimeRemaining("Mental Instinct") > 1.5 * 0.7 && Me.HasAura("Mental Instinct", true))) return;
-
-
-
-
-//			// actions.cop+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&primary_target=0&target.time_to_die>=(gcd*4*7%6),cycle_targets=1
-//			if (Orb >= 3 && HasSpell(165628) && !HasSpell(165629)) {
-//				CycleTarget = Adds.Where(u => u.IsInCombatRangeAndLoS && (Cooldown("Mind Blast") <= 2 * 1.5 || (Cooldown("Shadow Word: Death") <= 1.5 && Health(u) < 0.2))).DefaultIfEmpty(null).FirstOrDefault();
-//				if (Cast("Devouring Plague", CycleTarget, () => CycleTarget != null)) return;
-//			}
-//			// actions.cop+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))
-//			if (Cast("Devouring Plague", () => Orb >= 3 && HasSpell(165628) && !HasSpell(165629) && (Cooldown("Mind Blast") <= 2 * 1.5 || (Cooldown("Shadow Word: Death") <= 1.5 && Target.HealthFraction < 0.2)))) return;
-
-
-
-
-
-
-
-//			// actions.cop+=/mind_flay,if=target.dot.devouring_plague_tick.ticks_remain>1&active_enemies=1,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
-//			if (Cast("Mind Flay", () => Target.HasAura("Devouring Plague", true) && EnemyInRange(40) == 1)) {
-//				ChainMS = true;
-//				return;
-//			}
-
-
-
-
-//			}
-
 			return false;
 		}
 	}
 }
-
-
-
-
-
-//		public override void Combat() {
-//			// interrupt_if=cooldown.mind_blast.remains<=0.1
-//			if (ChainM) {
-//				if (Cooldown("Mind Blast") == 0.1) {
-//					ChainM = false;
-//					API.ExecuteMacro("/stopcasting");
-//				} else {
-//					return;
-//				}
-//			}
-//			// interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
-//			if (ChainMS) {
-//				if (Cooldown("Mind Blast") == 0 || Cooldown("Shadow Word: Death") == 0) {
-//					ChainMS = false;
-//					API.ExecuteMacro("/stopcasting");
-//				} else {
-//					return;
-//				}
-//			}
-//			// interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1|shadow_orb=5)
-//			if (ChainMSO) {
-//				if (Cooldown("Mind Blast") == 0 || Cooldown("Shadow Word: Death") == 0 || Orb == 5) {
-//					ChainMSO = false;
-//					API.ExecuteMacro("/stopcasting");
-//				} else {
-//					return;
-//				}
-//			}
-//			// interrupt_if=(cooldown.mind_blast.remains<=0.1|(cooldown.shadow_word_death.remains<=0.1&target.health.pct<20))
-//			if (ChainMSH) {
-//				if (Cooldown("Mind Blast") == 0 || (Cooldown("Shadow Word: Death") == 0 && TargetHealth < 0.2)) {
-//					ChainMSH = false;
-//					API.ExecuteMacro("/stopcasting");
-//				} else {
-//					return;
-//				}
-//			}
-//
-//			if (ToSkill == 1) {
-//				if ((TargetHealth < 0.2 && Cooldown("Shadow Word: Death") == 0))
-//					Main();
-//				else
-//					return;
-//			}
-//			if (ToSkill == 2) {
-//				if (Cooldown("Mind Blast") == 0)
-//					Main();
-//				else
-//					return;
-//			}
-//
-//			var targets = Adds;
-//			targets.Add(Target);
-//
-//			// Heal
-//			if (Health < 0.45) {
-//				API.UseItem(5512);
-//				return;
-//			} // 5512 = Healthstone
-//			// if (CastSelf("Dispersion", () => Mana < 0.1)) return;
-//			// if (Cast("Shadowfiend", () => Health < 0.5 && (IsElite || IsPlayer)))) return;
-//
-
-//
-//			if (CastSelf("Power Word: Shield", () => Health <= 0.7 && !HasAura("Weakened Soul"))) return;
-//			// if (CastSelfPreventDouble("Flash Heal", () => Health <= 0.5 && !Me.IsMoving)) return;
-//
-//			// if (CastOnTerrain("Halo", Me.Position, () => Health < 0.5 && (IsElite || IsPlayer))) return
-//
-//			// Interrupt
-//			CycleTarget = targets.Where(x => x.IsInLoS && x.CombatRange <= 30 && x.IsCastingAndInterruptible() && x.RemainingCastTime > 0).DefaultIfEmpty(null).FirstOrDefault();
-//			if (Cast("Silence", CycleTarget, () => CycleTarget != null)) return;
-//
-//		}

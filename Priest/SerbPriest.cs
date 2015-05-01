@@ -17,8 +17,9 @@ namespace ReBot
 		public UnitObject CycleTarget;
 		public PlayerObject PartyTarget;
 		public IEnumerable<UnitObject> MaxCycle;
-		public string Interrupt;
-		public string spell;
+		public string IfInterrupt;
+		public UnitObject InterruptTarget;
+		public string Spell;
 
 		public bool InGroup {
 			get {
@@ -73,7 +74,7 @@ namespace ReBot
 			}
 		}
 
-		public HashSet<string> pgUnits = new HashSet<string> () {
+		public HashSet<string> PgUnits = new HashSet<string> {
 			"Oto the Protector",
 			"Sooli the Survivalist",
 			"Kavan the Arcanist",
@@ -120,6 +121,12 @@ namespace ReBot
 			return u.IsPlayer;
 		}
 
+		public bool IsElite (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return u.IsElite ();
+		}
+
 		public int Orb {
 			get {
 				return Me.GetPower (WoWPowerType.PriestShadowOrbs);
@@ -130,6 +137,12 @@ namespace ReBot
 		{
 			u = u ?? Me;
 			return u.HealthFraction;
+		}
+
+		public double Mana (UnitObject u = null)
+		{
+			u = u ?? Me;
+			return u.ManaFraction;
 		}
 
 		public double Range (UnitObject u = null)
@@ -174,7 +187,7 @@ namespace ReBot
 					var t = API.Units.Where (p => p != null && !p.IsDead && p.IsValid).ToList ();
 					if (t.Any ()) {
 						foreach (var unit in t) {
-							if (pgUnits.Contains (unit.Name)) {
+							if (PgUnits.Contains (unit.Name)) {
 								pgGroup.Add ((PlayerObject)unit);
 							}
 						}
@@ -224,7 +237,76 @@ namespace ReBot
 			}
 			return null;
 		}
-			
+
+		// Combo
+
+		public bool Interrupt ()
+		{
+			var targets = Adds;
+			targets.Add (Target);
+
+			if (Usable ("Silence")) {
+				if (InArena || InBg) {
+					CycleTarget = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCastingAndInterruptible () && u.IsInLoS && Range (u) <= 30 && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (Silence (CycleTarget))
+							return true;
+					}
+				} else {
+					CycleTarget = targets.Where (u => u.IsCastingAndInterruptible () && u.IsInLoS && Range (u) <= 30 && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (Silence (CycleTarget))
+							return true;
+					}
+				}
+			}
+
+			if (Usable ("Psychic Horror") && Orb >= 1) {
+				if (InArena || InBg) {
+					CycleTarget = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCasting && u.IsInLoS && Range (u) <= 30 && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (PsychicHorror (CycleTarget))
+							return true;
+					}
+				} else {
+					CycleTarget = targets.Where (u => u.IsCasting && !IsBoss (u) && (IsElite (u) || IsPlayer (u)) && u.IsInLoS && Range (u) <= 30 && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (PsychicHorror (CycleTarget))
+							return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		public bool ShadowHeal ()
+		{
+			if (Health (Me) < 0.4) {
+				if (Healthstone ())
+					return true;
+			}
+
+			if (Health (Me) < 0.5 && (IsElite () || IsPlayer ())) {
+				if (Shadowfiend ())
+					return true;
+			}
+
+			if (Health (Me) <= 0.8 && !Me.HasAura ("Power Word: Shield") && !Me.HasAura ("Weakened Soul")) {
+				if (PowerWordShield (Me))
+					return true;
+			}
+
+			if ((Health (Me) <= 0.6 || (Me.HasAura ("Power Word: Shield") && Health (Me) < 0.8)) && !Me.IsMoving) {
+				if (DesperatePrayer ())
+					return true;
+				if (FlashHeal (Me))
+					return true;
+			}
+
+			return false;
+		}
+
 		// Spell
 
 		public bool VampiricTouch (UnitObject u = null)
@@ -257,18 +339,38 @@ namespace ReBot
 			return Cast ("Insanity", () => Usable ("Insanity") && u.IsInLoS && u.CombatRange <= 40 && !Me.IsMoving, u);
 		}
 
-
-
-
-
-		public bool BloodFury ()
+		public bool Silence (UnitObject u = null)
 		{
-			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && Target.IsInCombatRangeAndLoS && (Target.IsElite () || Target.IsPlayer));
+			u = u ?? Target;
+			return Cast ("Silence", () => Usable ("Silence") && u.IsInLoS && u.CombatRange <= 30, u);
 		}
 
-		public bool Berserking ()
+		public bool PsychicHorror (UnitObject u = null)
 		{
-			return CastSelf ("Berserking", () => Usable ("Berserking") && Target.IsInCombatRangeAndLoS && (Target.IsElite () || Target.IsPlayer));
+			u = u ?? Target;
+			return Cast ("Psychic Horror", () => Usable ("Psychic Horror") && Orb >= 1 && !IsBoss (u) && u.IsInLoS && u.CombatRange <= 30, u);
+		}
+
+		public bool Dispersion ()
+		{
+			return CastSelf ("Dispersion", () => Usable ("Dispersion"));
+		}
+
+		public bool DesperatePrayer ()
+		{
+			return CastSelf ("Desperate Prayer", () => Usable ("Desperate Prayer"));
+		}
+
+		public bool BloodFury (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && u.IsInCombatRangeAndLoS && (IsElite (u) || IsPlayer (u)));
+		}
+
+		public bool Berserking (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return CastSelf ("Berserking", () => Usable ("Berserking") && u.IsInCombatRangeAndLoS && (IsElite (u) || IsPlayer (u)));
 		}
 
 		public bool ArcaneTorrent (UnitObject u = null)
@@ -276,6 +378,58 @@ namespace ReBot
 			u = u ?? Target;
 			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && u.IsInCombatRangeAndLoS && (u.IsElite () || u.IsPlayer));
 		}
+
+
+		// Utils
+
+		public bool CaseInterrupt (UnitObject u = null)
+		{
+			u = u ?? Target;
+			// interrupt_if=cooldown.mind_blast.remains<=0.1
+			if (IfInterrupt == "ChainM") {
+				if (Cooldown ("Mind Blast") == 0.1) {
+					IfInterrupt = "";
+					API.ExecuteMacro ("/stopcasting");
+					return true;
+				}
+				return false;
+			}
+			// interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
+			if (IfInterrupt == "ChainMS") {
+				if (Cooldown ("Mind Blast") == 0 || Cooldown ("Shadow Word: Death") == 0) {
+					IfInterrupt = "";
+					API.ExecuteMacro ("/stopcasting");
+					return true;
+				}
+				return false;
+			}
+			// interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1|shadow_orb=5)
+			if (IfInterrupt == "ChainMSO") {
+				if (Cooldown ("Mind Blast") == 0 || Cooldown ("Shadow Word: Death") == 0 || Orb == 5) {
+					IfInterrupt = "";
+					API.ExecuteMacro ("/stopcasting");
+					return true;
+				}
+				return false;
+			}
+			// interrupt_if=(cooldown.mind_blast.remains<=0.1|(cooldown.shadow_word_death.remains<=0.1&target.health.pct<20))
+			if (IfInterrupt == "ChainMSH") {
+				if (Cooldown ("Mind Blast") == 0 || (Cooldown ("Shadow Word: Death") == 0 && Health (u) < 0.2)) {
+					IfInterrupt = "";
+					API.ExecuteMacro ("/stopcasting");
+					return true;
+				}
+				return false;
+			}
+
+			return false;
+		}
+
+
+
+
+
+
 
 		public bool PowerInfusion (UnitObject u = null)
 		{
@@ -499,7 +653,7 @@ namespace ReBot
 
 		public UnitObject CascadeTarget {
 			get {
-				var CascadeCounts = new List<PlayerObject> ();
+				List<PlayerObject> CascadeCounts;
 				if (GroupMembers.Count < 6) {
 					CascadeCounts = GroupMembers.Where (p => !p.IsDead && p.IsInLoS && Range (p) <= 40 && Health (p) <= 0.85).ToList ();
 					if (CascadeCounts.Count () >= 2)
@@ -516,7 +670,7 @@ namespace ReBot
 
 		public UnitObject HaloTarget {
 			get {
-				var HaloCounts = new List<PlayerObject> ();
+				List<PlayerObject> HaloCounts;
 				if (GroupMembers.Count < 6) {
 					HaloCounts = GroupMembers.Where (p => !p.IsDead && p.IsInLoS && Range (p) <= 30 && Health (p) <= 0.85).ToList ();
 					if (HaloCounts.Count () >= 2)
