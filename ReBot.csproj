@@ -69,6 +69,7 @@
     <Compile Include="DeathKnight\SerbDeathknightFrost.cs" />
     <Compile Include="Priest\SerbPriestShadowIV.cs" />
     <Compile Include="Paladin\SerbPaladinProtiction.cs" />
+    <Compile Include="Paladin\SerbPaladin.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
