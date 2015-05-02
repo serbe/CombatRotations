@@ -80,9 +80,10 @@ namespace ReBot
 			if (Me.HasAura ("Divine Purpose"))
 				ShieldoftheRighteous ();
 			//	actions+=/shield_of_the_righteous,if=(holy_power>=5|incoming_damage_1500ms>=health.max*0.3)&(!talent.seraphim.enabled|cooldown.seraphim.remains>5)
-			if (HolyPower >= 5 || DamageTaken(1500) >= Me.MaxHealth * 0.3)&(!talent.seraphim.enabled|cooldown.seraphim.remains>5))
-				ShieldoftheRighteous ();
+//			if (HolyPower >= 5 || DamageTaken(1500) >= Me.MaxHealth * 0.3)&(!talent.seraphim.enabled|cooldown.seraphim.remains>5))
+			ShieldoftheRighteous ();
 			//	actions+=/shield_of_the_righteous,if=buff.holy_avenger.remains>time_to_hpg&(!talent.seraphim.enabled|cooldown.seraphim.remains>time_to_hpg)
+//			if (Me.AuraTimeRemaining ("Holy Avenger") > time_to_hpg&(!talent.seraphim.enabled|cooldown.seraphim.remains>time_to_hpg)
 
 			//	# GCD-bound spells
 			if (HasGlobalCooldown () && Gcd)

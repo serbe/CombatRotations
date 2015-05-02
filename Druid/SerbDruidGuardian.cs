@@ -1,5 +1,5 @@
 ﻿using ReBot.API;
-using System.Security.Cryptography;
+using System.Linq;
 
 namespace ReBot
 {
@@ -29,12 +29,26 @@ namespace ReBot
 			//	# Snapshot raid buffed stats before combat begins and pre-potting is done.
 			//	actions.precombat+=/snapshot_stats
 			//	actions.precombat+=/cenarion_ward
+			if (Health (Me) < 0.9) {
+				if (Rejuvenation (Me))
+					return true;
+			}
+			if (Health (Me) < 0.6) {
+				if (HealingTouch (Me))
+					return true;
+			}
 
 			return false;
 		}
 
 		public override void Combat ()
 		{
+			var targets = Adds;
+			targets.Add (Target);
+
+			if (Interrupt ())
+				return;
+
 			if (BearForm ())
 				return;
 			//	actions=auto_attack
@@ -44,7 +58,7 @@ namespace ReBot
 					return;
 			}
 			//	actions+=/savage_defense,if=buff.barkskin.down
-			if (!Me.HasAura ("Barkskin")) {
+			if (Health (Me) < 0.5 && !Me.HasAura ("Barkskin")) {
 				if (SavageDefense ())
 					return;
 			}
@@ -56,10 +70,10 @@ namespace ReBot
 			ArcaneTorrent ();
 			//	actions+=/use_item,slot=trinket2
 			//	actions+=/barkskin,if=buff.bristling_fur.down
-			if (!Me.HasAura ("Bristling Fur"))
+			if (Health (Me) < 0.65 && !Me.HasAura ("Bristling Fur"))
 				Barkskin ();
 			//	actions+=/bristling_fur,if=buff.barkskin.down&buff.savage_defense.down
-			if (!Me.HasAura ("Barkskin") && !Me.HasAura ("Savage Defense"))
+			if (Health (Me) < 0.3 && !Me.HasAura ("Barkskin") && !Me.HasAura ("Savage Defense"))
 				BristlingFur ();
 			//	actions+=/maul,if=buff.tooth_and_claw.react&incoming_damage_1s
 			if (Me.HasAura ("Tooth and Claw") && (DamageTaken () / 10) > 0)
@@ -68,16 +82,19 @@ namespace ReBot
 			if (Me.AuraTimeRemaining ("Pulverize") > 10)
 				Berserk ();
 			//	actions+=/frenzied_regeneration,if=rage>=80
-			if (Rage >= 80)
+			if (Health (Me) < 0.5 && Rage >= 80)
 				FrenziedRegeneration ();
 			//	actions+=/cenarion_ward
-			if (CenarionWard (Me))
-				return;
+			if (Health (Me) < 0.9) {
+				if (CenarionWard (Me))
+					return;
+			}
 			//	actions+=/renewal,if=health.pct<30
 			if (Health (Me) < 0.3)
 				Renewal ();
 			//	actions+=/heart_of_the_wild
-			HeartoftheWild ();
+			if (Health (Me) < 0.5)
+				HeartoftheWild ();
 			//	actions+=/rejuvenation,if=buff.heart_of_the_wild.up&remains<=3.6
 			if (Me.HasAura ("Heart of the Wild") && Me.AuraTimeRemaining ("Rejuvenation") <= 3.6) {
 				if (Rejuvenation (Me))
@@ -102,7 +119,7 @@ namespace ReBot
 			if (IncarnationSonofUrsoc ())
 				return;
 			//	actions+=/lacerate,if=!ticking
-			if (Target.HasAura ("Lacerate")) {
+			if (!Target.HasAura ("Lacerate")) {
 				if (Lacerate ())
 					return;
 			}
@@ -110,6 +127,14 @@ namespace ReBot
 			if (!Target.HasAura ("Thrash")) {
 				if (Thrash ())
 					return;
+			}
+
+			if (EnemyInRange (10) > 1) {
+				CycleTarget = targets.Where (u => u.IsInLoS && Range (u) <= 8 && !u.HasAura ("Thrash")).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (Thrash (CycleTarget))
+						return;
+				}
 			}
 			//	actions+=/mangle
 			if (Mangle ())

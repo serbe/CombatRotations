@@ -1,5 +1,6 @@
 ﻿using ReBot.API;
 using Newtonsoft.Json;
+using System;
 
 namespace ReBot
 {
@@ -14,10 +15,13 @@ namespace ReBot
 		[JsonProperty ("Auto change stance")]
 		public bool UseStance = true;
 
-
+		public bool InCombat;
+		public DateTime StartBattle;
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
 		public UnitObject CycleTarget;
+
+		// Get
 
 		public double TimeToDie (UnitObject u = null)
 		{
@@ -25,35 +29,10 @@ namespace ReBot
 			return u.Health / Ttd;
 		}
 
-		public bool IsBoss (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return(u.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || u.Level >= Me.Level + BossLevelIncrease;
-		}
-
-		public bool IsPlayer (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.IsPlayer;
-		}
-
-		public bool IsElite (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.IsElite ();
-		}
-
 		public int Rage {
 			get {
 				return Me.GetPower (WoWPowerType.Rage);
 			}
-		}
-
-		public bool HasRage (int r)
-		{
-			if (Me.HasAura ("Spirits of the Lost"))
-				r = r - 5;
-			return r <= Rage;
 		}
 
 		public int EnemyInRange (int range)
@@ -71,11 +50,6 @@ namespace ReBot
 		{
 			u = u ?? Target;
 			return u.CombatRange;
-		}
-
-		public bool Usable (string s)
-		{ 
-			return HasSpell (s) && Cooldown (s) == 0;
 		}
 
 		public double Cooldown (string s)
@@ -105,37 +79,64 @@ namespace ReBot
 			return f;
 		}
 
-		public double DamageTaken ()
+		public double DamageTaken (float t)
 		{
-			return API.ExecuteLua<double> ("local ResolveName = GetSpellInfo(158300);local n,_,_,_,_,dur,expi,_,_,_,id,_,_,_,val1,val2,val3 = UnitAura(\"player\", ResolveName, nil, \"HELPFUL\");return val2");
-		}
+			var damage = API.ExecuteLua<double> ("local ResolveName = GetSpellInfo(158300);local n,_,_,_,_,dur,expi,_,_,_,id,_,_,_,val1,val2,val3 = UnitAura(\"player\", ResolveName, nil, \"HELPFUL\");return val2");
+			if (Time < 10) {
+				if (Time < t / 1000)
+					return damage;
+				return damage / Time * (t / 1000);
+			}
 
-		//		function f.UNIT_AURA(...)
-		//			local n,_,_,_,_,dur,expi,_,_,_,id,_,_,_,val1,val2,val3 = UnitAura("player", ResolveName, nil, "HELPFUL");
-		//			local ResolveValue,DamageTaken
-		//
-		//			ResolveValue = val1 or 0
-		//			DamageTaken = val2 or 0
-		//
-		//			f.ResolveMax = ResolveValue > f.ResolveMax and ResolveValue or f.ResolveMax
-		//			f.DamageMax = DamageTaken > f.DamageMax and DamageTaken or f.DamageMax
-		//			tinsert(f.ResolveData,ResolveValue)
-		//			tinsert(f.DamageData,DamageTaken)
-		//
-		//			f.StatusBar:SetValue(ResolveValue)
-		//			if ResolveStatusDB.dmgtaken then
-		//				f.StatusBar.Text:SetText(strformat("%s%% (%s)",ResolveValue,DamageTaken))
-		//			else
-		//				f.StatusBar.Text:SetText(strformat("%s%%",ResolveValue))
-		//			end
-		//		end
-		//
+			return damage / 10 * (t / 1000);
+		}
 
 		public double Health (UnitObject u = null)
 		{
 			u = u ?? Me;
 			return u.HealthFraction;
 		}
+
+		public double Time {
+			get {
+				TimeSpan combatTime = DateTime.Now.Subtract (StartBattle);
+				return combatTime.TotalSeconds;
+			}
+		}
+
+		// Check
+
+		public bool IsBoss (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return(u.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || u.Level >= Me.Level + BossLevelIncrease;
+		}
+
+		public bool IsPlayer (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return u.IsPlayer;
+		}
+
+		public bool IsElite (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return u.IsElite ();
+		}
+
+		public bool HasRage (int r)
+		{
+			if (Me.HasAura ("Spirits of the Lost"))
+				r = r - 5;
+			return r <= Rage;
+		}
+
+		public bool Usable (string s)
+		{ 
+			return HasSpell (s) && Cooldown (s) == 0;
+		}
+
+
 
 
 		// -----------

@@ -1,5 +1,6 @@
 ﻿using ReBot.API;
 using System.Linq;
+using System;
 
 namespace ReBot
 {
@@ -28,12 +29,21 @@ namespace ReBot
 			//	actions.precombat+=/snapshot_stats
 			//	actions.precombat+=/shield_wall
 			//	actions.precombat+=/potion,name=draenic_armor
+			if (InCombat) {
+				InCombat = false;
+				return true;
+			}
 
 			return false;
 		}
 
 		public override void Combat ()
 		{
+			if (!InCombat) {
+				InCombat = true;
+				StartBattle = DateTime.Now;
+			}
+
 			if (Gcd && HasGlobalCooldown ())
 				return;
 
@@ -102,30 +112,30 @@ namespace ReBot
 		public bool Prot ()
 		{
 			//	actions.prot=shield_block,if=!(debuff.demoralizing_shout.up|buff.ravager_protection.up|buff.shield_wall.up|buff.last_stand.up|buff.enraged_regeneration.up|buff.shield_block.up)
-			if (!(Target.HasAura ("Demoralizing Shout") || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block")))
+			if (Health (Me) < 0.9 && !(Target.HasAura ("Demoralizing Shout") || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block")))
 				ShieldBlock ();
 			//	actions.prot+=/shield_barrier,if=buff.shield_barrier.down&((buff.shield_block.down&action.shield_block.charges_fractional<0.75)|rage>=85)
-			if (!Me.HasAura ("Shield Barrier") && ((!Me.HasAura ("Shield Block") && Frac ("Shield Block") < 0.75) || Rage >= 85))
+			if (Health (Me) < 0.5 && !Me.HasAura ("Shield Barrier") && ((!Me.HasAura ("Shield Block") && Frac ("Shield Block") < 0.75) || Rage >= 85))
 				ShieldBarrier ();
 			//	actions.prot+=/demoralizing_shout,if=incoming_damage_2500ms>health.max*0.1&!(debuff.demoralizing_shout.up|buff.ravager_protection.up|buff.shield_wall.up|buff.last_stand.up|buff.enraged_regeneration.up|buff.shield_block.up|buff.potion.up)
-			if (DamageTaken () / 4 > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
+			if (DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
 				DemoralizingShout ();
 			//	actions.prot+=/enraged_regeneration,if=incoming_damage_2500ms>health.max*0.1&!(debuff.demoralizing_shout.up|buff.ravager_protection.up|buff.shield_wall.up|buff.last_stand.up|buff.enraged_regeneration.up|buff.shield_block.up|buff.potion.up)
-			if (DamageTaken () / 4 > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
+			if (Health (Me) < 0.5 && DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
 				EnragedRegeneration ();
 			//	actions.prot+=/shield_wall,if=incoming_damage_2500ms>health.max*0.1&!(debuff.demoralizing_shout.up|buff.ravager_protection.up|buff.shield_wall.up|buff.last_stand.up|buff.enraged_regeneration.up|buff.shield_block.up|buff.potion.up)
-			if (DamageTaken () / 4 > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
+			if (Health (Me) < 0.35 && DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
 				ShieldWall ();
 			//	actions.prot+=/last_stand,if=incoming_damage_2500ms>health.max*0.1&!(debuff.demoralizing_shout.up|buff.ravager_protection.up|buff.shield_wall.up|buff.last_stand.up|buff.enraged_regeneration.up|buff.shield_block.up|buff.potion.up)
-			if (DamageTaken () / 4 > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
+			if (Health (Me) < 0.35 && DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
 				LastStand ();
 			//	actions.prot+=/potion,name=draenic_armor,if=incoming_damage_2500ms>health.max*0.1&!(debuff.demoralizing_shout.up|buff.ravager_protection.up|buff.shield_wall.up|buff.last_stand.up|buff.enraged_regeneration.up|buff.shield_block.up|buff.potion.up)|target.time_to_die<=25
-			if (DamageTaken () / 4 > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")) || TimeToDie () <= 25) {
+			if (Health (Me) < 0.9 && DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")) || TimeToDie () <= 25) {
 				if (DraenicArmor ())
 					return true;
 			}
 			//	actions.prot+=/stoneform,if=incoming_damage_2500ms>health.max*0.1&!(debuff.demoralizing_shout.up|buff.ravager_protection.up|buff.shield_wall.up|buff.last_stand.up|buff.enraged_regeneration.up|buff.shield_block.up|buff.potion.up)
-			if (DamageTaken () / 4 > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
+			if (Health (Me) < 0.4 && DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
 				Stoneform ();
 			//	actions.prot+=/call_action_list,name=prot_aoe,if=active_enemies>3
 			if (EnemyInRange (8) > 3) {
