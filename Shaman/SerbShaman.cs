@@ -1,7 +1,9 @@
 ﻿using ReBot.API;
 using Newtonsoft.Json;
+using System.Linq;
+using System;
 
-namespace ReBot.Shaman
+namespace ReBot
 {
 	public abstract class SerbShaman : CombatRotation
 	{
@@ -11,10 +13,15 @@ namespace ReBot.Shaman
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
 		public UnitObject CycleTarget;
+		public DateTime StartBattle;
+		public DateTime StartSleepTime;
+		public bool InCombat;
+		public Int32 OraliusWhisperingCrystalId = 118922;
+		public Int32 CrystalOfInsanityId = 86569;
 
 		public double Health (UnitObject u = null)
 		{
-			u = u ?? Me;
+			u = u ?? Target;
 			return u.HealthFraction;
 		}
 
@@ -180,49 +187,49 @@ namespace ReBot.Shaman
 		public bool SearingTotem (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return CastSelf ("Searing Totem", () => Usable ("Searing Totem") && u.CombatRange <= 25);
+			return CastSelf ("Searing Totem", () => Usable ("Searing Totem") && Range (25, u));
 		}
 
 		public bool UnleashElements (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && u.IsInLoS && u.CombatRange <= 40, u);
+			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && Range (40, u), u);
 		}
 
 		public bool ElementalBlast (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Elemental Blast", () => Usable ("Elemental Blast") && u.IsInLoS && u.CombatRange <= 40 && (!Me.IsMoving || Me.HasAura ("Ancestral Swiftness")), u);
+			return Cast ("Elemental Blast", () => Usable ("Elemental Blast") && Range (40, u) && (!Me.IsMoving || Me.HasAura ("Ancestral Swiftness")), u);
 		}
 
 		public bool LightningBolt (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Lightning Bolt", () => Usable ("Lightning Bolt") && u.IsInLoS && u.CombatRange <= 30 && (!Me.IsMoving || Me.HasAura ("Ancestral Swiftness")), u);
+			return Cast ("Lightning Bolt", () => Usable ("Lightning Bolt") && Range (30, u) && (!Me.IsMoving || Me.HasAura ("Ancestral Swiftness")), u);
 		}
 
 		public bool Stormstrike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Stormstrike", () => Usable ("Stormstrike") && u.IsInLoS && u.CombatRange <= 5, u);
+			return Cast ("Stormstrike", () => Usable ("Stormstrike") && Range (5, u), u);
 		}
 
 		public bool LavaLash (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Lava Lash", () => Usable ("Lava Lash") && u.IsInLoS && u.CombatRange <= 5, u);
+			return Cast ("Lava Lash", () => Usable ("Lava Lash") && Range (5, u), u);
 		}
 
 		public bool FlameShock (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Flame Shock", () => Usable ("Flame Shock") && u.IsInLoS && u.CombatRange <= 25, u);
+			return Cast ("Flame Shock", () => Usable ("Flame Shock") && Range (25, u), u);
 		}
 
 		public bool FrostShock (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Frost Shock", () => Usable ("Frost Shock") && u.IsInLoS && u.CombatRange <= 25, u);
+			return Cast ("Frost Shock", () => Usable ("Frost Shock") && Range (25, u), u);
 		}
 
 		public bool FireNova (UnitObject u = null)
@@ -231,36 +238,86 @@ namespace ReBot.Shaman
 			return Cast ("Fire Nova", () => Usable ("Fire Nova") && u.IsInLoS, u);
 		}
 
+		public bool WindShear (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Wind Shear", () => Usable ("Wind Shear") && Range (25, u), u);
+		}
+
+		public bool Range (int r, UnitObject u = null)
+		{
+			return u.IsInLoS && u.CombatRange <= r;
+		}
+
+		public bool Interrupt (UnitObject u = null)
+		{
+			if (Usable ("Wind Shear")) {
+				var targets = Adds;
+				targets.Add (Target);
+
+				CycleTarget = targets.Where (t => t.IsCastingAndInterruptible && t.CastingTime > 0 && Range (25, t)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (WindShear (CycleTarget))
+						return true;
+				}
+			}
+			return false;
+		}
+
 		//		public bool  (UnitObject u = null)
 		//		{
 		//			u = u ?? Target;
-		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && u.IsInLoS && u.CombatRange <= 40, u);
+		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && Range(40, u), u);
 		//		}
 
 		//		public bool  (UnitObject u = null)
 		//		{
 		//			u = u ?? Target;
-		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && u.IsInLoS && u.CombatRange <= 40, u);
+		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && Range(40, u), u);
 		//		}
 
 		//		public bool  (UnitObject u = null)
 		//		{
 		//			u = u ?? Target;
-		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && u.IsInLoS && u.CombatRange <= 40, u);
+		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && Range(40, u), u);
 		//		}
 
 		//		public bool  (UnitObject u = null)
 		//		{
 		//			u = u ?? Target;
-		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && u.IsInLoS && u.CombatRange <= 40, u);
+		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && Range(40, u), u);
 		//		}
 
 		//		public bool  (UnitObject u = null)
 		//		{
 		//			u = u ?? Target;
-		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && u.IsInLoS && u.CombatRange <= 40, u);
+		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && Range(40, u), u);
 		//		}
-
+		//		public bool  (UnitObject u = null)
+		//		{
+		//			u = u ?? Target;
+		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && Range(40, u), u);
+		//		}
+		//		public bool  (UnitObject u = null)
+		//		{
+		//			u = u ?? Target;
+		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && Range(40, u), u);
+		//		}
+		//		public bool  (UnitObject u = null)
+		//		{
+		//			u = u ?? Target;
+		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && Range(40, u), u);
+		//		}
+		//		public bool  (UnitObject u = null)
+		//		{
+		//			u = u ?? Target;
+		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && Range(40, u), u);
+		//		}
+		//		public bool  (UnitObject u = null)
+		//		{
+		//			u = u ?? Target;
+		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && Range(40, u), u);
+		//		}
 	}
 }
 

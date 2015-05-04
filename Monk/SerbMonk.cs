@@ -114,6 +114,16 @@ namespace ReBot
 
 			return damage / 10 * (t / 1000);
 		}
+
+		public int ElusiveBrewStacks {
+			get {
+				foreach (var a in Me.Auras) {
+					if (a.SpellId == 128939)
+						return a.StackCount;
+				}
+				return  0;
+			}
+		}
 			
 		// Check
 
@@ -279,7 +289,7 @@ namespace ReBot
 
 		public bool ElusiveBrew ()
 		{
-			return CastSelf ("Elusive Brew", () => Usable ("Elusive Brew") && !Me.HasAura ("Elusive Brew"));
+			return CastSelf ("Elusive Brew", () => Usable ("Elusive Brew"));
 		}
 
 		public bool InvokeXuentheWhiteTiger (UnitObject u = null)
@@ -354,7 +364,7 @@ namespace ReBot
 		public bool ZenSphere (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Zen Sphere", () => Usable ("Zen Sphere") && u.IsInLoS && Range (u) <= 40, u);
+			return Cast ("Zen Sphere", () => Usable ("Zen Sphere") && u.IsInLoS && Range (u) <= 40 && !u.HasAura ("Zen Sphere") && u.IsFriendly, u);
 		}
 
 		public bool ExpelHarm (UnitObject u = null)

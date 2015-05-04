@@ -1,6 +1,6 @@
 ﻿using ReBot.API;
 
-namespace ReBot.Shaman
+namespace ReBot
 {
 	[Rotation ("Serb Shaman Enhancement SC", "ReBot", WoWClass.Shaman, Specialization.ShamanEnhancement, 5, 25)]
 
