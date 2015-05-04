@@ -163,6 +163,14 @@ namespace ReBot
 			return u.IsInCombatRangeAndLoS && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
 		}
 
+		public bool DangerBoss (UnitObject u = null, int r = 0, int e = 6)
+		{
+			u = u ?? Target;
+			if (r != 0)
+				return Range (r, u) && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e);
+			return u.IsInCombatRangeAndLoS && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e);
+		}
+
 		public bool IsPlayer (UnitObject u = null)
 		{
 			u = u ?? Target;
@@ -249,7 +257,7 @@ namespace ReBot
 					return true;
 			}
 			var players = Group.GetGroupMemberObjects ();
-			CycleTarget = players.Where (p => !p.IsDead && p.IsInLoS && Range (40, p) && !p.HasAura ("Zen Sphere", true)).DefaultIfEmpty (null).FirstOrDefault ();
+			CycleTarget = players.Where (p => !p.IsDead && Range (40, p) && p.Auras.Any (x => x.IsDebuff && "Curse".Contains (x.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
 			if (CycleTarget != null) {
 				if (CleanseSpirit (CycleTarget))
 					return true;
@@ -310,13 +318,13 @@ namespace ReBot
 		public bool StormElementalTotem (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return CastSelf ("Storm Elemental Totem", () => Usable ("Storm Elemental Totem") && Danger (u, 30, 5));
+			return CastSelf ("Storm Elemental Totem", () => Usable ("Storm Elemental Totem") && DangerBoss (u, 30));
 		}
 
 		public bool FireElementalTotem (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return CastSelf ("Fire Elemental Totem", () => Usable ("Fire Elemental Totem") && Danger (u, 30, 5));
+			return CastSelf ("Fire Elemental Totem", () => Usable ("Fire Elemental Totem") && DangerBoss (u, 30));
 		}
 
 		public bool SearingTotem ()
@@ -446,17 +454,16 @@ namespace ReBot
 			return CastSelf ("Ghost Wolf", () => Usable ("Ghost Wolf") && !Me.HasAura ("Ghost Wolf"));
 		}
 
-		//		public bool  (UnitObject u = null)
-		//		{
-		//			u = u ?? Target;
-		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && Range(40, u), u);
-		//		}
+		public bool GiftoftheNaaru (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Gift of the Naaru", () => Usable ("Gift of the Naaru") && Range (40, u), u);
+		}
 
-		//		public bool  (UnitObject u = null)
-		//		{
-		//			u = u ?? Target;
-		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && Range(40, u), u);
-		//		}
+		public bool AncestralGuidance ()
+		{
+			return CastSelf ("Ancestral Guidance", () => Usable ("Ancestral Guidance"));
+		}
 
 		//		public bool  (UnitObject u = null)
 		//		{
