@@ -62,13 +62,13 @@ namespace ReBot
 			Ascendance ();
 			//	# If only one enemy, priority follows the 'single' action list.
 			//	actions+=/call_action_list,name=single,if=active_enemies=1
-			if (EnemyInRange (8) == 1) {
+			if (ActiveEnemies (8) == 1) {
 				if (Single ())
 					return;
 			}
 			//	# On multiple enemies, the priority follows the 'aoe' action list.
 			//	actions+=/call_action_list,name=aoe,if=active_enemies>1
-			if (EnemyInRange (8) > 1) {
+			if (ActiveEnemies (8) > 1) {
 				if (Aoe ())
 					return;
 			}

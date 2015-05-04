@@ -70,8 +70,8 @@
     <Compile Include="Priest\SerbPriestShadowIV.cs" />
     <Compile Include="Paladin\SerbPaladinProtiction.cs" />
     <Compile Include="Paladin\SerbPaladin.cs" />
-    <Compile Include="Shaman\SerbShamanElementalist.cs" />
     <Compile Include="Monk\SerbMonkBrewmasterSC.cs" />
+    <Compile Include="Shaman\SerbShamanElementalistSC.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
