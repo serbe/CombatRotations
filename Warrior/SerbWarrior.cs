@@ -35,21 +35,15 @@ namespace ReBot
 			}
 		}
 
-		public int EnemyInRange (int range)
+		public int ActiveEnemies (int range)
 		{
 			int x = 0;
-			foreach (UnitObject mob in API.CollectUnits(range)) {
-				if ((mob.IsEnemy || Me.Target == mob) && !mob.IsDead && mob.IsAttackable) {
+			foreach (UnitObject u in API.CollectUnits(range)) {
+				if ((u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable && u.InCombat) {
 					x++;
 				}
 			}
 			return x;
-		}
-
-		public double Range (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.CombatRange;
 		}
 
 		public double Cooldown (string s)
@@ -105,6 +99,22 @@ namespace ReBot
 		}
 
 		// Check
+
+		public bool Range (int r, UnitObject u = null, int l = 0)
+		{
+			u = u ?? Target;
+			if (l != 0)
+				return u.IsInLoS && u.CombatRange <= r && u.CombatRange >= l;
+			return u.IsInLoS && u.CombatRange <= r;
+		}
+
+		public bool Danger (UnitObject u = null, int r = 0, int e = 2)
+		{
+			u = u ?? Target;
+			if (r != 0)
+				return Range (r, u) && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
+			return u.IsInCombatRangeAndLoS && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
+		}
 
 		public bool IsBoss (UnitObject u = null)
 		{
@@ -163,29 +173,43 @@ namespace ReBot
 			return true;
 		}
 
+		// Items
 
+		public bool DraenicArmor ()
+		{
+			if (API.HasItem (109220) && API.ItemCooldown (109220) == 0 && !Me.HasAura ("Draenic Armor Potion"))
+				return API.UseItem (109220);
+			return false;
+		}
+
+		public bool Healthstone ()
+		{
+			if (API.HasItem (5512) && API.ItemCooldown (5512) == 0)
+				return API.UseItem (5512);
+			return false;
+		}
 
 		// ------- Spells
 
 		public bool Charge (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Charge", () => Usable ("Charge") && u.IsInLoS && Range (u) >= 8 && (Range (u) <= 25 || (HasGlyph (58097) && Range (u) <= 30)) && u.InCombat, u);
+			return Cast ("Charge", () => Usable ("Charge") && (Range (25, u, 8) || (HasGlyph (58097) && Range (30, u, 8))), u);
 		}
 
 		public bool BloodFury ()
 		{
-			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && Target.IsInCombatRangeAndLoS && (IsElite () || IsPlayer () || EnemyInRange (10) > 2));
+			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && Danger ());
 		}
 
 		public bool Berserking ()
 		{
-			return CastSelf ("Berserking", () => Usable ("Berserking") && Target.IsInCombatRangeAndLoS && (IsElite () || IsPlayer () || EnemyInRange (10) > 2));
+			return CastSelf ("Berserking", () => Usable ("Berserking") && Danger ());
 		}
 
 		public bool ArcaneTorrent ()
 		{
-			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && Target.IsInCombatRangeAndLoS && (IsElite () || IsPlayer () || EnemyInRange (10) > 2));
+			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && Danger ());
 		}
 
 		public bool BerserkerRage ()
@@ -221,20 +245,6 @@ namespace ReBot
 		public bool LastStand ()
 		{
 			return CastSelf ("Last Stand", () => Usable ("Last Stand"));
-		}
-
-		public bool DraenicArmor ()
-		{
-			if (API.HasItem (109220) && API.ItemCooldown (109220) == 0 && !Me.HasAura ("Draenic Armor Potion"))
-				return API.UseItem (109220);
-			return false;
-		}
-
-		public bool Healthstone ()
-		{
-			if (API.HasItem (5512) && API.ItemCooldown (5512) == 0)
-				return API.UseItem (5512);
-			return false;
 		}
 
 		public bool Stoneform ()
@@ -279,7 +289,7 @@ namespace ReBot
 		public bool StormBolt (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Storm Bolt", () => Usable ("Storm Bolt") && u.IsInLoS && Range (u) <= 30, u);
+			return Cast ("Storm Bolt", () => Usable ("Storm Bolt") && Range (30, u), u);
 		}
 
 		public bool DragonRoar ()
@@ -302,7 +312,7 @@ namespace ReBot
 		public bool Execute (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Execute", () => Usable ("Execute") && u.IsInLoS && Range (u) <= 5 && ((HasRage (30) && Health (u) <= 0.2) || Me.HasAura ("Sudden Death")), u);
+			return Cast ("Execute", () => Usable ("Execute") && u.IsInCombatRangeAndLoS && ((HasRage (30) && Health (u) <= 0.2) || Me.HasAura ("Sudden Death")), u);
 		}
 
 		public bool Devastate (UnitObject u = null)
@@ -314,7 +324,7 @@ namespace ReBot
 		public bool ThunderClap (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return CastSelf ("Thunder Clap", () => Usable ("Thunder Clap") && u.IsInLoS && Range (u) <= 8);
+			return CastSelf ("Thunder Clap", () => Usable ("Thunder Clap") && Range (8, u));
 		}
 
 		public bool Bladestorm (UnitObject u = null)
@@ -326,25 +336,25 @@ namespace ReBot
 		public bool Shockwave (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Shockwave", () => Usable ("Shockwave") && u.IsInLoS && Range (u) <= 10, u);
+			return Cast ("Shockwave", () => Usable ("Shockwave") && Range (10, u), u);
 		}
 
 		public bool ShieldCharge (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Shield Charge", () => Usable ("Shield Charge") && HasRage (20) && u.IsInLoS && Range (u) <= 10, u);
+			return Cast ("Shield Charge", () => Usable ("Shield Charge") && HasRage (20) && Range (10, u), u);
 		}
 
 		public bool HeroicLeap (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return CastOnTerrain ("Heroic Leap", u.Position, () => Usable ("Heroic Leap") && u.IsInLoS && Range (u) >= 8 && ((HasGlyph (63325) && Range (u) <= 25) || Range (u) <= 40));
+			return CastOnTerrain ("Heroic Leap", u.Position, () => Usable ("Heroic Leap") && Range (40, u, 8) && ((HasGlyph (63325) && Range (25, u)) || Range (40, u)));
 		}
 
 		public bool HeroicThrow (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Heroic Throw", () => Usable ("Heroic Throw") && u.IsInLoS && Range (u) >= 8 && Range (u) <= 30, u);
+			return Cast ("Heroic Throw", () => Usable ("Heroic Throw") && Range (30, u, 8), u);
 		}
 
 		public bool DefensiveStance ()
@@ -354,7 +364,7 @@ namespace ReBot
 
 		public bool BattleStance ()
 		{
-			return CastSelf ("Battle Stance", () => Usable ("Battle Stance") && !Me.HasAura ("Battle Stance"));
+			return CastSelf ("Battle Stance", () => Usable ("Battle Stance") && !IsInShapeshiftForm ("Battle Stance"));
 		}
 	}
 }

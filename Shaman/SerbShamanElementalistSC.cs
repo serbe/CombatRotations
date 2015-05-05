@@ -31,8 +31,8 @@ namespace ReBot
 					return true;
 			}
 
-//			if (CleanCurse ())
-//				return true;
+			if (CleanCurse ())
+				return true;
 
 			if (Me.MovementSpeed != 0 && !Me.IsSwimming && Me.DistanceTo (API.GetNaviTarget ()) > 20) {
 				if (GhostWolf ())
@@ -82,21 +82,22 @@ namespace ReBot
 
 			//Heal - Support
 			if (Health (Me) <= 0.75) { 
-				if (GiftoftheNaaru (Me))
-					API.PrintInfo ("25");
+				GiftoftheNaaru (Me);
+			}
+			if (Health (Me) <= 0.5) { 
+				if (Healthstone ())
+					return;
 			}
 			if (Health (Me) <= 0.6 && Target.MaxHealth > Me.MaxHealth && Danger (Target, 40)) {
-				if (AncestralGuidance ()) {
-					API.PrintInfo ("26");
+				if (AncestralGuidance ())
 					return;
-				}
 			}
-//			if (HasSpell ("Astral Shift")) {
-//				if (CastSelf ("Astral Shift", () => Me.HealthFraction <= 0.5 && Target.HpGreaterThanOrElite (0.3) && Me.InCombat && Target.Target == Me && !HasAura ("Shamanistic Rage") && AS))
-//					return;
-//			}
-//			if (CastSelf ("Shamanistic Rage", () => Me.HealthFraction < 0.7 && Me.InCombat && !HasAura ("Astral Shift") && Target.HpGreaterThanOrElite (0.3) && Target.Target == Me && SR))
-//				return;
+			if (Health (Me) <= 0.5 && Target.HpGreaterThanOrElite (0.3) && Me.InCombat && Target.Target == Me && !HasAura ("Shamanistic Rage")) {
+				AstralShift ();
+			}
+			if (Health (Me) < 0.7 && Me.InCombat && !Me.HasAura ("Astral Shift") && Target.HpGreaterThanOrElite (0.3) && Target.Target == Me) {
+				ShamanisticRage ();
+			}
 			
 			if (!(InRaid || InInstance)) {
 				if (CastOnTerrainPreventDouble ("Healing Rain", Me.Position, () => Me.HealthFraction < 0.85))
@@ -145,8 +146,7 @@ namespace ReBot
 			}
 			//	actions+=/ancestral_swiftness,if=!buff.ascendance.up
 			if (!Me.HasAura ("Ascendance")) {
-				if (AncestralSwiftness ())
-					API.PrintInfo ("2");
+				AncestralSwiftness ();
 			}
 			//	actions+=/storm_elemental_totem
 			if (StormElementalTotem ()) {
@@ -302,7 +302,7 @@ namespace ReBot
 			//	actions.aoe+=/searing_totem,if=(!talent.liquid_magma.enabled&!totem.fire.active)|(talent.liquid_magma.enabled&pet.searing_totem.remains<=20&!pet.fire_elemental_totem.active&!buff.liquid_magma.up)
 			if ((!HasSpell ("Liquid Magma") && !Me.TotemExist (TotemType.Fire_M1_DeathKnightGhoul)) || (HasSpell ("Liquid Magma") && TotemRemainTime ("Searing Totem") <= 20 && !HasActiveFireElementalTotem && !Me.HasAura ("Liquid Magma"))) {
 				if (SearingTotem ()) {
-					API.PrintInfo ("23");
+//					API.PrintInfo ("23");
 					return;
 				}
 			}

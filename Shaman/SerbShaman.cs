@@ -1,7 +1,7 @@
-﻿using ReBot.API;
-using Newtonsoft.Json;
+﻿using System;
 using System.Linq;
-using System;
+using Newtonsoft.Json;
+using ReBot.API;
 
 namespace ReBot
 {
@@ -276,12 +276,12 @@ namespace ReBot
 		public bool Bloodlust (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return CastSelf ("Bloodlust", () => Usable ("Bloodlust") && (IsBoss (u) || IsPlayer (u)) && u.IsInCombatRangeAndLoS);
+			return CastSelf ("Bloodlust", () => Usable ("Bloodlust") && DangerBoss (u, 0, 15));
 		}
 
 		public bool BloodFury ()
 		{
-			return CastSelf ("BloodFury", () => Usable ("Blood Fury") && Danger ());
+			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && Danger ());
 		}
 
 		public bool Berserking ()
@@ -341,13 +341,14 @@ namespace ReBot
 		public bool ElementalBlast (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Elemental Blast", () => Usable ("Elemental Blast") && Range (40, u) && (!Me.IsMoving || Me.HasAura ("Ancestral Swiftness")), u);
+//			return Cast ("Elemental Blast", () => Usable ("Elemental Blast") && Range (40, u) && (!Me.IsMoving || Me.HasAura ("Ancestral Swiftness")), u);
+			return Cast ("Elemental Blast", () => Usable ("Elemental Blast") && Range (40, u), u);
 		}
 
 		public bool LightningBolt (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Lightning Bolt", () => Usable ("Lightning Bolt") && Range (30, u) && (!Me.IsMoving || Me.HasAura ("Ancestral Swiftness")), u);
+			return Cast ("Lightning Bolt", () => Usable ("Lightning Bolt") && (Range (30, u) || (Me.HasAura ("Elemental Reach") && Range (40, u))), u);
 		}
 
 		public bool Stormstrike (UnitObject u = null)
@@ -359,25 +360,25 @@ namespace ReBot
 		public bool LavaLash (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Lava Lash", () => Usable ("Lava Lash") && Range (5, u), u);
+			return Cast ("Lava Lash", () => Usable ("Lava Lash") && SpellCharges ("Lava Lash") >= 1 && Range (5, u), u);
 		}
 
 		public bool FlameShock (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Flame Shock", () => Usable ("Flame Shock") && Range (25, u), u);
+			return Cast ("Flame Shock", () => Usable ("Flame Shock") && (Range (25, u) || (Me.HasAura ("Elemental Reach") && Range (40, u))), u);
 		}
 
 		public bool FrostShock (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Frost Shock", () => Usable ("Frost Shock") && Range (25, u), u);
+			return Cast ("Frost Shock", () => Usable ("Frost Shock") && (Range (25, u) || (Me.HasAura ("Elemental Reach") && Range (40, u))), u);
 		}
 
 		public bool EarthShock (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Earth Shock", () => Usable ("Earth Shock") && Range (25, u), u);
+			return Cast ("Earth Shock", () => Usable ("Earth Shock") && (Range (25, u) || (Me.HasAura ("Elemental Reach") && Range (40, u))), u);
 		}
 
 		public bool FireNova (UnitObject u = null)
@@ -395,7 +396,7 @@ namespace ReBot
 		public bool UnleashFlame (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Unleash Flame", () => Usable ("Unleash Flame") && Me.HasAura ("Unleash Flame") && Range (40, u), u);
+			return Cast ("Unleash Flame", () => Usable ("Unleash Flame") && Range (40, u), u);
 		}
 
 		public bool LiquidMagma ()
@@ -411,7 +412,7 @@ namespace ReBot
 		public bool LavaBurst (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Lava Burst", () => Usable ("Lava Burst") && Range (30, u), u);
+			return Cast ("Lava Burst", () => Usable ("Lava Burst") && (Range (30, u) || (Me.HasAura ("Elemental Reach") && Range (40, u))), u);
 		}
 
 		public bool Earthquake (UnitObject u = null)
@@ -434,7 +435,7 @@ namespace ReBot
 		public bool ChainLightning (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Chain Lightning", () => Usable ("Chain Lightning") && Range (30, u), u);
+			return Cast ("Chain Lightning", () => Usable ("Chain Lightning") && (Range (30, u) || (Me.HasAura ("Elemental Reach") && Range (40, u))), u);
 		}
 
 		public bool HealingSurge (UnitObject u = null)
@@ -463,6 +464,16 @@ namespace ReBot
 		public bool AncestralGuidance ()
 		{
 			return CastSelf ("Ancestral Guidance", () => Usable ("Ancestral Guidance"));
+		}
+
+		public bool AstralShift ()
+		{
+			return CastSelf ("Astral Shift", () => Usable ("Astral Shift"));
+		}
+
+		public bool ShamanisticRage ()
+		{
+			return CastSelf ("Shamanistic Rage", () => Usable ("Shamanistic Rage"));
 		}
 
 		//		public bool  (UnitObject u = null)

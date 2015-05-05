@@ -1,5 +1,6 @@
 ﻿using System;
 using ReBot.API;
+using System.Linq;
 
 namespace ReBot
 {
@@ -89,13 +90,40 @@ namespace ReBot
 			if (HasGlobalCooldown () && Gcd)
 				return;
 			//	actions+=/seal_of_insight,if=talent.empowered_seals.enabled&!seal.insight&buff.uthers_insight.remains<cooldown.judgment.remains
+			if (HasSpell ("Empowered Seals") && !Me.HasAura ("Seal of Insight") && Me.AuraTimeRemaining ("Uther's Insight") < Cooldown ("Judgment")) {
+				if (SealofInsight ())
+					return;
+			}
 			//	actions+=/seal_of_righteousness,if=talent.empowered_seals.enabled&!seal.righteousness&buff.uthers_insight.remains>cooldown.judgment.remains&buff.liadrins_righteousness.down
+			if (HasSpell ("Empowered Seals") && !Me.HasAura ("Seal of Righteousness") && Me.AuraTimeRemaining ("Uther's Insight") > Cooldown ("Judgment") && !Me.HasAura ("Liadrins Righteousness")) {
+				if (SealofRighteousness ())
+					return;
+			}
 			//	actions+=/avengers_shield,if=buff.grand_crusader.react&active_enemies>1&!glyph.focused_shield.enabled
+			if (Me.HasAura ("Grand Crusader") && ActiveEnemies (30) > 1 && !HasGlyph (54930)) {
+				if (AvengersShield ())
+					return;
+			}
 			//	actions+=/hammer_of_the_righteous,if=active_enemies>=3
+			if (ActiveEnemies (8) >= 3) {
+				if (HammeroftheRighteous ())
+					return;
+			}
 			//	actions+=/crusader_strike
+			if (CrusaderStrike ())
+				return;
 			//	actions+=/wait,sec=cooldown.crusader_strike.remains,if=cooldown.crusader_strike.remains>0&cooldown.crusader_strike.remains<=0.35
+
 			//	actions+=/judgment,cycle_targets=1,if=glyph.double_jeopardy.enabled&last_judgment_target!=target
+			if (Usable ("Judgment") && HasGlyph (54922)) {
+				CycleTarget = Enemy.Where (u => u != LastJudgmentTarget).DefaultIfEmpty (null).FirstOrDefault;
+				if 
+			}
 			//	actions+=/judgment
+			if (Judgment ()) {
+				LastJudgmentTarget = Target;
+				return;
+			}
 			//	actions+=/wait,sec=cooldown.judgment.remains,if=cooldown.judgment.remains>0&cooldown.judgment.remains<=0.35
 			//	actions+=/avengers_shield,if=active_enemies>1&!glyph.focused_shield.enabled
 			//	actions+=/holy_wrath,if=talent.sanctified_wrath.enabled
@@ -206,3 +234,7 @@ namespace ReBot
 //	actions.max_survival+=/consecration,if=target.debuff.flying.down&!ticking
 //	actions.max_survival+=/holy_wrath
 //	actions.max_survival+=/sacred_shield
+
+
+
+

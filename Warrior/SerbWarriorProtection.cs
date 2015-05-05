@@ -77,7 +77,7 @@ namespace ReBot
 		public bool Protection ()
 		{
 			//	actions=charge
-			if (Range () > 10) {
+			if (Range (10)) {
 				if (Charge ())
 					return true;
 			}
@@ -103,7 +103,7 @@ namespace ReBot
 //				if (ThunderClap ())
 //					return true;
 //			}
-			if (Execute () && Me.Level < 100)
+			if (Me.Level < 100 && Execute ())
 				return true;
 
 			return false;
@@ -115,19 +115,19 @@ namespace ReBot
 			if (Health (Me) < 0.9 && !(Target.HasAura ("Demoralizing Shout") || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block")))
 				ShieldBlock ();
 			//	actions.prot+=/shield_barrier,if=buff.shield_barrier.down&((buff.shield_block.down&action.shield_block.charges_fractional<0.75)|rage>=85)
-			if (Health (Me) < 0.5 && !Me.HasAura ("Shield Barrier") && ((!Me.HasAura ("Shield Block") && Frac ("Shield Block") < 0.75) || Rage >= 85))
-				ShieldBarrier ();
+			if (Health (Me) < 0.9 && !Me.HasAura ("Shield Barrier") && ((!Me.HasAura ("Shield Block") && Frac ("Shield Block") < 0.75) || Rage >= 85))
+				ShieldBarrier (); // 5
 			//	actions.prot+=/demoralizing_shout,if=incoming_damage_2500ms>health.max*0.1&!(debuff.demoralizing_shout.up|buff.ravager_protection.up|buff.shield_wall.up|buff.last_stand.up|buff.enraged_regeneration.up|buff.shield_block.up|buff.potion.up)
-			if (DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
+			if (Health (Me) < 0.9 && DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
 				DemoralizingShout ();
 			//	actions.prot+=/enraged_regeneration,if=incoming_damage_2500ms>health.max*0.1&!(debuff.demoralizing_shout.up|buff.ravager_protection.up|buff.shield_wall.up|buff.last_stand.up|buff.enraged_regeneration.up|buff.shield_block.up|buff.potion.up)
-			if (Health (Me) < 0.5 && DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
+			if (Health (Me) < 0.9 && DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
 				EnragedRegeneration ();
 			//	actions.prot+=/shield_wall,if=incoming_damage_2500ms>health.max*0.1&!(debuff.demoralizing_shout.up|buff.ravager_protection.up|buff.shield_wall.up|buff.last_stand.up|buff.enraged_regeneration.up|buff.shield_block.up|buff.potion.up)
-			if (Health (Me) < 0.35 && DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
+			if (Health (Me) < 0.9 && DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
 				ShieldWall ();
 			//	actions.prot+=/last_stand,if=incoming_damage_2500ms>health.max*0.1&!(debuff.demoralizing_shout.up|buff.ravager_protection.up|buff.shield_wall.up|buff.last_stand.up|buff.enraged_regeneration.up|buff.shield_block.up|buff.potion.up)
-			if (Health (Me) < 0.35 && DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
+			if (Health (Me) < 0.9 && DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
 				LastStand ();
 			//	actions.prot+=/potion,name=draenic_armor,if=incoming_damage_2500ms>health.max*0.1&!(debuff.demoralizing_shout.up|buff.ravager_protection.up|buff.shield_wall.up|buff.last_stand.up|buff.enraged_regeneration.up|buff.shield_block.up|buff.potion.up)|target.time_to_die<=25
 			if (Health (Me) < 0.9 && DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")) || TimeToDie () <= 25) {
@@ -138,7 +138,7 @@ namespace ReBot
 			if (Health (Me) < 0.4 && DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
 				Stoneform ();
 			//	actions.prot+=/call_action_list,name=prot_aoe,if=active_enemies>3
-			if (EnemyInRange (8) > 3) {
+			if (ActiveEnemies (8) > 3) {
 				if (Prot_aoe ())
 					return true;
 			}
@@ -256,14 +256,14 @@ namespace ReBot
 		public bool Gladiator ()
 		{
 			//	actions=charge
-			if (Range () > 10) {
+			if (Range (10)) {
 				if (Charge ())
 					return true;
 			}
 			//	actions+=/auto_attack
 			//	# This is mostly to prevent cooldowns from being accidentally used during movement.
 			//	actions+=/call_action_list,name=movement,if=movement.distance>5
-			if (Range () > 5) {
+			if (Range (5)) {
 				if (Movement ())
 					return true;
 			}
@@ -303,12 +303,12 @@ namespace ReBot
 					return true;
 			}
 			//	actions+=/call_action_list,name=single,if=active_enemies=1
-			if (EnemyInRange (8) == 1) {
+			if (ActiveEnemies (8) == 1) {
 				if (GladSingle ())
 					return true;
 			}
 			//	actions+=/call_action_list,name=aoe,if=active_enemies>=2
-			if (EnemyInRange (8) >= 2) {
+			if (ActiveEnemies (8) >= 2) {
 				if (GladAoe ())
 					return true;
 			}
@@ -387,7 +387,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.aoe+=/thunder_clap,cycle_targets=1,if=dot.deep_wounds.remains<3&active_enemies>4
-			if (EnemyInRange (8) > 4) {
+			if (ActiveEnemies (8) > 4) {
 				CycleTarget = targets.Where (u => Me.Level >= 32 & u.AuraTimeRemaining ("Deep Wounds", true) < 3).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CycleTarget != null) {
 					if (ThunderClap ())
@@ -405,7 +405,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.aoe+=/thunder_clap,if=active_enemies>6
-			if (EnemyInRange (8) > 6) {
+			if (ActiveEnemies (8) > 6) {
 				if (ThunderClap ())
 					return true;
 			}
