@@ -146,10 +146,7 @@ namespace ReBot
 			return HasSpell (s) && Cooldown (s) == 0;
 		}
 
-
-
-
-		// -----------
+		// Combo
 
 		public bool Heal ()
 		{
@@ -171,6 +168,11 @@ namespace ReBot
 					return true;
 			}
 			return true;
+		}
+
+		public bool Interrupt ()
+		{
+			return false;
 		}
 
 		// Items
