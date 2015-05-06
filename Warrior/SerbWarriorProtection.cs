@@ -1,6 +1,7 @@
 ﻿using ReBot.API;
 using System.Linq;
 using System;
+using Newtonsoft.Json;
 
 namespace ReBot
 {
@@ -8,6 +9,9 @@ namespace ReBot
 
 	public class SerbWarriorProtectionSC : SerbWarrior
 	{
+		[JsonProperty ("Max rage")]
+		public int RageMax = 100;
+
 		public 	SerbWarriorProtectionSC ()
 		{
 //			GroupBuffs = new[] {
@@ -47,10 +51,10 @@ namespace ReBot
 			if (Gcd && HasGlobalCooldown ())
 				return;
 
-			if (Health () < 0.9) {
-				if (Heal ())
-					return;
-			}
+//			if (Health () < 0.9) {
+//				if (Heal ())
+//					return;
+//			}
 
 //			if (UseStance && !(Me.HasAura ("Defensive Stance") || Me.HasAura ("Improved Defensive Stance")) && (CombatRole == CombatRole.Tank || Health () < 0.4)) {
 //				if (DefensiveStance ())
