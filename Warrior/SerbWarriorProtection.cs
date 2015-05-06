@@ -229,7 +229,7 @@ namespace ReBot
 				return true;
 			//	actions.prot_aoe+=/revenge
 			if (InInstance) {
-				CycleTarget = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault;
+				CycleTarget = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CycleTarget != null) {
 					if (Revenge (CycleTarget))
 						return true;
@@ -259,7 +259,7 @@ namespace ReBot
 			//	actions.prot_aoe+=/execute,if=buff.sudden_death.react
 			if (Me.HasAura ("Sudden Death")) {
 				if (InInstance) {
-					CycleTarget = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault;
+					CycleTarget = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
 					if (CycleTarget != null) {
 						if (Execute (CycleTarget))
 							return true;
@@ -274,7 +274,7 @@ namespace ReBot
 			}
 			//	actions.prot_aoe+=/devastate
 			if (InInstance) {
-				CycleTarget = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault;
+				CycleTarget = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CycleTarget != null) {
 					if (Devastate (CycleTarget))
 						return true;

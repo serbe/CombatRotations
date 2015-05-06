@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using Geometry;
 
 namespace ReBot
 {
@@ -23,6 +24,14 @@ namespace ReBot
 
 		// Get
 
+		public double TimeToHpg {
+			get {
+				if (HasGlobalCooldown ())
+					return 1.5;
+				return 0.35 + 1.5;
+			}
+		}
+
 		public List<UnitObject> Enemy {
 			get {
 				var targets = Adds;
@@ -42,11 +51,23 @@ namespace ReBot
 			return SpellCooldown (s) > 0 ? SpellCooldown (s) : 0;
 		}
 
-		public int ActiveEnemies (int range)
+		public int ActiveEnemies (int r)
 		{
 			int x = 0;
-			foreach (UnitObject u in API.CollectUnits(range)) {
+			foreach (UnitObject u in API.CollectUnits(r)) {
 				if ((u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable && u.InCombat) {
+					x++;
+				}
+			}
+			return x;
+		}
+
+		public int ActiveEnemiesWithTarget (int r, UnitObject t = null)
+		{
+			t = t ?? Target;
+			int x = 0;
+			foreach (UnitObject u in API.CollectUnits(45)) {
+				if (Vector3.Distance (t.Position, u.Position) <= r && (u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable) {
 					x++;
 				}
 			}
@@ -67,6 +88,23 @@ namespace ReBot
 		}
 
 		// Check
+
+		public bool CS (string s)
+		{
+			if (CastSelf (s))
+				return true;
+			API.Print ("False CastSelf " + s);
+			return false;
+		}
+
+		public bool C (string s, UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (Cast (s, u))
+				return true;
+			API.Print ("False Cast " + s + " with " + u.CombatRange + " range");
+			return false;
+		}
 
 		public bool IsBoss (UnitObject u = null)
 		{
@@ -160,60 +198,104 @@ namespace ReBot
 		public bool GuardianofAncientKings (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Guardian of Ancient Kings", () => Usable ("Guardian of Ancient Kings") && Range (30, u), u);
+			return Usable ("Guardian of Ancient Kings") && Range (30, u) && C ("Guardian of Ancient Kings", u);
 		}
 
 		public bool ArdentDefender ()
 		{
-			return CastSelf ("Ardent Defender", () => Usable ("Ardent Defender"));
+			return Usable ("Ardent Defender") && CS ("Ardent Defender");
+		}
+
+		public bool FlashofLight (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Flash of Light") && Range (40, u) && C ("Flash of Light", u);
 		}
 
 		public bool EternalFlame (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Eternal Flame", () => Usable ("Eternal Flame") && HolyPower >= 1 && Range (40, u), u);
+			return Usable ("Eternal Flame") && HolyPower >= 1 && Range (40, u) && C ("Eternal Flame", u);
 		}
 
 		public bool ShieldoftheRighteous (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Shield of the Righteous", () => Usable ("Shield of the Righteous") && HolyPower >= 3 && Range (5, u), u);
+			return Usable ("Shield of the Righteous") && HolyPower >= 3 && Range (5, u) && C ("Shield of the Righteous", u);
 		}
-
-		// Spells
 
 		public bool SealofInsight ()
 		{
-			return CastSelf ("Seal of Insight", () => Usable ("Seal of Insight"));
+			return Usable ("Seal of Insight") && CS ("Seal of Insight");
+		}
+
+		public bool Consecration ()
+		{
+			return Usable ("Consecration") && CS ("Consecration");
 		}
 
 		public bool SealofRighteousness ()
 		{
-			return CastSelf ("Seal of Righteousness", () => Usable ("Seal of Righteousness"));
+			return Usable ("Seal of Righteousness") && CS ("Seal of Righteousness");
 		}
 
 		public bool AvengersShield (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Avenger's Shield", () => Usable ("Avenger's Shield") && Range (30, u), u);
+			return Usable ("Avenger's Shield") && Range (30, u) && C ("Avenger's Shield", u);
+		}
+
+		public bool SacredShield (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Sacred Shield") && Range (40, u) && C ("Sacred Shield", u);
+		}
+
+		public bool HolyPrism (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Holy Prism") && Range (40, u) && C ("Holy Prism", u);
+		}
+
+		public bool ExecutionSentence (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Execution Sentence") && Range (40, u) && C ("Execution Sentence", u);
 		}
 
 		public bool HammeroftheRighteous (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Hammer of the Righteous", () => Usable ("Hammer of the Righteous") && Range (5, u), u);
+			return Usable ("Hammer of the Righteous") && Range (5, u) && C ("Hammer of the Righteous", u);
 		}
 
 		public bool CrusaderStrike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Crusader Strike", () => Usable ("Crusader Strike") && Range (5, u), u);
+			return Usable ("Crusader Strike") && Range (5, u) && C ("Crusader Strike", u);
+		}
+
+		public bool LightsHammer (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Light's Hammer") && Range (30, u) && C ("Light's Hammer", u);
+		}
+
+		public bool HammerofWrath (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Hammer of Wrath") && Range (30, u) && C ("Hammer of Wrath", u);
 		}
 
 		public bool Judgment (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Judgment", () => Usable ("Judgment") && Range (30, u), u);
+			return Usable ("Judgment") && Range (30, u) && C ("Judgment", u);
+		}
+
+		public bool HolyWrath ()
+		{
+			return Usable ("Holy Wrath") && CS ("Holy Wrath");
 		}
 	}
 }

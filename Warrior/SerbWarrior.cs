@@ -28,7 +28,7 @@ namespace ReBot
 
 		// Get
 
-public bool AttackPowerBuff {
+		public bool AttackPowerBuff {
 			get {
 				return Me.HasAura ("Battle Shout") || Me.HasAura ("Horn of Winter");
 			}
@@ -43,7 +43,7 @@ public bool AttackPowerBuff {
 			}
 		}
 
-	public double TimeToDie (UnitObject u = null)
+		public double TimeToDie (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return u.Health / Ttd;
@@ -192,10 +192,9 @@ public bool AttackPowerBuff {
 
 		// Combo
 
-		{
-}
 
-		public bool Buff (WarCry Shout) {
+		public bool Buff (WarCry Shout)
+		{
 			if (CastSelf ("Commanding Shout",	() => Shout == WarCry.CommandingShout && (AttackPowerBuff || !Me.HasAura ("Commanding Shout"))))
 				return true;
 			if (CastSelf ("Battle Shout", () => Shout == WarCry.BattleShout && !AttackPowerBuff))
