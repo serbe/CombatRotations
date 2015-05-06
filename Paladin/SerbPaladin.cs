@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using Geometry;
+using System.Linq;
 
 namespace ReBot
 {
@@ -23,6 +24,30 @@ namespace ReBot
 		public float CrystalOfInsanityId = 86569;
 
 		// Get
+
+		public bool InRaid {
+			get {
+				return API.MapInfo.Type == MapType.Raid;
+			}
+		}
+
+		public bool InInstance {
+			get {
+				return API.MapInfo.Type == MapType.Instance;
+			}
+		}
+
+		public bool InArena {
+			get {
+				return API.MapInfo.Type == MapType.Arena;
+			}
+		}
+
+		public bool InBg {
+			get {
+				return API.MapInfo.Type == MapType.PvP;
+			}
+		}
 
 		public double TimeToHpg {
 			get {
@@ -157,11 +182,47 @@ namespace ReBot
 			return u.IsInCombatRangeAndLoS && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
 		}
 
+		// Combo
+
+		public bool Interrupt ()
+		{
+			if (InArena || InBg) {
+				if (Usable ("Rebuke")) {
+					CycleTarget = API.Players.Where (x => x.IsPlayer && x.IsEnemy && x.IsHealer && Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null && Rebuke (CycleTarget))
+						return true; 
+					CycleTarget = API.Players.Where (x => x.IsPlayer && x.IsEnemy && Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null && Rebuke (CycleTarget))
+						return true; 
+				}
+				if (Cooldown ("Fist of Justice") == 0) {
+					CycleTarget = API.Players.Where (x => x.IsPlayer && x.IsEnemy && x.IsHealer && Range (20, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null && FistofJustice (CycleTarget))
+						return true;
+					CycleTarget = API.Players.Where (x => x.IsPlayer && x.IsEnemy && Range (20, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null && FistofJustice (CycleTarget))
+						return true;
+				}
+			} else {
+				CycleTarget = Enemy.Where (x => Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && Rebuke (CycleTarget))
+					return true; 
+				if (Cooldown ("Fist of Justice") == 0) {
+					CycleTarget = Enemy.Where (x => !IsBoss (x) && Range (20, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null && FistofJustice (CycleTarget))
+						return true;
+				}
+			}
+
+			return false;
+		}
+
+
 		// Spell
 
 		public bool SpeedofLight ()
 		{
-			return CastSelf ("Speed of Light", () => Usable ("Speed of Light"));
+			return Usable ("Speed of Light") && CS ("Speed of Light");
 		}
 
 		public bool BloodFury ()
@@ -181,18 +242,18 @@ namespace ReBot
 
 		public bool HolyAvenger ()
 		{
-			return CastSelf ("Holy Avenger", () => Usable ("Holy Avenger") && Danger ());
+			return Usable ("Holy Avenger") && Danger () && CS ("Holy Avenger");
 		}
 
 		public bool Seraphim (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return CastSelf ("Seraphim", () => Usable ("Seraphim") && u.IsInCombatRangeAndLoS);
+			return Usable ("Seraphim") && u.IsInCombatRangeAndLoS && CS ("Seraphim");
 		}
 
 		public bool DivineProtection ()
 		{
-			return CastSelf ("Divine Protection", () => Usable ("Divine Protection"));
+			return Usable ("Divine Protection") && CS ("Divine Protection");
 		}
 
 		public bool GuardianofAncientKings (UnitObject u = null)
@@ -296,6 +357,29 @@ namespace ReBot
 		public bool HolyWrath ()
 		{
 			return Usable ("Holy Wrath") && CS ("Holy Wrath");
+		}
+
+		public bool Cleanse (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Cleanse") && Range (40, u) && C ("Cleanse", u);
+		}
+
+		public bool RighteousFury ()
+		{
+			return Usable ("Righteous Fury") && CS ("Righteous Fury");
+		}
+
+		public bool Rebuke (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Rebuke") && Range (5, u) && C ("Rebuke", u);
+		}
+
+		public bool FistofJustice (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Fist of Justice") && Range (20, u) && C ("Fist of Justice", u);
 		}
 	}
 }

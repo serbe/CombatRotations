@@ -1,18 +1,17 @@
 ﻿using System;
 using ReBot.API;
 using System.Linq;
-using System.Threading;
 
 namespace ReBot
 {
-	[Rotation ("Serb Paladin Protiction SC", "Serb", WoWClass.Paladin, Specialization.PaladinProtection, 5, 25)]
+	[Rotation ("Serb Paladin Protection SC", "Serb", WoWClass.Paladin, Specialization.PaladinProtection, 5, 25)]
 
-	public class SerbPaladinProtictionSC : SerbPaladin
+	public class SerbPaladinProtectionSC : SerbPaladin
 	{
 		bool WaitCrusaderStrike;
 		bool WaitJudgment;
 
-		public SerbPaladinProtictionSC ()
+		public SerbPaladinProtectionSC ()
 		{
 		}
 
@@ -38,6 +37,21 @@ namespace ReBot
 			if (WaitJudgment)
 				WaitJudgment = false;
 
+			// Heal
+
+			if (Health (Me) <= 0.75) {
+				if (FlashofLight (Me))
+					return true;
+			}
+			if (Me.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType))) {
+				if (Cleanse (Me))
+					return true;
+			}
+			if (CombatRole == CombatRole.Tank && !Me.HasAura ("Righteous Fury")) {
+				if (RighteousFury ())
+					return true;
+			}
+
 			return false;
 		}
 
@@ -48,20 +62,23 @@ namespace ReBot
 				StartBattle = DateTime.Now;
 			}
 
-			if (WaitCrusaderStrike) {
-				if (Cooldown ("Crusader Strike") != 0)
-					return;
-				WaitCrusaderStrike = false;
-				CrusaderStrike ();
+//			if (WaitCrusaderStrike) {
+//				if (Cooldown ("Crusader Strike") != 0)
+//					return;
+//				WaitCrusaderStrike = false;
+//				CrusaderStrike ();
+//				return;
+//			}
+//			if (WaitJudgment) {
+//				if (Cooldown ("Judgment") != 0)
+//					return;
+//				WaitJudgment = false;
+//				Judgment ();
+//				return;
+//			}
+
+			if (Interrupt ())
 				return;
-			}
-			if (WaitJudgment) {
-				if (Cooldown ("Judgment") != 0)
-					return;
-				WaitJudgment = false;
-				Judgment ();
-				return;
-			}
 
 			//	actions=auto_attack
 			//	actions+=/speed_of_light,if=movement.remains>1
@@ -90,7 +107,7 @@ namespace ReBot
 			if (Time < 5 || (!Me.HasAura ("Holy Avenger") && !Me.HasAura ("Shield of the Righteous") && !Me.HasAura ("Divine Protection") && !Me.HasAura ("Guardian of Ancient Kings")))
 				ArdentDefender ();
 			//	actions+=/eternal_flame,if=buff.eternal_flame.remains<2&buff.bastion_of_glory.react>2&(holy_power>=3|buff.divine_purpose.react|buff.bastion_of_power.react)
-			if (Me.AuraTimeRemaining ("Eternal Flame") < 2 && Me.GetAura ("Bastion of Glory").StackCount > 2 && (HolyPower >= 3 || Me.HasAura ("Divine Purpose") || Me.HasAura ("Bastion of Power"))) {
+			if (Me.AuraTimeRemaining ("Eternal Flame") < 2 && AuraStackCount ("Bastion of Glory") > 2 && (HolyPower >= 3 || Me.HasAura ("Divine Purpose") || Me.HasAura ("Bastion of Power"))) {
 				if (EternalFlame ())
 					return;
 			}
@@ -245,6 +262,10 @@ namespace ReBot
 					return;
 			}
 
+			if (Health (Me) <= 0.5 && !Me.IsMoving) {
+				if (FlashofLight (Me))
+					return;
+			}
 		}
 	}
 }
