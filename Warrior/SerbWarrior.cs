@@ -1,6 +1,7 @@
 ﻿using ReBot.API;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 
 namespace ReBot
 {
@@ -22,6 +23,14 @@ namespace ReBot
 		public UnitObject CycleTarget;
 
 		// Get
+
+		public List<UnitObject> Enemy {
+			get {
+				var targets = Adds;
+				targets.Add (Target);
+				return targets;
+			}
+		}
 
 		public double TimeToDie (UnitObject u = null)
 		{
@@ -144,6 +153,30 @@ namespace ReBot
 		public bool Usable (string s)
 		{ 
 			return HasSpell (s) && Cooldown (s) == 0;
+		}
+
+		public bool InRaid {
+			get {
+				return API.MapInfo.Type == MapType.Raid;
+			}
+		}
+
+		public bool InInstance {
+			get {
+				return API.MapInfo.Type == MapType.Instance;
+			}
+		}
+
+		public bool InArena {
+			get {
+				return API.MapInfo.Type == MapType.Arena;
+			}
+		}
+
+		public bool InBg {
+			get {
+				return API.MapInfo.Type == MapType.PvP;
+			}
 		}
 
 		// Combo
