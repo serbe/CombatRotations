@@ -1,17 +1,22 @@
 ﻿using ReBot.API;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 
 namespace ReBot
 {
 	public abstract class SerbWarrior : CombatRotation
 	{
+		public enum WarCry
+		{
+			CommandingShout = 0,
+			BattleShout = 1,
+		}
+
 		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
 		public int Ttd = 10;
 		[JsonProperty ("Use GCD")]
 		public bool Gcd = true;
-		[JsonProperty ("Max rage")]
-		public int RageMax = 100;
 		[JsonProperty ("Auto change stance")]
 		public bool UseStance = true;
 
@@ -22,6 +27,21 @@ namespace ReBot
 		public UnitObject CycleTarget;
 
 		// Get
+
+		public bool AttackPowerBuff {
+			get {
+				return Me.HasAura ("Battle Shout") || Me.HasAura ("Horn of Winter");
+			}
+		}
+
+
+		public List<UnitObject> Enemy {
+			get {
+				var targets = Adds;
+				targets.Add (Target);
+				return targets;
+			}
+		}
 
 		public double TimeToDie (UnitObject u = null)
 		{
@@ -148,26 +168,14 @@ namespace ReBot
 
 		// Combo
 
-		public bool Heal ()
+		public bool Buff (WarCry Shout)
 		{
-			
-			if (Health () < 0.9 && Me.Level < 100) {
-				if (VictoryRush ())
-					return true;
-			}
-			if (Health () < 0.6 && Me.Level < 100) {
-				if (ImpendingVictory ())
-					return true;
-			}
-//			if (CastSelf ("Rallying Cry", () => Health <= 0.25))
-//				return;
-//			if (CastSelf ("Enraged Regeneration", () => Health <= 0.5))
-//				return;
-			if (Health () < 0.6) {
-				if (Healthstone ())
-					return true;
-			}
-			return true;
+			if (CastSelf ("Commanding Shout",	() => Shout == WarCry.CommandingShout && (AttackPowerBuff || !Me.HasAura ("Commanding Shout"))))
+				return true;
+			if (CastSelf ("Battle Shout", () => Shout == WarCry.BattleShout && !AttackPowerBuff))
+				return true;
+
+			return false;
 		}
 
 		public bool Interrupt ()
@@ -356,7 +364,7 @@ namespace ReBot
 		public bool HeroicThrow (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Heroic Throw", () => Usable ("Heroic Throw") && Range (30, u, 8), u);
+			return CastPreventDouble ("Heroic Throw", () => Usable ("Heroic Throw") && Range (30, u, 8), u, 2000);
 		}
 
 		public bool DefensiveStance ()
@@ -367,6 +375,11 @@ namespace ReBot
 		public bool BattleStance ()
 		{
 			return CastSelf ("Battle Stance", () => Usable ("Battle Stance") && !IsInShapeshiftForm ("Battle Stance"));
+		}
+
+		public bool RallyingCry ()
+		{
+			return CastSelf ("Rallying Cry", () => Usable ("Rallying Cry"));
 		}
 	}
 }

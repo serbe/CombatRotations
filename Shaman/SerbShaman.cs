@@ -268,20 +268,181 @@ namespace ReBot
 
 		// Spell
 
+		public bool LightningBolt (UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (Usable ("Lightning Bolt") && (Range (30, u) || (Me.HasAura ("Elemental Reach") && Range (40, u)))) {
+				if (Cast ("Lightning Bolt", u))
+					return true;
+				API.Print ("Lightning Bolt");
+			}
+			return false;
+		}
+
+		//		Primal Strike
+
+		public bool HealingSurge (UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (Usable ("Healing Surge") && Range (40, u)) {
+				if (Cast ("Healing Surge", u))
+					return true;
+				API.Print ("Healing Surge");
+			}
+			return false;
+		}
+
 		public bool LightningShield ()
 		{
-			return CastSelf ("Lightning Shield", () => Usable ("Lightning Shield") && !Me.HasAura ("Lightning Shield"));
+			if (Usable ("Lightning Shield") && !Me.HasAura ("Lightning Shield")) {
+				if (CastSelf ("Lightning Shield"))
+					return true;
+				API.Print ("Lightning Shield");
+			}
+			return false;
+		}
+
+		public bool FlameShock (UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (Usable ("Flame Shock") && (Range (25, u) || (Me.HasAura ("Elemental Reach") && Range (40, u)))) {
+				if (Cast ("Flame Shock", u))
+					return true;
+				API.Print ("Flame Shock");
+
+			}
+			return false;
+		}
+
+		public bool GhostWolf ()
+		{
+			if (Usable ("Ghost Wolf") && !Me.HasAura ("Ghost Wolf")) {
+				if (CastSelf ("Ghost Wolf"))
+					return true;
+				API.Print ("Ghost Wolf");
+			}
+			return false;
+		}
+
+		public bool SearingTotem ()
+		{
+			if (Usable ("Searing Totem") && Range (25)) {
+				if (CastSelf ("Searing Totem"))
+					return true;
+				API.Print ("Searing Totem");
+			}
+			return false;
+		}
+
+		public bool WindShear (UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (Usable ("Wind Shear") && Range (25, u)) {
+				if (Cast ("Wind Shear", u))
+					return true;
+				API.Print ("Wind Shear");
+			}
+			return false;
+		}
+
+		public bool CleanseSpirit (UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (Usable ("Cleanse Spirit") && Range (40, u)) {
+				if (Cast ("Cleanse Spirit", u))
+					return true;
+				API.Print ("Cleanse Spirit");
+			}
+			return false;
+		}
+
+		public bool FrostShock (UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (Usable ("Frost Shock") && (Range (25, u) || (Me.HasAura ("Elemental Reach") && Range (40, u)))) {
+				if (Cast ("Frost Shock", u))
+					return true;
+				API.Print ("Frost Shock");
+			}
+			return false;
+		}
+
+		public bool ChainLightning (UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (Usable ("Chain Lightning") && (Range (30, u) || (Me.HasAura ("Elemental Reach") && Range (40, u)))) {
+				if (Cast ("Chain Lightning", u))
+					return true;
+				API.Print ("Chain Lightning");
+			}
+			return false;
+		}
+
+		public bool HealingStreamTotem ()
+		{
+			if (Usable ("Healing Stream Totem") && !Me.IsMoving) {
+				if (CastSelf ("Healing Stream Totem"))
+					return true;
+				API.Print ("Healing Stream Totem");
+			}
+			return false;
+		}
+
+		public bool HealingRain (UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (Usable ("Healing Rain") && Range (40, u)) {
+				if (CastOnTerrain ("Healing Rain", u.Position))
+					return true;
+				API.Print ("Healing Rain");
+			}
+			return false;
+		}
+
+		public bool FireElementalTotem (UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (Usable ("Fire Elemental Totem") && DangerBoss (u, 30)) {
+				if (CastSelf ("Fire Elemental Totem"))
+					return true;
+				API.Print ("Fire Elemental Totem");
+			}
+			return false;
 		}
 
 		public bool Bloodlust (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return CastSelf ("Bloodlust", () => Usable ("Bloodlust") && DangerBoss (u, 0, 15));
+			if (Usable ("Bloodlust") && DangerBoss (u, 0, 15)) {
+				if (CastSelf ("Bloodlust"))
+					return true;
+				API.Print ("Bloodlust");
+			}
+			return false;
 		}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 		public bool BloodFury ()
 		{
-			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && Danger ());
+			if (Usable ("Blood Fury") && Danger ()) {
+				if (CastSelf ("Blood Fury"))
+					return true;
+				API.Print ("Blood Fury");
+			}
+			return false;
 		}
 
 		public bool Berserking ()
@@ -296,192 +457,237 @@ namespace ReBot
 
 		public bool ElementalMastery ()
 		{
-			return CastSelf ("Elemental Mastery", () => Usable ("Elemental Mastery") && Danger ());
+			if (Usable ("Elemental Mastery") && Danger ()) {
+				if (CastSelf ("Elemental Mastery"))
+					return true;				
+				API.Print ("Elemental Mastery");
+			}
+			return false;
 		}
 
 		public bool FeralSpirit (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Feral Spirit", () => Usable ("Feral Spirit") && Danger (u, 30), u);
+			if (Usable ("Feral Spirit") && Danger (u, 30)) {
+				if (Cast ("Feral Spirit", u))
+					return true;			
+				API.Print ("Feral Spirit");
+			}
+			return false;
 		}
 
 		public bool AncestralSwiftness ()
 		{
-			return CastSelf ("Ancestral Swiftness", () => Usable ("Ancestral Swiftness") && Danger ());
+			if (Usable ("Ancestral Swiftness") && Danger ()) {
+				if (CastSelf ("Ancestral Swiftness"))
+					return true;			
+				API.Print ("Ancestral Swiftness");
+			}
+			return false;
 		}
 
 		public bool Ascendance ()
 		{
-			return CastSelf ("Ascendance", () => Usable ("Ascendance") && Danger ());
+			if (Usable ("Ascendance") && Danger ()) {
+				if (CastSelf ("Ascendance"))
+					return true;
+				API.Print ("Ascendance");
+			}
+			return false;
 		}
 
 		public bool StormElementalTotem (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return CastSelf ("Storm Elemental Totem", () => Usable ("Storm Elemental Totem") && DangerBoss (u, 30));
-		}
-
-		public bool FireElementalTotem (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return CastSelf ("Fire Elemental Totem", () => Usable ("Fire Elemental Totem") && DangerBoss (u, 30));
-		}
-
-		public bool SearingTotem ()
-		{
-			return CastSelf ("Searing Totem", () => Usable ("Searing Totem") && Range (25));
+			if (Usable ("Storm Elemental Totem") && DangerBoss (u, 30)) {
+				if (CastSelf ("Storm Elemental Totem"))
+					return true;
+				API.Print ("Storm Elemental Totem");
+			}
+			return false;
 		}
 
 		public bool UnleashElements (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && Range (40, u), u);
+			if (Usable ("Unleash Elements") && Range (40, u)) {
+				if (Cast ("Unleash Elements", u))
+					return true;
+				API.Print ("Unleash Elements");
+			}
+			return false;
 		}
 
 		public bool ElementalBlast (UnitObject u = null)
 		{
 			u = u ?? Target;
-//			return Cast ("Elemental Blast", () => Usable ("Elemental Blast") && Range (40, u) && (!Me.IsMoving || Me.HasAura ("Ancestral Swiftness")), u);
-			return Cast ("Elemental Blast", () => Usable ("Elemental Blast") && Range (40, u), u);
-		}
-
-		public bool LightningBolt (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Lightning Bolt", () => Usable ("Lightning Bolt") && (Range (30, u) || (Me.HasAura ("Elemental Reach") && Range (40, u))), u);
+			if (Usable ("Elemental Blast") && Range (40, u) && (!Me.IsMoving || Me.HasAura ("Ancestral Swiftness"))) {
+				if (Cast ("Elemental Blast", u))
+					return true;
+				API.Print ("Elemental Blast");
+			}
+			return false;
 		}
 
 		public bool Stormstrike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Stormstrike", () => Usable ("Stormstrike") && Range (5, u), u);
+			if (Usable ("Stormstrike") && Range (5, u)) {
+				if (Cast ("Stormstrike", u))
+					return true;
+				API.Print ("Stormstrike");
+			}
+			return false;
 		}
 
 		public bool LavaLash (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Lava Lash", () => Usable ("Lava Lash") && SpellCharges ("Lava Lash") >= 1 && Range (5, u), u);
-		}
-
-		public bool FlameShock (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Flame Shock", () => Usable ("Flame Shock") && (Range (25, u) || (Me.HasAura ("Elemental Reach") && Range (40, u))), u);
-		}
-
-		public bool FrostShock (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Frost Shock", () => Usable ("Frost Shock") && (Range (25, u) || (Me.HasAura ("Elemental Reach") && Range (40, u))), u);
+			if (Usable ("Lava Lash") && SpellCharges ("Lava Lash") >= 1 && Range (5, u)) {
+				if (Cast ("Lava Lash", u))
+					return true;
+				API.Print ("Lava Lash");
+			}
+			return false;
 		}
 
 		public bool EarthShock (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Earth Shock", () => Usable ("Earth Shock") && (Range (25, u) || (Me.HasAura ("Elemental Reach") && Range (40, u))), u);
+			if (Usable ("Earth Shock") && (Range (25, u) || (Me.HasAura ("Elemental Reach") && Range (40, u)))) {
+				if (Cast ("Earth Shock", u))
+					return true;
+				API.Print ("Earch Shock");
+			}
+			return false;
 		}
 
 		public bool FireNova (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Fire Nova", () => Usable ("Fire Nova") && u.IsInLoS, u);
-		}
-
-		public bool WindShear (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Wind Shear", () => Usable ("Wind Shear") && Range (25, u), u);
+			if (Usable ("Fire Nova") && u.IsInLoS) {
+				if (Cast ("Fire Nova", u))
+					return true;
+				API.Print ("Fire Nova");
+			}
+			return false;
 		}
 
 		public bool UnleashFlame (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Unleash Flame", () => Usable ("Unleash Flame") && Range (40, u), u);
+			if (Usable ("Unleash Flame") && Range (40, u)) {
+				if (Cast ("Unleash Flame", u))
+					return true;
+				API.Print ("Unleash Flame");
+			}
+			return false;
 		}
 
 		public bool LiquidMagma ()
 		{
-			return CastSelf ("Liquid Magma", () => Usable ("Liquid Magma") && !Me.HasAura ("Liquid Magma"));
+			if (Usable ("Liquid Magma") && !Me.HasAura ("Liquid Magma")) {
+				if (CastSelf ("Liquid Magma"))
+					return true;
+				API.Print ("Liquid Magma");
+			}
+			return false;
 		}
 
 		public bool SpiritwalkersGrace ()
 		{
-			return CastSelf ("Spiritwalker's Grace", () => Usable ("Spiritwalker's Grace"));
+			if (Usable ("Spiritwalker's Grace")) {
+				if (CastSelf ("Spiritwalker's Grace"))
+					return true;
+				API.Print ("Spiritwalker's Grace");
+			}
+			return false;
 		}
 
 		public bool LavaBurst (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Lava Burst", () => Usable ("Lava Burst") && (Range (30, u) || (Me.HasAura ("Elemental Reach") && Range (40, u))), u);
+			if (Usable ("Lava Burst") && (Range (30, u) || (Me.HasAura ("Elemental Reach") && Range (40, u)))) {
+				if (Cast ("Lava Burst", u))
+					return true;
+				API.Print ("Lava Burst");
+			}
+			return false;
 		}
 
 		public bool Earthquake (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return CastOnTerrain ("Earthquake", u.Position, () => Usable ("Earthquake") && Range (35, u));
+			if (Usable ("Earthquake") && Range (35, u)) {
+				if (CastOnTerrain ("Earthquake", u.Position))
+					return true;
+				API.Print ("Earthquake");
+			}
+			return false;
 		}
 
 		public bool LavaBeam (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Lava Beam", () => Usable ("Lava Beam") && Range (40, u), u);
+			if (Usable ("Lava Beam") && Range (40, u)) {
+				if (Cast ("Lava Beam", u))
+					return true;
+				API.Print ("Lava Beam");
+			}
+			return false;
 		}
 
 		public bool Thunderstorm ()
 		{
-			return CastSelf ("Thunderstorm", () => Usable ("Thunderstorm"));
-		}
-
-		public bool ChainLightning (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Chain Lightning", () => Usable ("Chain Lightning") && (Range (30, u) || (Me.HasAura ("Elemental Reach") && Range (40, u))), u);
-		}
-
-		public bool HealingSurge (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Healing Surge", () => Usable ("Healing Surge") && Range (40, u), u);
-		}
-
-		public bool CleanseSpirit (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Cleanse Spirit", () => Usable ("Cleanse Spirit") && Range (40, u), u);
-		}
-
-		public bool GhostWolf ()
-		{
-			return CastSelf ("Ghost Wolf", () => Usable ("Ghost Wolf") && !Me.HasAura ("Ghost Wolf"));
+			if (Usable ("Thunderstorm")) {
+				if (CastSelf ("Thunderstorm"))
+					return true;
+				API.Print ("Thunderstorm");
+			}
+			return false;
 		}
 
 		public bool GiftoftheNaaru (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Gift of the Naaru", () => Usable ("Gift of the Naaru") && Range (40, u), u);
+			if (Usable ("Gift of the Naaru") && Range (40, u)) {
+				if (Cast ("Gift of the Naaru", u))
+					return true;
+				API.Print ("Gift of the Naaru");
+			}
+			return false;
 		}
 
 		public bool AncestralGuidance ()
 		{
-			return CastSelf ("Ancestral Guidance", () => Usable ("Ancestral Guidance"));
+			if (Usable ("Ancestral Guidance")) {
+				if (CastSelf ("Ancestral Guidance"))
+					return true;
+				API.Print ("Ancestral Guidance");
+			}
+			return false;
+				
 		}
 
 		public bool AstralShift ()
 		{
-			return CastSelf ("Astral Shift", () => Usable ("Astral Shift"));
+			if (Usable ("Astral Shift")) {
+				if (CastSelf ("Astral Shift"))
+					return true;
+				API.Print ("Astral Shift");
+			}
+			return false;
 		}
 
 		public bool ShamanisticRage ()
 		{
-			return CastSelf ("Shamanistic Rage", () => Usable ("Shamanistic Rage"));
+			if (Usable ("Shamanistic Rage")) {
+				if (CastSelf ("Shamanistic Rage"))
+					return true;
+				API.Print ("Shamanistic Rage");
+			}
+			return false;
 		}
-
-		//		public bool  (UnitObject u = null)
-		//		{
-		//			u = u ?? Target;
-		//			return Cast ("Unleash Elements", () => Usable ("Unleash Elements") && Range(40, u), u);
-		//		}
-
 
 		// Items
 

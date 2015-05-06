@@ -63,59 +63,37 @@ namespace ReBot
 
 			if (HasGlobalCooldown ())
 				return;
-			if (Me.IsChanneling)
-				return;
-			if (Me.IsCasting)
-				return;
-			if (Me.HasAura ("Drink"))
-				return;
-			if (Me.HasAura ("Shadowmeld"))
-				return;
-			if (Me.HasAura ("Refreshment"))
-				return;
-
-
-
+//			if (Me.IsChanneling)
+//				return;
+//			if (Me.IsCasting)
+//				return;
+//			if (Me.HasAura ("Drink"))
+//				return;
+//			if (Me.HasAura ("Shadowmeld"))
+//				return;
+//			if (Me.HasAura ("Refreshment"))
+//				return;
+//
+//
+//
 
 			//	actions=wind_shear
 			Interrupt ();
 
 			//Heal - Support
-			if (Health (Me) <= 0.75) { 
-				GiftoftheNaaru (Me);
-			}
-			if (Health (Me) <= 0.5) { 
-				if (Healthstone ())
-					return;
-			}
-			if (Health (Me) <= 0.6 && Target.MaxHealth > Me.MaxHealth && Danger (Target, 40)) {
-				if (AncestralGuidance ())
-					return;
-			}
-			if (Health (Me) <= 0.5 && Target.HpGreaterThanOrElite (0.3) && Me.InCombat && Target.Target == Me && !HasAura ("Shamanistic Rage")) {
-				AstralShift ();
-			}
-			if (Health (Me) < 0.7 && Me.InCombat && !Me.HasAura ("Astral Shift") && Target.HpGreaterThanOrElite (0.3) && Target.Target == Me) {
-				ShamanisticRage ();
-			}
-			
-			if (!(InRaid || InInstance)) {
-				if (CastOnTerrainPreventDouble ("Healing Rain", Me.Position, () => Me.HealthFraction < 0.85))
-					return;
-				if (CastSelfPreventDouble ("Healing Surge", () => Me.HealthFraction <= 0.4 && HasAura ("Maelstrom Weapon", true, 5)))
-					return;
-				if (CastSelf ("Healing Stream Totem", () => Me.HealthFraction < 0.7 && Target.IsInCombatRangeAndLoS))
+			if (Health (Me) < 0.9) {
+				if (Heal ())
 					return;
 			}
 
-			if (CastSelf ("Cleanse Spirit", () => Me.Auras.Any (x => x.IsDebuff && "Curse".Contains (x.DebuffType))))
-				return;
-			if (Cast ("Earth Elemental Totem", () => (Target.IsElite () || Adds.Count >= 3) && Me.HealthFraction < 0.7 && Target.Target == Me && Target.HealthFraction >= 0.3))
-				return;
-			if (Cast ("Earth Elemental Totem", () => (Target.IsElite () || Adds.Count >= 3) && Me.HealthFraction < 0.7 && Target.Target == Me && Target.HealthFraction >= 0.3))
-				return;
-			if (Cast ("Grounding Totem", () => Target.IsCasting && Target.Target == Me))
-				return;
+//			if (CastSelf ("Cleanse Spirit", () => Me.Auras.Any (x => x.IsDebuff && "Curse".Contains (x.DebuffType))))
+//				return;
+//			if (Cast ("Earth Elemental Totem", () => (Target.IsElite () || Adds.Count >= 3) && Me.HealthFraction < 0.7 && Target.Target == Me && Target.HealthFraction >= 0.3))
+//				return;
+//			if (Cast ("Earth Elemental Totem", () => (Target.IsElite () || Adds.Count >= 3) && Me.HealthFraction < 0.7 && Target.Target == Me && Target.HealthFraction >= 0.3))
+//				return;
+//			if (Cast ("Grounding Totem", () => Target.IsCasting && Target.Target == Me))
+//				return;
 
 
 			//	# Bloodlust casting behavior mirrors the simulator settings for proxy bloodlust. See options 'bloodlust_percent', and 'bloodlust_time'.
@@ -156,7 +134,6 @@ namespace ReBot
 			//	actions+=/fire_elemental_totem,if=!active
 			if (!HasActiveFireElementalTotem) {
 				if (FireElementalTotem ()) {
-//					API.PrintInfo ("4");
 					return;
 				}
 			}
@@ -200,14 +177,12 @@ namespace ReBot
 			//	actions.single+=/earth_shock,if=buff.lightning_shield.react=buff.lightning_shield.max_stack
 			if (AuraStackCount ("Lightning Shield") == MaxLightningShieldCharges) {
 				if (EarthShock ()) {
-//					API.PrintInfo ("9");
 					return;
 				}
 			}
 			//	actions.single+=/lava_burst,if=dot.flame_shock.remains>cast_time&(buff.ascendance.up|cooldown_react)
 			if (Target.AuraTimeRemaining ("Flame Shock") > CastTime (51505) && (Me.HasAura ("Ascendance") || Cooldown ("Lava Burst") == 0)) {
 				if (LavaBurst ()) {
-//					API.PrintInfo ("10");
 					return;
 				}
 			}
@@ -221,7 +196,6 @@ namespace ReBot
 			//	actions.single+=/flame_shock,if=dot.flame_shock.remains<=9
 			if (Target.AuraTimeRemaining ("Flame Shock") <= 9) {
 				if (FlameShock ()) {
-//					API.PrintInfo ("12");
 					return;
 				}
 			}
@@ -316,6 +290,44 @@ namespace ReBot
 //				API.PrintInfo ("24");
 				return;
 			}
+		}
+
+		public bool Heal ()
+		{
+			if (Health (Me) <= 0.75) { 
+				GiftoftheNaaru (Me);
+			}
+			if (Health (Me) <= 0.5) { 
+				if (Healthstone ())
+					return true;
+			}
+			if (Health (Me) <= 0.6 && Target.MaxHealth > Me.MaxHealth && Danger (Target, 40)) {
+				if (AncestralGuidance ())
+					return true;
+			}
+			if (Health (Me) <= 0.5 && Target.HpGreaterThanOrElite (0.3) && Me.InCombat && Target.Target == Me && !HasAura ("Shamanistic Rage")) {
+				AstralShift ();
+			}
+			if (Health (Me) < 0.7 && Me.InCombat && !Me.HasAura ("Astral Shift") && Target.HpGreaterThanOrElite (0.3) && Target.Target == Me) {
+				ShamanisticRage ();
+			}
+
+			if (!(InRaid || InInstance)) {
+				if (Health (Me) < 0.85) {
+					if (HealingRain (Me))
+						return true;
+				}
+				if (Health (Me) <= 0.4 && HasAura ("Maelstrom Weapon", true, 5)) {
+					if (HealingSurge (Me))
+						return true;
+				}
+				if (Health (Me) < 0.7) {
+					if (HealingStreamTotem ())
+						return true;
+				}
+			}
+
+			return false;
 		}
 	}
 }

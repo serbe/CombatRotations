@@ -43,7 +43,7 @@ namespace ReBot
 
 			//	actions=auto_attack
 			//	actions+=/speed_of_light,if=movement.remains>1
-			if (Range () > 15)
+			if (Range (15))
 				SpeedofLight ();
 			//	actions+=/blood_fury
 			BloodFury ();
@@ -115,10 +115,10 @@ namespace ReBot
 			//	actions+=/wait,sec=cooldown.crusader_strike.remains,if=cooldown.crusader_strike.remains>0&cooldown.crusader_strike.remains<=0.35
 
 			//	actions+=/judgment,cycle_targets=1,if=glyph.double_jeopardy.enabled&last_judgment_target!=target
-			if (Usable ("Judgment") && HasGlyph (54922)) {
-				CycleTarget = Enemy.Where (u => u != LastJudgmentTarget).DefaultIfEmpty (null).FirstOrDefault;
-				if 
-			}
+//			if (Usable ("Judgment") && HasGlyph (54922)) {
+//				CycleTarget = Enemy.Where (u => u != LastJudgmentTarget).DefaultIfEmpty (null).FirstOrDefault;
+//				if 
+//			}
 			//	actions+=/judgment
 			if (Judgment ()) {
 				LastJudgmentTarget = Target;
