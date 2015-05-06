@@ -1,6 +1,7 @@
 ﻿using ReBot.API;
 using System.Linq;
 using System;
+using Newtonsoft.Json;
 
 namespace ReBot
 {
@@ -8,6 +9,9 @@ namespace ReBot
 
 	public class SerbWarriorProtectionSC : SerbWarrior
 	{
+		[JsonProperty ("Max rage")]
+		public int RageMax = 100;
+
 		public 	SerbWarriorProtectionSC ()
 		{
 //			GroupBuffs = new[] {
@@ -47,10 +51,10 @@ namespace ReBot
 			if (Gcd && HasGlobalCooldown ())
 				return;
 
-			if (Health () < 0.9) {
-				if (Heal ())
-					return;
-			}
+//			if (Health () < 0.9) {
+//				if (Heal ())
+//					return;
+//			}
 
 //			if (UseStance && !(Me.HasAura ("Defensive Stance") || Me.HasAura ("Improved Defensive Stance")) && (CombatRole == CombatRole.Tank || Health () < 0.4)) {
 //				if (DefensiveStance ())
@@ -77,10 +81,10 @@ namespace ReBot
 		public bool Protection ()
 		{
 			//	actions=charge
-			if (Range (10)) {
-				if (Charge ())
-					return true;
-			}
+//			if (Range (40, Target, 10)) {
+//				if (Charge ())
+//					return true;
+//			}
 			//	actions+=/auto_attack
 			//	actions+=/use_item,name=tablet_of_turnbuckle_teamwork,if=active_enemies=1&(buff.bloodbath.up|!talent.bloodbath.enabled)|(active_enemies>=2&buff.ravager_protection.up)
 			//	actions+=/blood_fury,if=buff.bloodbath.up|buff.avatar.up
@@ -103,8 +107,8 @@ namespace ReBot
 //				if (ThunderClap ())
 //					return true;
 //			}
-			if (Me.Level < 100 && Execute ())
-				return true;
+//			if (Me.Level < 100 && Execute ())
+//				return true;
 
 			return false;
 		}
@@ -196,7 +200,7 @@ namespace ReBot
 			//	actions.prot_aoe+=/avatar
 			Avatar ();
 			//	actions.prot_aoe+=/thunder_clap,if=!dot.deep_wounds.ticking
-			if (Me.Level >= 32 & !Target.HasAura ("Deep Wounds", true)) {
+			if (Me.Level >= 32 & !Target.HasAura ("Deep Wounds", true) && Time > 0.5) {
 				if (ThunderClap ())
 					return true;
 			}
@@ -224,8 +228,19 @@ namespace ReBot
 			if (Shockwave ())
 				return true;
 			//	actions.prot_aoe+=/revenge
-			if (Revenge ())
-				return true;
+			if (InInstance) {
+				CycleTarget = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (Revenge (CycleTarget))
+						return true;
+				} else {
+					if (Revenge ())
+						return true;
+				}
+			} else {
+				if (Revenge ())
+					return true;
+			}
 			//	actions.prot_aoe+=/thunder_clap
 			if (ThunderClap ())
 				return true;
@@ -243,12 +258,34 @@ namespace ReBot
 				return true;
 			//	actions.prot_aoe+=/execute,if=buff.sudden_death.react
 			if (Me.HasAura ("Sudden Death")) {
-				if (Execute ())
-					return true;
+				if (InInstance) {
+					CycleTarget = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null) {
+						if (Execute (CycleTarget))
+							return true;
+					} else {
+						if (Execute ())
+							return true;
+					}
+				} else {
+					if (Execute ())
+						return true;
+				}
 			}
 			//	actions.prot_aoe+=/devastate
-			if (Devastate ())
-				return true;
+			if (InInstance) {
+				CycleTarget = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (Devastate (CycleTarget))
+						return true;
+				} else {
+					if (Devastate ())
+						return true;
+				}
+			} else {
+				if (Devastate ())
+					return true;
+			}
 			
 			return false;
 		}

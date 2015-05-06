@@ -1,6 +1,7 @@
 ﻿using System;
 using ReBot.API;
 using System.Linq;
+using System.Threading;
 
 namespace ReBot
 {
@@ -8,6 +9,9 @@ namespace ReBot
 
 	public class SerbPaladinProtictionSC : SerbPaladin
 	{
+		bool WaitCrusaderStrike;
+		bool WaitJudgment;
+
 		public SerbPaladinProtictionSC ()
 		{
 		}
@@ -26,10 +30,13 @@ namespace ReBot
 			//	# Snapshot raid buffed stats before combat begins and pre-potting is done.
 			//	actions.precombat+=/snapshot_stats
 			//	actions.precombat+=/potion,name=draenic_armor
-			if (InCombat) {
+			if (InCombat)
 				InCombat = false;
-				return true;
-			}
+
+			if (WaitCrusaderStrike)
+				WaitCrusaderStrike = false;
+			if (WaitJudgment)
+				WaitJudgment = false;
 
 			return false;
 		}
@@ -41,9 +48,24 @@ namespace ReBot
 				StartBattle = DateTime.Now;
 			}
 
+			if (WaitCrusaderStrike) {
+				if (Cooldown ("Crusader Strike") != 0)
+					return;
+				WaitCrusaderStrike = false;
+				CrusaderStrike ();
+				return;
+			}
+			if (WaitJudgment) {
+				if (Cooldown ("Judgment") != 0)
+					return;
+				WaitJudgment = false;
+				Judgment ();
+				return;
+			}
+
 			//	actions=auto_attack
 			//	actions+=/speed_of_light,if=movement.remains>1
-			if (Range () > 15)
+			if (Range (15))
 				SpeedofLight ();
 			//	actions+=/blood_fury
 			BloodFury ();
@@ -81,11 +103,15 @@ namespace ReBot
 			if (Me.HasAura ("Divine Purpose"))
 				ShieldoftheRighteous ();
 			//	actions+=/shield_of_the_righteous,if=(holy_power>=5|incoming_damage_1500ms>=health.max*0.3)&(!talent.seraphim.enabled|cooldown.seraphim.remains>5)
-//			if (HolyPower >= 5 || DamageTaken(1500) >= Me.MaxHealth * 0.3)&(!talent.seraphim.enabled|cooldown.seraphim.remains>5))
-			ShieldoftheRighteous ();
+			if ((HolyPower >= 5 || DamageTaken (1500) >= Me.MaxHealth * 0.3) && (!HasSpell ("Seraphim") || Cooldown ("Seraphim") > 5)) {
+				if (ShieldoftheRighteous ())
+					return;
+			}
 			//	actions+=/shield_of_the_righteous,if=buff.holy_avenger.remains>time_to_hpg&(!talent.seraphim.enabled|cooldown.seraphim.remains>time_to_hpg)
-//			if (Me.AuraTimeRemaining ("Holy Avenger") > time_to_hpg&(!talent.seraphim.enabled|cooldown.seraphim.remains>time_to_hpg)
-
+			if (Me.AuraTimeRemaining ("Holy Avenger") > TimeToHpg && (!HasSpell ("Seraphim") || Cooldown ("Seraphim") > TimeToHpg)) {
+				if (ShieldoftheRighteous ())
+					return;
+			}
 			//	# GCD-bound spells
 			if (HasGlobalCooldown () && Gcd)
 				return;
@@ -113,11 +139,18 @@ namespace ReBot
 			if (CrusaderStrike ())
 				return;
 			//	actions+=/wait,sec=cooldown.crusader_strike.remains,if=cooldown.crusader_strike.remains>0&cooldown.crusader_strike.remains<=0.35
-
+			if (Cooldown ("Crusader Strike") > 0 && Cooldown ("Crusader Strike") <= 0.35) {
+				WaitCrusaderStrike = true;
+				return;
+			}
 			//	actions+=/judgment,cycle_targets=1,if=glyph.double_jeopardy.enabled&last_judgment_target!=target
 			if (Usable ("Judgment") && HasGlyph (54922)) {
-				CycleTarget = Enemy.Where (u => u != LastJudgmentTarget).DefaultIfEmpty (null).FirstOrDefault;
-				if 
+				CycleTarget = Enemy.Where (u => u != LastJudgmentTarget).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null) {
+					if (Judgment (CycleTarget))
+						LastJudgmentTarget = CycleTarget;
+					return;
+				}
 			}
 			//	actions+=/judgment
 			if (Judgment ()) {
@@ -125,24 +158,93 @@ namespace ReBot
 				return;
 			}
 			//	actions+=/wait,sec=cooldown.judgment.remains,if=cooldown.judgment.remains>0&cooldown.judgment.remains<=0.35
+			if (Cooldown ("Judgment") > 0 && Cooldown ("Judgment") <= 0.35) {
+				WaitJudgment = true;
+				return;
+			}
 			//	actions+=/avengers_shield,if=active_enemies>1&!glyph.focused_shield.enabled
+			if (ActiveEnemiesWithTarget (10) > 1 && !HasGlyph (54930)) {
+				if (AvengersShield ())
+					return;
+			}
 			//	actions+=/holy_wrath,if=talent.sanctified_wrath.enabled
+			if (HasSpell ("Sanctified Wrath")) {
+				if (HolyWrath ())
+					return;
+			}
 			//	actions+=/avengers_shield,if=buff.grand_crusader.react
+			if (Me.HasAura ("Grand Crusader")) {
+				if (AvengersShield ())
+					return;
+			}
 			//	actions+=/sacred_shield,if=target.dot.sacred_shield.remains<2
+			if (Target.AuraTimeRemaining ("Sacred Shield") < 2) {
+				if (SacredShield ())
+					return;
+			}
 			//	actions+=/holy_wrath,if=glyph.final_wrath.enabled&target.health.pct<=20
+			if (HasGlyph (54935) && Health () <= 0.2) {
+				if (HolyWrath ())
+					return;
+			}
 			//	actions+=/avengers_shield
+			if (AvengersShield ())
+				return;
 			//	actions+=/lights_hammer,if=!talent.seraphim.enabled|buff.seraphim.remains>10|cooldown.seraphim.remains<6
+			if (!HasSpell ("Seraphim") || Me.AuraTimeRemaining ("Seraphim") > 10 || Cooldown ("Seraphim") < 6) {
+				if (LightsHammer ())
+					return;
+			}
 			//	actions+=/holy_prism,if=!talent.seraphim.enabled|buff.seraphim.up|cooldown.seraphim.remains>5|time<5
+			if (!HasSpell ("Seraphim") || Me.HasAura ("Seraphim") || Cooldown ("Seraphim") > 5 || Time < 5) {
+				if (HolyPrism ())
+					return;
+			}
 			//	actions+=/consecration,if=target.debuff.flying.down&active_enemies>=3
+			if (!Target.IsFlying && ActiveEnemies (8) >= 3) {
+				if (Consecration ())
+					return;
+			}
 			//	actions+=/execution_sentence,if=!talent.seraphim.enabled|buff.seraphim.up|time<12
+			if (!HasSpell ("Seraphim") || Me.HasAura ("Seraphim") || Time < 12) {
+				if (ExecutionSentence ())
+					return;
+			}
 			//	actions+=/hammer_of_wrath
+			if (HammerofWrath ())
+				return;
 			//	actions+=/sacred_shield,if=target.dot.sacred_shield.remains<8
+			if (Target.AuraTimeRemaining ("Sacred Shield") < 8) {
+				if (SacredShield ())
+					return;
+			}
 			//	actions+=/consecration,if=target.debuff.flying.down
+			if (!Target.IsFlying) {
+				if (Consecration ())
+					return;
+			}
 			//	actions+=/holy_wrath
+			if (HolyWrath ())
+				return;
 			//	actions+=/seal_of_insight,if=talent.empowered_seals.enabled&!seal.insight&buff.uthers_insight.remains<=buff.liadrins_righteousness.remains
+			if (HasSpell ("Empowered Seals") && !Me.HasAura ("Seal of Insight") && Me.AuraTimeRemaining ("Uther's Insight") <= Me.AuraTimeRemaining ("Liadrins Righteousness")) {
+				if (SealofInsight ())
+					return;
+			}
 			//	actions+=/seal_of_righteousness,if=talent.empowered_seals.enabled&!seal.righteousness&buff.liadrins_righteousness.remains<=buff.uthers_insight.remains
+			if (HasSpell ("Empowered Seals") && !Me.HasAura ("Seal of Righteousness") && Me.AuraTimeRemaining ("Uther's Insight") <= Me.AuraTimeRemaining ("Uther's Insight")) {
+				if (SealofRighteousness ())
+					return;
+			}
 			//	actions+=/sacred_shield
+			if (SacredShield ())
+				return;
 			//	actions+=/flash_of_light,if=talent.selfless_healer.enabled&buff.selfless_healer.stack>=3
+			if (HasSpell ("Selfless Healer") && AuraStackCount ("Selfless Healer") >= 3) {
+				if (Health (Me) < 0.8 && FlashofLight (Me))
+					return;
+			}
+
 		}
 	}
 }
