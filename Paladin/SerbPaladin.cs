@@ -184,6 +184,50 @@ namespace ReBot
 
 		// Combo
 
+		public bool Heal ()
+		{
+			if (Health (Me) <= 0.4 && AuraStackCount ("Selfless Healer") >= 3) {
+				if (FlashofLight (Me))
+					return true;
+			}
+			if (Health (Me) <= 0.9 && Me.HasAura ("Hand of Protection")) {
+				if (FlashofLight (Me))
+					return true;
+			}
+//			if (CastSelf ("Flash of Light", () => Health <= 0.6 && Me.HasAura ("Divine Shield") && TargetHealth >= 0.15))
+//				return;
+			if (Me.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType))) {
+				if (Cleanse (Me))
+					return true;
+			}
+			if (Health (Me) <= 0.3 && !Me.HasAura ("Immunity")) {
+				if (DivineShield ())
+					return true;
+			}
+			if (Health (Me) <= 0.2 && !Me.HasAura ("Divine Shield") && !Me.HasAura ("Immunity")) {
+				if (LayonHands (Me))
+					return true;
+			}
+			if (Health (Me) <= 0.6 && Target.IsCasting && !Me.HasAura ("Divine Shield")) {
+				if (DivineProtection ())
+					return true;
+			}
+			if (Health (Me) <= 0.15 && !Me.HasAura ("Immunity") && Cooldown ("Lay on Hands") > 1 && Cooldown ("Divine Shield") > 1) {
+				if (HandofProtection (Me))
+					return true;
+			}
+
+			// Party
+
+			if (InInstance) {
+				CycleTarget = Group.GetGroupMemberObjects ().Where (p => !p.IsDead && p.IsHealer && Health (p) < 0.2 && !p.HasAura ("Immunity") && Range (40, p)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && HandofProtection (CycleTarget))
+					return true;
+			}
+
+			return false;
+		}
+
 		public bool Interrupt ()
 		{
 			if (InArena || InBg) {
@@ -219,6 +263,17 @@ namespace ReBot
 
 
 		// Spell
+
+		public bool HandofProtection (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Hand of Protection") && Range (40, u) && C ("Hand of Protection", u);
+		}
+
+		public bool DivineShield ()
+		{
+			return Usable ("Divine Shield") && CS ("Divine Shield");
+		}
 
 		public bool SpeedofLight ()
 		{
@@ -380,6 +435,12 @@ namespace ReBot
 		{
 			u = u ?? Target;
 			return Usable ("Fist of Justice") && Range (20, u) && C ("Fist of Justice", u);
+		}
+
+		public bool LayonHands (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Lay on Hands") && Range (40, u) && C ("Lay on Hands", u);
 		}
 	}
 }
