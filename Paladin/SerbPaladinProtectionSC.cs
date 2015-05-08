@@ -61,6 +61,12 @@ namespace ReBot
 					return true;
 			}
 
+			if (CrystalOfInsanity ())
+				return true;
+
+			if (OraliusWhisperingCrystal ())
+				return true;
+
 			return false;
 		}
 
@@ -70,6 +76,9 @@ namespace ReBot
 				InCombat = true;
 				StartBattle = DateTime.Now;
 			}
+
+			if (Me.CanNotParticipateInCombat ())
+				Freedom ();
 
 			if (WaitCrusaderStrike) {
 				if (Cooldown ("Crusader Strike") != 0)
@@ -88,6 +97,9 @@ namespace ReBot
 			}
 
 			if (Interrupt ())
+				return;
+
+			if (Heal ())
 				return;
 
 			if (SelectedRotation == ConfigRotation.Normal) {

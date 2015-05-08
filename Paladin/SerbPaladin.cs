@@ -1,9 +1,9 @@
-﻿using ReBot.API;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Geometry;
 using System.Linq;
+using Geometry;
+using Newtonsoft.Json;
+using ReBot.API;
 
 namespace ReBot
 {
@@ -20,8 +20,8 @@ namespace ReBot
 		public UnitObject LastJudgmentTarget;
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
-		public float OraliusWhisperingCrystalId = 118922;
-		public float CrystalOfInsanityId = 86569;
+		public Int32 OraliusWhisperingCrystalId = 118922;
+		public Int32 CrystalOfInsanityId = 86569;
 
 		// Get
 
@@ -183,6 +183,11 @@ namespace ReBot
 		}
 
 		// Combo
+
+		public bool Freedom ()
+		{
+			return WilloftheForsaken () || EveryManforHimself ();
+		}
 
 		public bool Heal ()
 		{
@@ -441,6 +446,32 @@ namespace ReBot
 		{
 			u = u ?? Target;
 			return Usable ("Lay on Hands") && Range (40, u) && C ("Lay on Hands", u);
+		}
+
+		public bool WilloftheForsaken ()
+		{
+			return Usable ("Will of the Forsaken") && CS ("Will of the Forsaken");
+		}
+
+		public bool EveryManforHimself ()
+		{
+			return Usable ("Every Man for Himself") && CS ("Every Man for Himself");
+		}
+
+		// Items
+
+		public bool CrystalOfInsanity ()
+		{
+			if (!InArena && API.HasItem (CrystalOfInsanityId) && !HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityId) == 0)
+				return (API.UseItem (CrystalOfInsanityId));
+			return false;
+		}
+
+		public bool OraliusWhisperingCrystal ()
+		{
+			if (API.HasItem (OraliusWhisperingCrystalId) && !HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalId) == 0)
+				return API.UseItem (OraliusWhisperingCrystalId);
+			return false;
 		}
 	}
 }
