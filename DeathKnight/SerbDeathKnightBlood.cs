@@ -28,7 +28,7 @@ namespace ReBot.DeathKnight
 			if (Interrupt ())
 				return;
 
-			if (Cast ("Remorseless Winter", () => HasSpell ("Remorseless Winter") && (EnemyInRange (8) >= 2 || (IsPlayer () && Target.CombatRange < 8))))
+			if (Cast ("Remorseless Winter", () => HasSpell ("Remorseless Winter") && (ActiveEnemies (8) >= 2 || (IsPlayer () && Range (8)))))
 				return;
 
 			if (Gcd && HasGlobalCooldown ())

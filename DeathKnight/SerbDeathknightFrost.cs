@@ -44,12 +44,12 @@ namespace ReBot.DeathKnight
 			ArcaneTorrent ();
 			//	actions+=/use_item,slot=trinket2
 			//	actions+=/run_action_list,name=aoe,if=active_enemies>=4
-			if (EnemyInRange (10) >= 4) {
+			if (ActiveEnemies (10) >= 4) {
 				if (Aoe ())
 					return;
 			}
 			//	actions+=/run_action_list,name=single_target,if=active_enemies<4
-			if (EnemyInRange (10) < 4) {
+			if (ActiveEnemies (10) < 4) {
 				if (Single_target ())
 					return;
 			}
