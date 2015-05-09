@@ -2,6 +2,7 @@
 using System.Linq;
 using System;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace ReBot
 {
@@ -11,12 +12,15 @@ namespace ReBot
 	{
 		[JsonProperty ("Max rage")]
 		public int RageMax = 100;
+		[JsonProperty ("War cry"), JsonConverter (typeof(StringEnumConverter))]							
+		public WarCry Shout = WarCry.BattleShout;
+
 
 		public 	SerbWarriorProtectionSC ()
 		{
-//			GroupBuffs = new[] {
-//				"Mark of the Wild"
-//			};
+			GroupBuffs = new[] {
+				"Battle Shout"
+			};
 			PullSpells = new[] {
 				"Charge"
 			};
@@ -35,8 +39,16 @@ namespace ReBot
 			//	actions.precombat+=/potion,name=draenic_armor
 			if (InCombat) {
 				InCombat = false;
-				return true;
 			}
+
+			if (Buff (Shout))
+				return true;
+
+			if (CrystalOfInsanity ())
+				return true;
+
+			if (OraliusWhisperingCrystal ())
+				return true;
 
 			return false;
 		}
@@ -143,7 +155,7 @@ namespace ReBot
 				Stoneform ();
 			//	actions.prot+=/call_action_list,name=prot_aoe,if=active_enemies>3
 			if (ActiveEnemies (8) > 3) {
-				if (Prot_aoe ())
+				if (ProtAoe ())
 					return true;
 			}
 			//	actions.prot+=/heroic_strike,if=buff.ultimatum.up|(talent.unyielding_strikes.enabled&buff.unyielding_strikes.stack>=6)
@@ -193,7 +205,7 @@ namespace ReBot
 			return false;
 		}
 
-		public bool Prot_aoe ()
+		public bool ProtAoe ()
 		{
 			//	actions.prot_aoe=bloodbath
 			Bloodbath ();

@@ -76,19 +76,19 @@ namespace ReBot
 				StartBattle = DateTime.Now;
 			}
 
-			var targets = Adds;
-			targets.Add (Target);
-
-			if (!Me.CanParticipateInCombat) {
-				if (Freedom ())
-					return;
-			}
+			if (Freedom ())
+				return;
 
 			if (Interrupt ())
 				return;
 
 			if (InInstance && Dh && CombatRole == CombatRole.Tank) {
 				if (AggroDizzyingHaze ())
+					return;
+			}
+
+			if (Me.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType))) {
+				if (Detox ())
 					return;
 			}
 
@@ -171,18 +171,15 @@ namespace ReBot
 			}
 
 			//	actions+=/call_action_list,name=st,if=active_enemies<3
-			if (EnemyInRange (10) < 3)
+			if (ActiveEnemies (10) < 3)
 				St ();
 			//	actions+=/call_action_list,name=aoe,if=active_enemies>=3
-			if (EnemyInRange (10) >= 3)
+			if (ActiveEnemies (10) >= 3)
 				AOE ();
 		}
 
 		public void St ()
 		{
-			var targets = Adds;
-			targets.Add (Target);
-
 			//	actions.st=purifying_brew,if=stagger.heavy
 			if (Me.HasAura ("Heavy Stagger")) {
 				if (PurifyingBrew ())
@@ -247,11 +244,9 @@ namespace ReBot
 			//	actions.st+=/zen_sphere,cycle_targets=1,if=!dot.zen_sphere.ticking&energy.time_to_max>2&buff.serenity.down
 			if (TimeToMaxEnergy > 2 && !Me.HasAura ("Serenity")) {
 				var players = Group.GetGroupMemberObjects ();
-				CycleTarget = players.Where (p => !p.IsDead && p.IsInLoS && Range (p) <= 40 && !p.HasAura ("Zen Sphere", true)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (ZenSphere (CycleTarget))
-						return;
-				}
+				CycleTarget = players.Where (p => !p.IsDead && Range (40, p) && !p.HasAura ("Zen Sphere", true) && Health (p) < 0.95).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && ZenSphere (CycleTarget))
+					return;
 				if (!Me.HasAura ("Zen Sphere", true)) {
 					if (ZenSphere (Me))
 						return;
@@ -279,9 +274,6 @@ namespace ReBot
 
 		public void AOE ()
 		{
-			var targets = Adds;
-			targets.Add (Target);
-
 			//	actions.aoe=purifying_brew,if=stagger.heavy
 			if (Me.HasAura ("Heavy Stagger")) {
 				if (PurifyingBrew ())
@@ -351,11 +343,9 @@ namespace ReBot
 			//	actions.aoe+=/zen_sphere,cycle_targets=1,if=!dot.zen_sphere.ticking&energy.time_to_max>2&buff.serenity.down
 			if (TimeToMaxEnergy > 2 && !Me.HasAura ("Serenity")) {
 				var players = Group.GetGroupMemberObjects ();
-				CycleTarget = players.Where (p => !p.IsDead && p.IsInLoS && Range (p) <= 40 && !p.HasAura ("Zen Sphere", true)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (ZenSphere (CycleTarget))
-						return;
-				}
+				CycleTarget = players.Where (p => !p.IsDead && Range (40, p) && !p.HasAura ("Zen Sphere", true) && Health (p) < 0.95).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && ZenSphere (CycleTarget))
+					return;
 				if (!Me.HasAura ("Zen Sphere", true)) {
 					if (ZenSphere (Me))
 						return;
@@ -379,11 +369,9 @@ namespace ReBot
 
 
 			if (InInstance && CombatRole == CombatRole.Tank) {
-				CycleTarget = targets.Where (u => u.Target != Me && u.IsInLoS && Range (u) <= 5).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (TigerPalm (CycleTarget))
-						return;
-				}
+				CycleTarget = Enemy.Where (u => u.Target != Me && Range (5, u)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && TigerPalm (CycleTarget))
+					return;
 			}
 
 			if (Sck) {

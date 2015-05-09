@@ -38,6 +38,12 @@ namespace ReBot.DeathKnight
 			if (Interrupt ())
 				return;
 
+			if (Freedom ())
+				return;
+
+			if (Aggro ())
+				return;
+
 			if (Cast ("Remorseless Winter", () => HasSpell ("Remorseless Winter") && (ActiveEnemies (8) >= 2 || (IsPlayer () && Range (8)))))
 				return;
 
@@ -68,7 +74,7 @@ namespace ReBot.DeathKnight
 					return;
 			}
 			//	actions+=/lichborne,if=health.pct<90
-			if (Health (Me) < 0.9) {
+			if ((Health (Me) < 0.9 && Danger ()) || Health (Me) < 0.5) {
 				if (Lichborne ())
 					return;
 			}

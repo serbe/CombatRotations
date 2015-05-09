@@ -1,7 +1,7 @@
-﻿using ReBot.API;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using ReBot.API;
 
 namespace ReBot
 {
@@ -25,8 +25,18 @@ namespace ReBot
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
 		public UnitObject CycleTarget;
+		public Int32 OraliusWhisperingCrystalID = 118922;
+		public Int32 CrystalOfInsanityID = 86569;
+		public DateTime PrevBloodthirst;
 
 		// Get
+
+		public bool PrevGcdBloodthirst {
+			get {
+				TimeSpan CombatTime = DateTime.Now.Subtract (PrevBloodthirst);
+				return CombatTime.TotalSeconds < 3;
+			}
+		}
 
 		public bool AttackPowerBuff {
 			get {
@@ -120,6 +130,50 @@ namespace ReBot
 
 		// Check
 
+		public bool C (string s, UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (Cast (s, u))
+				return true;
+			API.Print ("False Cast " + s + " with " + u.CombatRange + " range");
+			return false;
+		}
+
+		public bool CPD (string s, UnitObject u = null, int d = 800)
+		{
+			u = u ?? Target;
+			if (CastPreventDouble (s, null, u, d))
+				return true;
+			API.Print ("False CastPreventDouble " + s + " with " + u.CombatRange + " range " + d + " delay");
+			return false;
+		}
+
+		public bool CS (string s)
+		{
+			if (CastSelf (s))
+				return true;
+			API.Print ("False CastSelf " + s);
+			return false;
+		}
+
+		public bool COT (string s, UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (CastOnTerrain (s, u.Position))
+				return true;
+			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range");
+			return false;
+		}
+
+		public bool COTPD (string s, UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (CastOnTerrainPreventDouble (s, u.Position))
+				return true;
+			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range");
+			return false;
+		}
+
 		public bool Range (int r, UnitObject u = null, int l = 0)
 		{
 			u = u ?? Target;
@@ -134,6 +188,14 @@ namespace ReBot
 			if (r != 0)
 				return Range (r, u) && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
 			return u.IsInCombatRangeAndLoS && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
+		}
+
+		public bool DangerBoss (UnitObject u = null, int r = 0, int e = 6)
+		{
+			u = u ?? Target;
+			if (r != 0)
+				return Range (r, u) && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e);
+			return u.IsInCombatRangeAndLoS && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e);
 		}
 
 		public bool IsBoss (UnitObject u = null)
@@ -193,11 +255,11 @@ namespace ReBot
 		// Combo
 
 
-		public bool Buff (WarCry Shout)
+		public bool Buff (WarCry shout)
 		{
-			if (CastSelf ("Commanding Shout",	() => Shout == WarCry.CommandingShout && (AttackPowerBuff || !Me.HasAura ("Commanding Shout"))))
+			if (shout == WarCry.CommandingShout && (AttackPowerBuff || !Me.HasAura ("Commanding Shout")) && CS ("Commanding Shout"))
 				return true;
-			if (CastSelf ("Battle Shout", () => Shout == WarCry.BattleShout && !AttackPowerBuff))
+			if (shout == WarCry.BattleShout && !AttackPowerBuff && CS ("Battle Shout"))
 				return true;
 
 			return false;
@@ -224,187 +286,235 @@ namespace ReBot
 			return false;
 		}
 
+		public bool CrystalOfInsanity ()
+		{
+			if (!InArena && API.HasItem (CrystalOfInsanityID) && !HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityID) == 0)
+				return API.UseItem (CrystalOfInsanityID);
+			return false;
+		}
+
+		public bool OraliusWhisperingCrystal ()
+		{
+			if (API.HasItem (OraliusWhisperingCrystalID) && !HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalID) == 0)
+				return API.UseItem (OraliusWhisperingCrystalID);
+			return false;
+		}
+
 		// ------- Spells
 
 		public bool Charge (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Charge", () => Usable ("Charge") && (Range (25, u, 8) || (HasGlyph (58097) && Range (30, u, 8))), u);
+			return Usable ("Charge") && (Range (25, u, 8) || (HasGlyph (58097) && Range (30, u, 8))) && C ("Charge", u);
 		}
 
 		public bool BloodFury ()
 		{
-			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && Danger ());
+			return Usable ("Blood Fury") && Danger () && CS ("Blood Fury");
 		}
 
 		public bool Berserking ()
 		{
-			return CastSelf ("Berserking", () => Usable ("Berserking") && Danger ());
+			return Usable ("Berserking") && Danger () && CS ("Berserking");
 		}
 
 		public bool ArcaneTorrent ()
 		{
-			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && Danger ());
+			return Usable ("Arcane Torrent") && Danger () && CS ("Arcane Torrent");
 		}
 
 		public bool BerserkerRage ()
 		{
-			return CastSelf ("Berserker Rage", () => Usable ("Berserker Rage") && Target.IsInLoS);
+			return Usable ("Berserker Rage") && Target.IsInLoS && CS ("Berserker Rage");
 		}
 
 		public bool ShieldBlock ()
 		{
-			return CastSelf ("Shield Block", () => Usable ("Shield Block") && HasRage (60));
+			return Usable ("Shield Block") && HasRage (60) && CS ("Shield Block");
 		}
 
 		public bool ShieldBarrier ()
 		{
-			return CastSelf ("Shield Barrier", () => Usable ("Shield Barrier") && HasRage (20));
+			return Usable ("Shield Barrier") && HasRage (20) && CS ("Shield Barrier");
 		}
 
 		public bool DemoralizingShout ()
 		{
-			return CastSelf ("Demoralizing Shout", () => Usable ("Demoralizing Shout"));
+			return Usable ("Demoralizing Shout") && CS ("Demoralizing Shout");
 		}
 
 		public bool EnragedRegeneration ()
 		{
-			return CastSelf ("Enraged Regeneration", () => Usable ("Enraged Regeneration"));
+			return Usable ("Enraged Regeneration") && CS ("Enraged Regeneration");
 		}
 
 		public bool ShieldWall ()
 		{
-			return CastSelf ("Shield Wall", () => Usable ("Shield Wall"));
+			return Usable ("Shield Wall") && CS ("Shield Wall");
 		}
 
 		public bool LastStand ()
 		{
-			return CastSelf ("Last Stand", () => Usable ("Last Stand"));
+			return Usable ("Last Stand") && CS ("Last Stand");
 		}
 
 		public bool Stoneform ()
 		{
-			return CastSelf ("Stoneform", () => Usable ("Stoneform"));
+			return Usable ("Stoneform") && CS ("Stoneform");
 		}
 
 		public bool HeroicStrike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Heroic Strike", () => Usable ("Heroic Strike") && HasRage (30) && u.IsInCombatRangeAndLoS, u);
+			return Usable ("Heroic Strike") && HasRage (30) && u.IsInCombatRangeAndLoS && C ("Heroic Strike", u);
 		}
 
 		public bool Bloodbath ()
 		{
-			return CastSelf ("Bloodbath", () => Usable ("Bloodbath"));
+			return Usable ("Bloodbath") && CS ("Bloodbath");
 		}
 
 		public bool Avatar ()
 		{
-			return CastSelf ("Avatar", () => Usable ("Avatar"));
+			return Usable ("Avatar") && Danger () && CS ("Avatar");
 		}
 
 		public bool ShieldSlam (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Shield Slam", () => Usable ("Shield Slam") && u.IsInCombatRangeAndLoS, u);
+			return Usable ("Shield Slam") && u.IsInCombatRangeAndLoS && C ("Shield Slam", u);
 		}
 
 		public bool Revenge (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Revenge", () => Usable ("Revenge") && u.IsInCombatRangeAndLoS, u);
+			return Usable ("Revenge") && u.IsInCombatRangeAndLoS && C ("Revenge", u);
 		}
 
 		public bool Ravager (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Ravager", () => Usable ("Ravager") && u.IsInCombatRangeAndLoS, u);
+			return Usable ("Ravager") && u.IsInCombatRangeAndLoS && C ("Ravager", u);
 		}
 
 		public bool StormBolt (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Storm Bolt", () => Usable ("Storm Bolt") && Range (30, u), u);
+			return Usable ("Storm Bolt") && Range (30, u) && C ("Storm Bolt", u);
 		}
 
 		public bool DragonRoar ()
 		{
-			return CastSelf ("Dragon Roar", () => Usable ("Dragon Roar") && Target.IsInCombatRangeAndLoS);
+			return Usable ("Dragon Roar") && Target.IsInCombatRangeAndLoS && CS ("Dragon Roar");
 		}
 
 		public bool ImpendingVictory (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Impending Victory", () => Usable ("Impending Victory") && HasRage (10) && u.IsInCombatRangeAndLoS, u);
+			return Usable ("Impending Victory") && HasRage (10) && u.IsInCombatRangeAndLoS && C ("Impending Victory", u);
 		}
 
 		public bool VictoryRush (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Victory Rush", () => Usable ("Victory Rush") && u.IsInCombatRangeAndLoS && Me.HasAura ("Victorious"), u);
+			return Usable ("Victory Rush") && u.IsInCombatRangeAndLoS && Me.HasAura ("Victorious") && C ("Victory Rush", u);
 		}
 
 		public bool Execute (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Execute", () => Usable ("Execute") && u.IsInCombatRangeAndLoS && ((HasRage (30) && Health (u) <= 0.2) || Me.HasAura ("Sudden Death")), u);
+			return Usable ("Execute") && u.IsInCombatRangeAndLoS && ((HasRage (30) && Health (u) <= 0.2) || Me.HasAura ("Sudden Death")) && C ("Execute", u);
 		}
 
 		public bool Devastate (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Devastate", () => Usable ("Devastate") && u.IsInCombatRangeAndLoS, u);
+			return Usable ("Devastate") && u.IsInCombatRangeAndLoS && C ("Devastate", u);
 		}
 
 		public bool ThunderClap (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return CastSelf ("Thunder Clap", () => Usable ("Thunder Clap") && Range (8, u));
+			return Usable ("Thunder Clap") && (Range (8, u) || (HasGlyph (63324) && Range (12, u))) && CS ("Thunder Clap");
 		}
 
-		public bool Bladestorm (UnitObject u = null)
+		public bool Bladestorm ()
 		{
-			u = u ?? Target;
-			return CastSelf ("Bladestorm", () => Usable ("Bladestorm") && u.IsInCombatRangeAndLoS);
+			return Usable ("Bladestorm") && Danger () && CS ("Bladestorm");
 		}
 
 		public bool Shockwave (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Shockwave", () => Usable ("Shockwave") && Range (10, u), u);
+			return Usable ("Shockwave") && Range (10, u) && C ("Shockwave", u);
 		}
 
 		public bool ShieldCharge (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Shield Charge", () => Usable ("Shield Charge") && HasRage (20) && Range (10, u), u);
+			return Usable ("Shield Charge") && HasRage (20) && Range (10, u) && C ("Shield Charge", u);
 		}
 
 		public bool HeroicLeap (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return CastOnTerrain ("Heroic Leap", u.Position, () => Usable ("Heroic Leap") && Range (40, u, 8) && ((HasGlyph (63325) && Range (25, u)) || Range (40, u)));
+			return Usable ("Heroic Leap") && Range (40, u, 8) && ((HasGlyph (63325) && Range (25, u)) || Range (40, u)) && COT ("Heroic Leap", u);
 		}
 
 		public bool HeroicThrow (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return CastPreventDouble ("Heroic Throw", () => Usable ("Heroic Throw") && Range (30, u, 8), u, 2000);
+			return Usable ("Heroic Throw") && Range (30, u, 8) && CPD ("Heroic Throw", u, 2000);
 		}
 
 		public bool DefensiveStance ()
 		{
-			return CastSelf ("Defensive Stance", () => Usable ("Defensive Stance") && !(Me.HasAura ("Defensive Stance") || Me.HasAura ("Improved Defensive Stance")));
+			return Usable ("Defensive Stance") && !(Me.HasAura ("Defensive Stance") || Me.HasAura ("Improved Defensive Stance")) && CS ("Defensive Stance");
 		}
 
 		public bool BattleStance ()
 		{
-			return CastSelf ("Battle Stance", () => Usable ("Battle Stance") && !IsInShapeshiftForm ("Battle Stance"));
+			return Usable ("Battle Stance") && !IsInShapeshiftForm ("Battle Stance") && CS ("Battle Stance");
 		}
 
 		public bool RallyingCry ()
 		{
-			return CastSelf ("Rallying Cry", () => Usable ("Rallying Cry"));
+			return Usable ("Rallying Cry") && CS ("Rallying Cry");
+		}
+
+		public bool Recklessness ()
+		{
+			return Usable ("Recklessness") && DangerBoss () && CS ("Recklessness");
+		}
+
+		public bool WildStrike (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Wild Strike") && (Rage >= 45 || (Me.HasAura ("Furious Strikes") && Rage >= 20)) && Range (5, u) && C ("Wild Strike", u);
+		}
+
+		public bool Bloodthirst (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Bloodthirst") && Range (5, u) && C ("Bloodthirst", u);
+		}
+
+		public bool Siegebreaker (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Siegebreaker") && Range (5, u) && C ("Siegebreaker", u);
+		}
+
+		public bool RagingBlow (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Raging Blow") && Rage >= 10 && Range (5, u) && C ("Raging Blow", u);
+		}
+
+		public bool Whirlwind (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Whirlwind") && HasRage (20) && (Range (8, u) || (HasGlyph (63324) && Range (12, u))) && C ("Whirlwind", u);
 		}
 	}
 }

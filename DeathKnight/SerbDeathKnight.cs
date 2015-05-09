@@ -373,7 +373,48 @@ namespace ReBot
 			return u.Health / Ttd;
 		}
 
+		// Combo
+
+		public bool Freedom ()
+		{
+			if (!Me.CanParticipateInCombat) {
+				if (WilloftheForsaken ())
+					return true;
+				if (EveryManforHimself ())
+					return true;
+			}
+
+			return false;
+		}
+
+		public bool Aggro ()
+		{ 
+			if (InInstance && Time > 3) {
+				CycleTarget = Enemy.Where (u => (Range (30, u) || (HasGlyph (62259) && Range (35, u))) && u.Target != Me).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && DeathGrip (CycleTarget))
+					return true;
+			}
+
+			return false;
+		}
+
 		// Spell
+
+		public bool DeathGrip (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Death Grip") && (Range (30, u) || (HasGlyph (62259) && Range (35, u))) && C ("Death Grip", u);
+		}
+
+		public bool WilloftheForsaken ()
+		{
+			return Usable ("Will of the Forsaken") && CS ("Will of the Forsaken");
+		}
+
+		public bool EveryManforHimself ()
+		{
+			return Usable ("Every Man for Himself") && CS ("Every Man for Himself");
+		}
 
 		public bool HornofWinter ()
 		{

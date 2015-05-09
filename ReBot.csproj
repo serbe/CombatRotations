@@ -73,6 +73,7 @@
     <Compile Include="Shaman\SerbShamanElementalistSC.cs" />
     <Compile Include="Warrior\SerbWarriorProtectionIV.cs" />
     <Compile Include="Paladin\SerbPaladinProtectionSC.cs" />
+    <Compile Include="Warrior\SerbWarriorFury.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
