@@ -1,8 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Geometry;
 using Newtonsoft.Json;
 using ReBot.API;
-using System.Collections.Generic;
-using Geometry;
 
 namespace ReBot
 {
@@ -18,6 +19,9 @@ namespace ReBot
 		public int CrystalOfInsanityId = 86569;
 		public int OraliusWhisperingCrystalId = 118922;
 		public UnitObject CycleTarget;
+		public bool InCombat;
+		public DateTime StartBattle;
+		public DateTime StartSleepTime;
 
 		// Check
 
@@ -167,6 +171,25 @@ namespace ReBot
 
 
 		// Get
+
+		public double DamageTaken (float t)
+		{
+			var damage = API.ExecuteLua<double> ("local ResolveName = GetSpellInfo(158300);local n,_,_,_,_,dur,expi,_,_,_,id,_,_,_,val1,val2,val3 = UnitAura(\"player\", ResolveName, nil, \"HELPFUL\");return val2");
+			if (Time < 10) {
+				if (Time < t / 1000)
+					return damage;
+				return damage / Time * (t / 1000);
+			}
+
+			return damage / 10 * (t / 1000);
+		}
+
+		public double Time {
+			get {
+				TimeSpan combatTime = DateTime.Now.Subtract (StartBattle);
+				return combatTime.TotalSeconds;
+			}
+		}
 
 		public List<UnitObject> Enemy {
 			get {
@@ -354,41 +377,41 @@ namespace ReBot
 
 		public bool HornofWinter ()
 		{
-			return Usable ("Horn of Winter") && !HasAura ("Horn of Winter") && !HasAura ("Battle Shout") && CastSelf ("Horn of Winter");
+			return Usable ("Horn of Winter") && !HasAura ("Horn of Winter") && !HasAura ("Battle Shout") && CS ("Horn of Winter");
 		}
 
 		public bool RaiseDead ()
 		{
-			return Usable ("Raise Dead") && !Me.HasAlivePet && CastSelf ("Raise Dead");
+			return Usable ("Raise Dead") && !Me.HasAlivePet && CS ("Raise Dead");
 		}
 
 		public bool BloodFury (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Blood Fury") && Danger (u, 10) && CastSelf ("Blood Fury");
+			return Usable ("Blood Fury") && Danger (u, 10) && CS ("Blood Fury");
 		}
 
 		public bool Berserking (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Berserking") && Danger (u, 10) && CastSelf ("Berserking");
+			return Usable ("Berserking") && Danger (u, 10) && CS ("Berserking");
 		}
 
 		public bool ArcaneTorrent (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Arcane Torrent") && Danger (u, 10) && CastSelf ("Arcane Torrent");
+			return Usable ("Arcane Torrent") && Danger (u, 10) && CS ("Arcane Torrent");
 		}
 
 		public bool AntimagicShell ()
 		{
-			return Usable ("Anti-Magic Shell") && CastSelf ("Anti-Magic Shell");
+			return Usable ("Anti-Magic Shell") && CS ("Anti-Magic Shell");
 		}
 
 		public bool UnholyBlight (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Unholy Blight") && Range (10, u) && CastSelf ("Unholy Blight");
+			return Usable ("Unholy Blight") && Range (10, u) && CS ("Unholy Blight");
 		}
 
 		public bool Defile (UnitObject u = null)
@@ -400,23 +423,23 @@ namespace ReBot
 		public bool BloodBoil (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Blood Boil") && (Me.HasAura ("Crimson Scourge") || (HasBlood || HasDeath)) && Range (10, u) && CastSelf ("Blood Boil");
+			return Usable ("Blood Boil") && (Me.HasAura ("Crimson Scourge") || (HasBlood || HasDeath)) && Range (10, u) && CS ("Blood Boil");
 		}
 
 		public bool SummonGargoyle (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Summon Gargoyle") && Range (30, u) && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > 2) && Cast ("Summon Gargoyle");
+			return Usable ("Summon Gargoyle") && Range (30, u) && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > 2) && C ("Summon Gargoyle");
 		}
 
 		public bool DarkTransformation ()
 		{
-			return Usable ("Dark Transformation") && !Me.Pet.HasAura ("Dark Transformation") && Me.HasAlivePet && Me.GetAura ("Shadow Infusion").StackCount == 5 && (HasSpell ("Enhanced Dark Transformation") || (HasDeath || HasUnholy)) && Cast ("Dark Transformation");
+			return Usable ("Dark Transformation") && !Me.Pet.HasAura ("Dark Transformation") && Me.HasAlivePet && Me.GetAura ("Shadow Infusion").StackCount == 5 && (HasSpell ("Enhanced Dark Transformation") || (HasDeath || HasUnholy)) && C ("Dark Transformation");
 		}
 
 		public bool BloodTap ()
 		{
-			return Usable ("Blood Tap") && BloodCharge >= 5 && CastSelf ("Blood Tap");
+			return Usable ("Blood Tap") && BloodCharge >= 5 && CS ("Blood Tap");
 		}
 
 		public bool DeathandDecay (UnitObject u = null)
@@ -428,55 +451,55 @@ namespace ReBot
 		public bool SoulReaper (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Soul Reaper") && Cast ("Soul Reaper", u);
+			return Usable ("Soul Reaper") && C ("Soul Reaper", u);
 		}
 
 		public bool ScourgeStrike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Scourge Strike") && (HasUnholy || HasDeath) && Cast ("Scourge Strike", u);
+			return Usable ("Scourge Strike") && (HasUnholy || HasDeath) && C ("Scourge Strike", u);
 		}
 
 		public bool DeathCoil (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Death Coil") && (Me.HasAura ("Sudden Doom") || RunicPower >= 30) && Range (40, u) && Cast ("Death Coil", u);
+			return Usable ("Death Coil") && (Me.HasAura ("Sudden Doom") || RunicPower >= 30) && Range (40, u) && C ("Death Coil", u);
 		}
 
 		public bool IcyTouch (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Icy Touch") && (HasFrost || HasDeath) && Range (30, u) && Cast ("Icy Touch", u);
+			return Usable ("Icy Touch") && (HasFrost || HasDeath) && Range (30, u) && C ("Icy Touch", u);
 		}
 
 		public bool PlagueLeech (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Plague Leech") && u.HasAura ("Frost Fever", true) && u.HasAura ("Blood Plague", true) && Cast ("Plague Leech");
+			return Usable ("Plague Leech") && u.HasAura ("Frost Fever", true) && u.HasAura ("Blood Plague", true) && C ("Plague Leech");
 		}
 
 		public bool EmpowerRuneWeapon (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Empower Rune Weapon") && Danger (u, 10) && Cast ("Empower Rune Weapon");
+			return Usable ("Empower Rune Weapon") && Danger (u, 10) && C ("Empower Rune Weapon");
 		}
 
 		public bool Outbreak (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Outbreak") && (!HasGlyph (59332) || RunicPower >= 30) && Range (30, u) && Cast ("Outbreak", u);
+			return Usable ("Outbreak") && (!HasGlyph (59332) || RunicPower >= 30) && Range (30, u) && C ("Outbreak", u);
 		}
 
 		public bool PlagueStrike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Plague Strike") && (HasUnholy || HasDeath) && Cast ("Plague Strike", u);
+			return Usable ("Plague Strike") && (HasUnholy || HasDeath) && C ("Plague Strike", u);
 		}
 
 		public bool FesteringStrike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Festering Strike") && ((HasFrost && HasBlood) || (HasFrost && HasDeath) || (HasDeath && HasBlood) || Death == 2) && Cast ("Festering Strike", u);
+			return Usable ("Festering Strike") && ((HasFrost && HasBlood) || (HasFrost && HasDeath) || (HasDeath && HasBlood) || Death == 2) && C ("Festering Strike", u);
 		}
 
 		public bool Interrupt ()
@@ -568,90 +591,95 @@ namespace ReBot
 		public bool MindFreeze (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("MindFreeze") && Cast ("Mind Freeze", u);
+			return Usable ("MindFreeze") && C ("Mind Freeze", u);
 		}
 
 		public bool Strangulate (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Strangulate") && (HasBlood || HasDeath) && Range (30, u) && Cast ("Strangulate", u);
+			return Usable ("Strangulate") && (HasBlood || HasDeath) && Range (30, u) && C ("Strangulate", u);
 		}
 
 		public bool Asphyxiate (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Asphyxiate") && Range (30, u) && Cast ("Asphyxiate", u);
+			return Usable ("Asphyxiate") && Range (30, u) && C ("Asphyxiate", u);
 		}
 
 		public bool DeathSiphon (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Death Siphon") && HasDeath && Range (30, u) && Cast ("Death Siphon", u);
+			return Usable ("Death Siphon") && HasDeath && Range (30, u) && C ("Death Siphon", u);
 		}
 
 		public bool DeathStrike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Death Strike") && ((HasFrost && HasUnholy) || (HasFrost && HasDeath) || (HasDeath && HasUnholy) || Death == 2) && Cast ("Death Strike", u);
+			return Usable ("Death Strike") && ((HasFrost && HasUnholy) || (HasFrost && HasDeath) || (HasDeath && HasUnholy) || Death == 2) && C ("Death Strike", u);
 		}
 
 		public bool BreathofSindragosa (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Breath of Sindragosa") && RunicPower > 0 && Danger (u, 10) && CastSelf ("Breath of Sindragosa");
+			return Usable ("Breath of Sindragosa") && RunicPower > 0 && Danger (u, 10) && CS ("Breath of Sindragosa");
 		}
 
 		public bool Lichborne ()
 		{
-			return Usable ("Lichborne") && CastSelf ("Lichborne");
+			return Usable ("Lichborne") && CS ("Lichborne");
 		}
 
 		public bool ArmyoftheDead (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Army of the Dead") && DangerBoss (u, 40) && ((HasBlood && HasFrost && HasUnholy) || (HasDeath && HasFrost && HasUnholy) || (HasBlood && HasDeath && HasUnholy) || (HasBlood && HasFrost && HasDeath) || ((HasBlood || HasFrost || HasUnholy) && Death >= 2) || Death >= 3) && CastSelf ("Army of the Dead");
+			return Usable ("Army of the Dead") && DangerBoss (u, 40) && ((HasBlood && HasFrost && HasUnholy) || (HasDeath && HasFrost && HasUnholy) || (HasBlood && HasDeath && HasUnholy) || (HasBlood && HasFrost && HasDeath) || ((HasBlood || HasFrost || HasUnholy) && Death >= 2) || Death >= 3) && CS ("Army of the Dead");
 		}
 
 		public bool VampiricBlood ()
 		{
-			return Usable ("Vampiric Blood") && CastSelf ("Vampiric Blood");
+			return Usable ("Vampiric Blood") && CS ("Vampiric Blood");
 		}
 
 		public bool IceboundFortitude ()
 		{
-			return Usable ("Icebound Fortitude") && CastSelf ("Icebound Fortitude");
+			return Usable ("Icebound Fortitude") && CS ("Icebound Fortitude");
 		}
 
 		public bool DancingRuneWeapon (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Dancing Rune Weapon") && Range (30, u) && CastSelf ("Dancing Rune Weapon"); 
+			return Usable ("Dancing Rune Weapon") && Range (30, u) && CS ("Dancing Rune Weapon"); 
 		}
 
 		public bool DeathPact ()
 		{
-			return Usable ("Death Pact") && CastSelf ("Death Pact");
+			return Usable ("Death Pact") && CS ("Death Pact");
 		}
 
 		public bool BoneShield ()
 		{
-			return Usable ("Bone Shield") && !Me.HasAura ("Bone Shield") && CastSelf ("Bone Shield");
+			return Usable ("Bone Shield") && !Me.HasAura ("Bone Shield") && CS ("Bone Shield");
 		}
 
 		public bool ChainsofIce (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Chains of Ice") && Range (30, u) && (HasFrost && HasDeath) && Cast ("Chains of Ice", u);
+			return Usable ("Chains of Ice") && Range (30, u) && (HasFrost && HasDeath) && C ("Chains of Ice", u);
 		}
 
 		public bool RuneTap ()
 		{
-			return Usable ("Rune Tap") && (HasBlood || HasDeath) && CastSelf ("Rune Tap");
+			return Usable ("Rune Tap") && (HasBlood || HasDeath) && CS ("Rune Tap");
 		}
 
 		public bool PillarofFrost ()
 		{
-			return Usable ("Pillar of Frost") && CastSelf ("Pillar of Frost");
+			return Usable ("Pillar of Frost") && CS ("Pillar of Frost");
+		}
+
+		public bool Conversion ()
+		{
+			return Usable ("Conversion") && CS ("Conversion");
 		}
 
 		// Items

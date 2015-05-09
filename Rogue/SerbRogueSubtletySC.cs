@@ -77,7 +77,6 @@ namespace ReBot.Rogue
 
 			if (InCombat) {
 				InCombat = false;
-				return true;
 			}
 
 			Sleep = 0;
