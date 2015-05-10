@@ -132,6 +132,19 @@ namespace ReBot
 
 		// Check
 
+		public bool UseShieldBlock {
+			get {
+				int x = 0;
+				foreach (UnitObject u in API.CollectUnits(5)) {
+					if (!u.IsDead && u.MaxMana == 0 && u.Target == Me && u.InCombat) {
+						x++;
+					}
+				}
+				return x > 0;
+			}
+		}
+
+
 		public bool C (string s, UnitObject u = null)
 		{
 			u = u ?? Target;

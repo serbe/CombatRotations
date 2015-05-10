@@ -14,6 +14,8 @@ namespace ReBot
 		public int RageMax = 100;
 		[JsonProperty ("War cry"), JsonConverter (typeof(StringEnumConverter))]							
 		public WarCry Shout = WarCry.BattleShout;
+		[JsonProperty ("Use Movement")]
+		public bool Move = false;
 
 
 		public 	SerbWarriorProtectionSC ()
@@ -59,6 +61,12 @@ namespace ReBot
 				InCombat = true;
 				StartBattle = DateTime.Now;
 			}
+
+			if (Interrupt ())
+				return;
+
+			if (Reflect ())
+				return;
 
 			if (Gcd && HasGlobalCooldown ())
 				return;
@@ -128,7 +136,7 @@ namespace ReBot
 		public bool Prot ()
 		{
 			//	actions.prot=shield_block,if=!(debuff.demoralizing_shout.up|buff.ravager_protection.up|buff.shield_wall.up|buff.last_stand.up|buff.enraged_regeneration.up|buff.shield_block.up)
-			if (Health (Me) < 0.9 && !(Target.HasAura ("Demoralizing Shout") || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block")))
+			if (Health (Me) < 0.9 && UseShieldBlock && !(Target.HasAura ("Demoralizing Shout") || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block")))
 				ShieldBlock ();
 			//	actions.prot+=/shield_barrier,if=buff.shield_barrier.down&((buff.shield_block.down&action.shield_block.charges_fractional<0.75)|rage>=85)
 			if (Health (Me) < 0.9 && !Me.HasAura ("Shield Barrier") && ((!Me.HasAura ("Shield Block") && Frac ("Shield Block") < 0.75) || Rage >= 85))
@@ -212,7 +220,7 @@ namespace ReBot
 			//	actions.prot_aoe+=/avatar
 			Avatar ();
 			//	actions.prot_aoe+=/thunder_clap,if=!dot.deep_wounds.ticking
-			if (Me.Level >= 32 & !Target.HasAura ("Deep Wounds", true) && Time > 0.5) {
+			if (Me.Level >= 32 & !Target.HasAura ("Deep Wounds", true) && Range (5)) {
 				if (ThunderClap ())
 					return true;
 			}
@@ -305,7 +313,7 @@ namespace ReBot
 		public bool Gladiator ()
 		{
 			//	actions=charge
-			if (Range (10)) {
+			if (Range (10) && Move) {
 				if (Charge ())
 					return true;
 			}
