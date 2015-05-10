@@ -6,16 +6,18 @@ using System.Linq;
 
 namespace ReBot
 {
-	[Rotation ("Warrior Protection SC", "Serb", WoWClass.Warrior, Specialization.WarriorProtection, 5, 25)]
+	[Rotation ("Serb Warrior Fury SC", "Serb", WoWClass.Warrior, Specialization.WarriorFury, 5, 25)]
 
-	public class SerbWarriorFury : SerbWarrior
+	public class SerbWarriorFurySC : SerbWarrior
 	{
 		[JsonProperty ("Max rage")]
 		public int RageMax = 100;
 		[JsonProperty ("War cry"), JsonConverter (typeof(StringEnumConverter))]							
 		public WarCry Shout = WarCry.BattleShout;
+		[JsonProperty ("Use Movement")]
+		public bool Move = false;
 
-		public SerbWarriorFury ()
+		public SerbWarriorFurySC ()
 		{
 			GroupBuffs = new[] {
 				"Battle Shout"
@@ -45,58 +47,62 @@ namespace ReBot
 
 			if (OraliusWhisperingCrystal ())
 				return true;
-			
+
+			if (WaitBloodthirst)
+				WaitBloodthirst = false;
+
 			return false;
 		}
 
 		public override void Combat ()
 		{
+			if (WaitBloodthirst) {
+				if (Cooldown ("Bloodthirst") == 0) {
+					Bloodthirst ();
+					WaitBloodthirst = false;
+					return;
+				}
+				return;
+			}
 
 
-			//Def CD
-//			if (Cast ("Die by the Sword", () => Health <= 0.4))
-//				return;
-//			if (Cast ("Shield Barrier", () => Rage >= 20 && !Me.HasAura ("Shield Barrier") && Health <= 0.6))
-//				return;
-//			if (CastSelf ("Rallying Cry", () => Health <= 0.3))
-//				return;
+			if (Health (Me) <= 0.4) {
+				if (DiebytheSword ())
+					return;
+			}
+			if (!Me.HasAura ("Shield Barrier") && Health (Me) <= 0.6) {
+				if (ShieldBarrier ())
+					return;
+			}
+			if (Health (Me) <= 0.3) {
+				if (RallyingCry ())
+					return;
+			}
 
-			// Interrups casting or reflect
-//			if (SpellCooldown ("Pummel") == 0) {
-//				var interruptTarget = targets.Where (u => u.IsCastingAndInterruptible () && u.CombatRange <= 6 && u.RemainingCastTime > 0 && (u.Target == (UnitObject)Me && !Me.HasAura ("Spell Reflect")) && !Me.HasAura ("Mass Spell Reflection")).OrderBy (u => u.RemainingCastTime).DefaultIfEmpty (null).FirstOrDefault ();
-//				if (Cast ("Pummel", interruptTarget, () => interruptTarget != null))
-//					return;
-//			}
-//			if (HasSpell ("Storm Bolt") && SpellCooldown ("Storm Bolt") == 0) {
-//				var interruptTarget = targets.Where (u => u.IsCastingAndInterruptible () && u.CombatRange <= 30 && u.RemainingCastTime > 0 && (u.Target == (UnitObject)Me && !Me.HasAura ("Spell Reflect")) && !Me.HasAura ("Mass Spell Reflection")).OrderBy (u => u.RemainingCastTime).DefaultIfEmpty (null).FirstOrDefault ();
-//				if (Cast ("Storm Bolt", interruptTarget, () => interruptTarget != null))
-//					return;
-//			}
+			if (Interrupt ())
+				return;
 
-//			if (HasSpell ("Spell Reflection") && SpellCooldown ("Spell Reflection") == 0 && !HasGlobalCooldown ()) {
-//				var castToMe = targets.Where (u => u.IsCasting && u.RemainingCastTime > 0 && u.Target == (UnitObject)Me && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
-//				if (Cast ("Spell Reflection", () => castToMe != null))
-//					return;
-//			}
-//			if (HasSpell ("Mass Spell Reflection") && SpellCooldown ("Mass Spell Reflection") == 0 && !HasGlobalCooldown ()) {
-//				var castToMe = targets.Where (u => u.IsCasting && u.RemainingCastTime > 0 && u.Target == (UnitObject)Me && !Me.HasAura ("Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
-//				if (Cast ("Mass Spell Reflection", () => castToMe != null))
-//					return;
-//			}
+			if (Reflect ())
+				return;
+
 
 			// Slow Enemy Player
 //			if (Cast ("Hamstring", () => (IsPlayer && IsFleeing) && !Target.HasAura ("Hamstring")))
 //				return;
 //
 			//Heal
-//			if (Cast ("Victory Rush", () => Health < 0.9 && Me.HasAura ("Victorious")))
-//				return;
-//			if (Cast ("Impending Victory", () => HasSpell ("Impending Victory") && Health < 0.6))
-//				return;
-//			if (CastSelf ("Rallying Cry", () => Health <= 0.25))
-//				return;
-//			if (CastSelf ("Enraged Regeneration", () => Health <= 0.5))
-//				return;
+			if (Health (Me) < 0.9 && Me.HasAura ("Victorious")) {
+				if (VictoryRush ())
+					return;
+			}
+			if (Health (Me) < 0.6) {
+				if (ImpendingVictory ())
+					return;
+			}
+			if (Health (Me) <= 0.5) {
+				if (EnragedRegeneration ())
+					return;
+			}
 
 			//CD
 			// if (CastSelf("Recklessness",	() => Target.IsElite() && RecklessnessCD)) return;
@@ -108,7 +114,7 @@ namespace ReBot
 			//	actions+=/auto_attack
 			//	# This is mostly to prevent cooldowns from being accidentally used during movement.
 			//	actions+=/run_action_list,name=movement,if=movement.distance>5
-			if (Range (40, Target, 10)) {
+			if (Range (40, Target, 10) && Move) {
 				if (Movement ())
 					return;
 			}
@@ -149,17 +155,17 @@ namespace ReBot
 			}
 			//	actions+=/call_action_list,name=two_targets,if=active_enemies=2
 			if (ActiveEnemies (10) == 2) {
-				if (two_targets ())
+				if (TwoTargets ())
 					return;
 			}
 			//	actions+=/call_action_list,name=three_targets,if=active_enemies=3
 			if (ActiveEnemies (10) == 3) {
-				if (three_targets ())
+				if (ThreeTargets ())
 					return;
 			}
 			//	actions+=/call_action_list,name=aoe,if=active_enemies>3
 			if (ActiveEnemies (10) > 3) {
-				if (aoe ())
+				if (Aoe ())
 					return;
 			}
 
@@ -222,8 +228,10 @@ namespace ReBot
 			if (RagingBlow ())
 				return true;
 			//	actions.single_target+=/wait,sec=cooldown.bloodthirst.remains,if=cooldown.bloodthirst.remains<0.5&rage<50
-//	if (Cast ("Wild Strike", () => Rage >= 45 && Me.HasAura ("Enrage") && TargetHealth > 0.2))
-//		return;
+			if (HasSpell ("Bloodthirst") && Range (5) && Cooldown ("Bloodthirst") > 0 && Cooldown ("Bloodthirst") < 0.5 && Rage < 50) {
+				WaitBloodthirst = true;
+				return true;
+			}
 			//	actions.single_target+=/wild_strike,if=buff.enrage.up&target.health.pct>20
 			if (Me.HasAura ("Enrage") && Health () > 0.2) {
 				if (WildStrike ())
@@ -243,13 +251,15 @@ namespace ReBot
 					return true;
 			}
 			//	actions.single_target+=/bloodthirst
-			if (Bloodthirst ())
+			if (Bloodthirst ()) {
+				PrevBloodthirst = DateTime.Now;
 				return true;
+			}
 
 			return false;
 		}
 
-		public bool two_targets ()
+		public bool TwoTargets ()
 		{
 			//	actions.two_targets=bloodbath
 			if (Bloodbath ())
@@ -265,12 +275,14 @@ namespace ReBot
 					return true;
 			}
 			//	actions.two_targets+=/call_action_list,name=bladestorm
-			if (Action_bladestorm ())
+			if (ActionBladestorm ())
 				return true;
 			//	actions.two_targets+=/bloodthirst,if=buff.enrage.down|rage<40|buff.raging_blow.down
 			if (!Me.HasAura ("Enrage") || Rage < 40 || !Me.HasAura (("Raging Blow"))) {
-				if (Bloodthirst ())
+				if (Bloodthirst ()) {
+					PrevBloodthirst = DateTime.Now;
 					return true;
+				}
 			}
 			//	actions.two_targets+=/siegebreaker
 			if (Siegebreaker ())
@@ -297,8 +309,10 @@ namespace ReBot
 					return true;
 			}
 			//	actions.two_targets+=/bloodthirst
-			if (Bloodthirst ())
+			if (Bloodthirst ()) {
+				PrevBloodthirst = DateTime.Now;
 				return true;
+			}
 			//	actions.two_targets+=/whirlwind
 			if (Whirlwind ())
 				return true;
@@ -306,7 +320,7 @@ namespace ReBot
 			return false;
 		}
 
-		public bool three_targets ()
+		public bool ThreeTargets ()
 		{
 			//	actions.three_targets=bloodbath
 			if (Bloodbath ())
@@ -317,12 +331,14 @@ namespace ReBot
 					return true;
 			}
 			//	actions.three_targets+=/call_action_list,name=bladestorm
-			if (Action_bladestorm ())
+			if (ActionBladestorm ())
 				return true;
 			//	actions.three_targets+=/bloodthirst,if=buff.enrage.down|rage<50|buff.raging_blow.down
 			if (!Me.HasAura ("Enrage") || Rage < 50 || !Me.HasAura (("Raging Blow"))) {
-				if (Bloodthirst ())
+				if (Bloodthirst ()) {
+					PrevBloodthirst = DateTime.Now;
 					return true;
+				}
 			}
 			//	actions.three_targets+=/raging_blow,if=buff.meat_cleaver.stack>=2
 			if (AuraStackCount ("Meat Cleaver") >= 2) {
@@ -349,8 +365,10 @@ namespace ReBot
 					return true;
 			}
 			//	actions.three_targets+=/bloodthirst
-			if (Bloodthirst ())
+			if (Bloodthirst ()) {
+				PrevBloodthirst = DateTime.Now;
 				return true;
+			}
 			//	actions.three_targets+=/wild_strike,if=buff.bloodsurge.up
 			if (Me.HasAura ("Bloodsurge")) {
 				if (WildStrike ())
@@ -363,7 +381,7 @@ namespace ReBot
 			return false;
 		}
 
-		public bool aoe ()
+		public bool Aoe ()
 		{
 			//	actions.aoe=bloodbath
 			if (Bloodbath ())
@@ -380,8 +398,10 @@ namespace ReBot
 			}
 			//	actions.aoe+=/bloodthirst,if=buff.enrage.down|rage<50|buff.raging_blow.down
 			if (!Me.HasAura ("Enrage") || Rage < 50 || !Me.HasAura (("Raging Blow"))) {
-				if (Bloodthirst ())
+				if (Bloodthirst ()) {
+					PrevBloodthirst = DateTime.Now;
 					return true;
+				}
 			}
 			//	actions.aoe+=/raging_blow,if=buff.meat_cleaver.stack>=3
 			if (AuraStackCount ("Meat Cleaver") >= 3) {
@@ -389,7 +409,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.aoe+=/call_action_list,name=bladestorm
-			if (Action_bladestorm ())
+			if (ActionBladestorm ())
 				return true;
 			//	actions.aoe+=/whirlwind
 			if (WildStrike ())
@@ -408,8 +428,10 @@ namespace ReBot
 					return true;
 			}
 			//	actions.aoe+=/bloodthirst
-			if (Bloodthirst ())
+			if (Bloodthirst ()) {
+				PrevBloodthirst = DateTime.Now;
 				return true;
+			}
 			//	actions.aoe+=/wild_strike,if=buff.bloodsurge.up
 			if (Me.HasAura ("Bloodsurge")) {
 				if (WildStrike ())
@@ -423,25 +445,26 @@ namespace ReBot
 		{
 
 			//	actions.movement=heroic_leap
-			if (CastOnTerrain ("Heroic Leap", Target.Position, () => Range >= 8 && Range <= 40 && RunToEnemy))
+			if (HeroicLeap ())
 				return true;
 			//	actions.movement+=/charge,cycle_targets=1,if=debuff.charge.down
 			//	# If possible, charge a target that will give rage. Otherwise, just charge to get back in range.
 			//	actions.movement+=/charge
 			//	# May as well throw storm bolt if we can.
 			//	actions.movement+=/storm_bolt
-			if (Cast ("Storm Bolt", () => HasSpell ("Storm Bolt")))
+			if (StormBolt ())
 				return true;
 			//	actions.movement+=/heroic_throw
-			if (Cast ("Heroic Throw", () => Range >= 8 && Range <= 40))
+			if (HeroicThrow ())
 				return true;
 
 			return false;
 		}
 
-		public bool Action_bladestorm ()
+		public bool ActionBladestorm ()
 		{
 			//	actions.bladestorm=recklessness,sync=bladestorm,if=buff.enrage.remains>6&((talent.anger_management.enabled&raid_event.adds.in>45)|(!talent.anger_management.enabled&raid_event.adds.in>60)|!raid_event.adds.exists|active_enemies>desired_targets)
+//			if (Me.AuraTimeRemaining("Enrage") > 6 && ((HasSpell("Anger Management")) || (!HasSpell("Anger Management")) || ActiveEnemies(10) == 1))
 			//	actions.bladestorm+=/bladestorm,if=buff.enrage.remains>6&((talent.anger_management.enabled&raid_event.adds.in>45)|(!talent.anger_management.enabled&raid_event.adds.in>60)|!raid_event.adds.exists|active_enemies>desired_targets)
 		
 			return false;

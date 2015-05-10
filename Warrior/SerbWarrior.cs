@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using ReBot.API;
+using System.Linq;
 
 namespace ReBot
 {
@@ -21,6 +22,7 @@ namespace ReBot
 		public bool UseStance = true;
 
 		public bool InCombat;
+		public bool WaitBloodthirst;
 		public DateTime StartBattle;
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
@@ -267,6 +269,33 @@ namespace ReBot
 
 		public bool Interrupt ()
 		{
+			if (Usable ("Pummel")) {
+				CycleTarget = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (6, u) && u.RemainingCastTime > 0 && (u.Target == Me && !Me.HasAura ("Spell Reflect")) && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && Pummel (CycleTarget))
+					return true;
+			}
+			if (Usable ("Storm Bolt")) {
+				CycleTarget = Enemy.Where (u => u.IsCasting && !IsBoss (u) && Range (30, u) && u.RemainingCastTime > 0 && (u.Target == (UnitObject)Me && !Me.HasAura ("Spell Reflect")) && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && StormBolt (CycleTarget))
+					return true;
+			}
+
+			return false;
+		}
+
+		public bool Reflect ()
+		{
+			if (Usable ("Spell Reflection") && !HasGlobalCooldown ()) {
+				CycleTarget = Enemy.Where (u => u.IsCasting && u.RemainingCastTime > 0 && u.Target == Me && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && SpellReflection ())
+					return true;
+			}
+			if (Usable ("Mass Spell Reflection") && !HasGlobalCooldown ()) {
+				CycleTarget = Enemy.Where (u => u.IsCasting && u.RemainingCastTime > 0 && u.Target == Me && !Me.HasAura ("Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && MassSpellReflection ())
+					return true;
+			}
+
 			return false;
 		}
 
@@ -311,6 +340,21 @@ namespace ReBot
 		public bool BloodFury ()
 		{
 			return Usable ("Blood Fury") && Danger () && CS ("Blood Fury");
+		}
+
+		public bool MassSpellReflection ()
+		{
+			return Usable ("Mass Spell Reflection") && CS ("Mass Spell Reflection");
+		}
+
+		public bool SpellReflection ()
+		{
+			return Usable ("Spell Reflection") && CS ("Spell Reflection");
+		}
+
+		public bool DiebytheSword ()
+		{
+			return Usable ("Die by the Sword") && CS ("Die by the Sword");
 		}
 
 		public bool Berserking ()
@@ -509,6 +553,12 @@ namespace ReBot
 		{
 			u = u ?? Target;
 			return Usable ("Raging Blow") && Rage >= 10 && Range (5, u) && C ("Raging Blow", u);
+		}
+
+		public bool Pummel (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Pummel") && Range (5, u) && C ("Pummel", u);
 		}
 
 		public bool Whirlwind (UnitObject u = null)
