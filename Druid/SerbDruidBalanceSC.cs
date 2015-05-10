@@ -39,16 +39,16 @@ namespace ReBot
 			// actions.precombat+=/starfire
 
 			// Heal
-			if (Health () <= 0.75 && !Me.HasAura ("Rejuvenation")) {
-				if (Rejuvenation ())
+			if (Health (Me) <= 0.75 && !Me.HasAura ("Rejuvenation")) {
+				if (Rejuvenation (Me))
 					return true;
 			}
-			if (Health () <= 0.5 && !Me.IsMoving) {
-				if (HealingTouch ())
+			if (Health (Me) <= 0.5 && !Me.IsMoving) {
+				if (HealingTouch (Me))
 					return true;
 			}
 			if (Me.Auras.Any (x => x.IsDebuff && "Curse,Poison".Contains (x.DebuffType))) {
-				if (RemoveCorruption ())
+				if (RemoveCorruption (Me))
 					return true;
 			}
 
@@ -60,7 +60,6 @@ namespace ReBot
 
 			if (InCombat) {
 				InCombat = false;
-				return true;
 			}
 
 			return false;
@@ -82,7 +81,7 @@ namespace ReBot
 			}
 
 			// Heal
-			if (Health () < 0.9) {
+			if (Health (Me) < 0.9) {
 				if (Heal ())
 					return;
 			}
@@ -106,13 +105,13 @@ namespace ReBot
 					return;
 			}
 			// actions+=/call_action_list,name=single_target,if=active_enemies=1
-			if (EnemyInRange (40) == 1) {
+			if (ActiveEnemies (40) == 1) {
 				if (Single ())
 					return;
 			}
 			// actions+=/call_action_list,name=aoe,if=active_enemies>1
-			if (EnemyInRange (40) > 1) {
-				if (AOE_action ())
+			if (ActiveEnemies (40) > 1) {
+				if (AOEAction ())
 					return;
 			}
 		}
@@ -181,11 +180,8 @@ namespace ReBot
 			return false;
 		}
 
-		public bool AOE_action ()
+		public bool AOEAction ()
 		{
-			var targets = Adds;
-			targets.Add (Target);
-
 			// actions.aoe=celestial_alignment,if=lunar_max<8|target.time_to_die<20
 			if ((Direction == "moon" && Eclipse < -20) || TimeToDie (Target) < 20) {
 				if (Starfire ())
@@ -198,14 +194,12 @@ namespace ReBot
 			}
 			// actions.aoe+=/sunfire,cycle_targets=1,if=remains<8
 			if (Usable ("Sunfire") && Eclipse > 0) {
-				CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && x.AuraTimeRemaining ("Sunfire", true) < 8).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Sunfire (CycleTarget))
-						return true;
-				}
+				CycleTarget = Enemy.Where (x => Range (40, x) && x.AuraTimeRemaining ("Sunfire", true) < 8).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && Sunfire (CycleTarget))
+					return true;
 			}
 			// actions.aoe+=/starfall,if=!buff.starfall.up&active_enemies>2
-			if (UseStarFall && !Me.HasAura ("Starfall") && EnemyInRange (40) > 2) {
+			if (UseStarFall && !Me.HasAura ("Starfall") && ActiveEnemies (40) > 2) {
 				if (Starfall ())
 					return true;
 			}
@@ -216,27 +210,23 @@ namespace ReBot
 			}
 			// actions.aoe+=/moonfire,cycle_targets=1,if=remains<12
 			if (Usable ("Moonfire") && Eclipse <= 0) {
-				CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && x.AuraTimeRemaining ("Moonfire", true) < 12).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Moonfire ())
-						return true;
-				}
+				CycleTarget = Enemy.Where (x => Range (40, x) && x.AuraTimeRemaining ("Moonfire", true) < 12).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && Moonfire ())
+					return true;
 			}
 			// actions.aoe+=/stellar_flare,cycle_targets=1,if=remains<7
 			if (Usable ("Stellar Flare")) {
-				CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && x.AuraTimeRemaining ("Stellar Flare", true) < 7).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (StellarFlare ())
-						return true;
-				}
+				CycleTarget = Enemy.Where (x => Range (40, x) && x.AuraTimeRemaining ("Stellar Flare", true) < 7).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && StellarFlare ())
+					return true;
 			}
 			// actions.aoe+=/starsurge,if=buff.lunar_empowerment.down&eclipse_energy>20&active_enemies=2
-			if (!Me.HasAura ("Lunar Empowerment") && Eclipse > 20 && EnemyInRange (40) == 2) {
+			if (!Me.HasAura ("Lunar Empowerment") && Eclipse > 20 && ActiveEnemies (40) == 2) {
 				if (Starsurge ())
 					return true;
 			}
 			// actions.aoe+=/starsurge,if=buff.solar_empowerment.down&eclipse_energy<-40&active_enemies=2
-			if (!Me.HasAura ("Lunar Empowerment") && Eclipse < -40 && EnemyInRange (40) == 2) {
+			if (!Me.HasAura ("Lunar Empowerment") && Eclipse < -40 && ActiveEnemies (40) == 2) {
 				if (Starsurge ())
 					return true;
 			}

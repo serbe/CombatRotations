@@ -1,5 +1,6 @@
 ﻿using ReBot.API;
 using System.Linq;
+using System;
 
 namespace ReBot
 {
@@ -38,13 +39,19 @@ namespace ReBot
 					return true;
 			}
 
+			if (InCombat) {
+				InCombat = false;
+			}
+
 			return false;
 		}
 
 		public override void Combat ()
 		{
-			var targets = Adds;
-			targets.Add (Target);
+			if (!InCombat) {
+				InCombat = true;
+				StartBattle = DateTime.Now;
+			}
 
 			if (Interrupt ())
 				return;
@@ -53,7 +60,7 @@ namespace ReBot
 				return;
 			//	actions=auto_attack
 			//	actions+=/skull_bash
-			if (Range () > 6) {
+			if (Target.CombatRange > 6) {
 				if (SkullBash ())
 					return;
 			}
@@ -76,7 +83,7 @@ namespace ReBot
 			if (Health (Me) < 0.3 && !Me.HasAura ("Barkskin") && !Me.HasAura ("Savage Defense"))
 				BristlingFur ();
 			//	actions+=/maul,if=buff.tooth_and_claw.react&incoming_damage_1s
-			if (Me.HasAura ("Tooth and Claw") && (DamageTaken () / 10) > 0)
+			if (Me.HasAura ("Tooth and Claw") && DamageTaken (1000) > 0)
 				Maul ();
 			//	actions+=/berserk,if=buff.pulverize.remains>10
 			if (Me.AuraTimeRemaining ("Pulverize") > 10)
@@ -111,7 +118,7 @@ namespace ReBot
 			if (Me.AuraTimeRemaining ("Pulverize") <= 3.6)
 				Pulverize ();
 			//	actions+=/lacerate,if=talent.pulverize.enabled&buff.pulverize.remains<=(3-dot.lacerate.stack)*gcd&buff.berserk.down
-			if (HasSpell ("Pulverize") && Me.AuraTimeRemaining ("Pulverize") <= (3 - Target.GetAura ("Lacerate", true).StackCount) * 1.5 && !Me.HasAura ("Berserk")) {
+			if (HasSpell ("Pulverize") && Me.AuraTimeRemaining ("Pulverize") <= (3 - AuraStackCount ("Lacerate")) * 1.5 && !Me.HasAura ("Berserk")) {
 				if (Lacerate ())
 					return;
 			}
@@ -129,12 +136,10 @@ namespace ReBot
 					return;
 			}
 
-			if (EnemyInRange (10) > 1) {
-				CycleTarget = targets.Where (u => u.IsInLoS && Range (u) <= 8 && !u.HasAura ("Thrash")).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Thrash (CycleTarget))
-						return;
-				}
+			if (ActiveEnemies (10) > 1) {
+				CycleTarget = Enemy.Where (u => Range (8, u) && !u.HasAura ("Thrash")).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && Thrash (CycleTarget))
+					return;
 			}
 			//	actions+=/mangle
 			if (Mangle ())

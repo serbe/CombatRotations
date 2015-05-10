@@ -15,7 +15,6 @@ namespace ReBot
 		[JsonProperty ("Use moonfire")]
 		public bool UseMoonfire;
 
-
 		public double Sleep;
 		public string Skill;
 
@@ -50,16 +49,16 @@ namespace ReBot
 
 
 			// Heal
-			if (Health () <= 0.75 && !Me.HasAura ("Rejuvenation")) {
-				if (Rejuvenation ())
+			if (Health (Me) <= 0.75 && !Me.HasAura ("Rejuvenation")) {
+				if (Rejuvenation (Me))
 					return true;
 			}
-			if (Health () <= 0.5 && !Me.IsMoving) {
-				if (HealingTouch ())
+			if (Health (Me) <= 0.5 && !Me.IsMoving) {
+				if (HealingTouch (Me))
 					return true;
 			}
 			if (Me.Auras.Any (x => x.IsDebuff && "Curse,Poison".Contains (x.DebuffType))) {
-				if (RemoveCorruption ())
+				if (RemoveCorruption (Me))
 					return true;
 			}
 
@@ -73,7 +72,6 @@ namespace ReBot
 
 			if (InCombat) {
 				InCombat = false;
-				return true;
 			}
 
 			Sleep = 0;
@@ -89,10 +87,7 @@ namespace ReBot
 				StartBattle = DateTime.Now;
 			}
 
-			var targets = Adds;
-			targets.Add (Target);
-
-			if (Health () < 0.9) {
+			if (Health (Me) < 0.9) {
 				if (Heal ())
 					return;
 			}
@@ -185,11 +180,9 @@ namespace ReBot
 				//	# Keep Rip from falling off during execute range.
 				//	actions+=/ferocious_bite,cycle_targets=1,if=dot.rip.ticking&dot.rip.remains<3&target.health.pct<25
 				if (Usable ("Ferocious Bite") && ComboPoints > 0) {
-					CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && x.HasAura ("Rip", true) && x.AuraTimeRemaining ("Rip", true) < 3 && x.HealthFraction < 0.25).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null) {
-						if (FerociousBite (CycleTarget))
-							return;
-					}
+					CycleTarget = Enemy.Where (x => x.IsInCombatRangeAndLoS && x.HasAura ("Rip", true) && x.AuraTimeRemaining ("Rip", true) < 3 && Health (x) < 0.25).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null && FerociousBite (CycleTarget))
+						return;
 				}
 				//	actions+=/healing_touch,if=talent.bloodtalons.enabled&buff.predatory_swiftness.up&(combo_points>=4|buff.predatory_swiftness.remains<1.5)
 				if (HasSpell ("Bloodtalons") && Me.HasAura ("Predatory Swiftness") && (ComboPoints >= 4 || Me.AuraTimeRemaining ("Predatory Swiftness") < 1.5)) {
@@ -202,18 +195,16 @@ namespace ReBot
 						return;
 				}
 				//	actions+=/pool_resource,for_next=1
-				if (Usable ("Thrash") && Energy < 50 && !Me.HasAura ("Clearcasting") && Target.AuraTimeRemaining ("Thrash", true) + TimeToRegen (50) < 4.5 && EnemyInRange (8) >= 4) {
+				if (Usable ("Thrash") && Energy < 50 && !Me.HasAura ("Clearcasting") && Target.AuraTimeRemaining ("Thrash", true) + TimeToRegen (50) < 4.5 && ActiveEnemies (8) >= 4) {
 					Sleep = 50;
 					Skill = "Thrash";
 					return;
 				}
 				//	actions+=/thrash_cat,cycle_targets=1,if=remains<4.5&(active_enemies>=2&set_bonus.tier17_2pc|active_enemies>=4)
-				if (Usable ("Thrash") && EnemyInRange (8) >= 4) {
-					CycleTarget = targets.Where (x => x.IsInLoS && x.CombatRange <= 8 && x.AuraTimeRemaining ("Thrash", true) < 4.5).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null) {
-						if (Thrash (CycleTarget))
-							return;
-					}
+				if (Usable ("Thrash") && ActiveEnemies (8) >= 4) {
+					CycleTarget = Enemy.Where (x => Range (8, x) && x.AuraTimeRemaining ("Thrash", true) < 4.5).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null && Thrash (CycleTarget))
+						return;
 				}
 				//	actions+=/call_action_list,name=finisher,if=combo_points=5
 				if (ComboPoints == 5) {
@@ -231,18 +222,16 @@ namespace ReBot
 						return;
 				}
 				//	actions+=/pool_resource,for_next=1
-				if (Usable ("Thrash") && Energy < 50 && !Me.HasAura ("Clearcasting") && Target.AuraTimeRemaining ("Thrash", true) + TimeToRegen (50) < 4.5 && EnemyInRange (8) >= 2) {
+				if (Usable ("Thrash") && Energy < 50 && !Me.HasAura ("Clearcasting") && Target.AuraTimeRemaining ("Thrash", true) + TimeToRegen (50) < 4.5 && ActiveEnemies (8) >= 2) {
 					Sleep = 50;
 					Skill = "Thrash";
 					return;
 				}
 				//	actions+=/thrash_cat,cycle_targets=1,if=remains<4.5&active_enemies>=2
-				if (Usable ("Thrash") && EnemyInRange (8) >= 2) {
-					CycleTarget = targets.Where (x => x.IsInLoS && x.CombatRange <= 8 && x.AuraTimeRemaining ("Thrash", true) < 4.5).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null) {
-						if (Thrash (CycleTarget))
-							return;
-					}
+				if (Usable ("Thrash") && ActiveEnemies (8) >= 2) {
+					CycleTarget = Enemy.Where (x => Range (8, x) && x.AuraTimeRemaining ("Thrash", true) < 4.5).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null && Thrash (CycleTarget))
+						return;
 				}
 				//	actions+=/call_action_list,name=generator,if=combo_points<5
 				if (ComboPoints < 5) {
@@ -261,40 +250,29 @@ namespace ReBot
 
 		public bool Finishers ()
 		{
-			var targets = Adds;
-			targets.Add (Target);
-
 			//	actions.finisher=rip,cycle_targets=1,if=remains<2&target.time_to_die-remains>18&(target.health.pct>25|!dot.rip.ticking)
 			if (Usable ("Rip")) {
-				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Rip", true) < 2 && TimeToDie () - u.AuraTimeRemaining ("Rip", true) > 18 && (u.HealthFraction > 0.25 || !u.HasAura ("Rip", true))).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Rip (CycleTarget))
-						return true;
-				}
+				CycleTarget = Enemy.Where (u => Range (5, u) && u.AuraTimeRemaining ("Rip", true) < 2 && TimeToDie (u) - u.AuraTimeRemaining ("Rip", true) > 18 && (Health (u) > 0.25 || !u.HasAura ("Rip", true))).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && Rip (CycleTarget))
+					return true;
 			}		
 			//	actions.finisher=ferocious_bite,cycle_targets=1,max_energy=1,if=target.health.pct<25&dot.rip.ticking
 			if (Usable ("Ferocious Bite") && Energy >= 50) {
-				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && u.HealthFraction < 0.25 && u.HasAura ("Rip", true)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (FerociousBite (CycleTarget))
-						return true;
-				}
+				CycleTarget = Enemy.Where (u => Range (5, u) && Health (u) < 0.25 && u.HasAura ("Rip", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && FerociousBite (CycleTarget))
+					return true;
 			}
 			//	actions.finisher+=/rip,cycle_targets=1,if=remains<7.2&persistent_multiplier>dot.rip.pmultiplier&target.time_to_die-remains>18
 			if (Usable ("Rip") && HasEnergy (30)) {
-				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Rip", true) < 7.2 && TimeToDie (u) - u.AuraTimeRemaining ("Rip", true) > 18).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Rip (CycleTarget))
-						return true;
-				}
+				CycleTarget = Enemy.Where (u => Range (5, u) && u.AuraTimeRemaining ("Rip", true) < 7.2 && TimeToDie (u) - u.AuraTimeRemaining ("Rip", true) > 18).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && Rip (CycleTarget))
+					return true;
 			}
 			//	actions.finisher+=/rip,cycle_targets=1,if=remains<7.2&persistent_multiplier=dot.rip.pmultiplier&(energy.time_to_max<=1|!talent.bloodtalons.enabled)&target.time_to_die-remains>18
 			if (Usable ("Rip") && HasEnergy (30)) {
-				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Rip", true) < 7.2 && (EnergyTimeToMax <= 1 || !HasSpell ("Bloodtalons")) && TimeToDie (u) - u.AuraTimeRemaining ("Rip", true) > 18).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Rip (CycleTarget))
-						return true;
-				}
+				CycleTarget = Enemy.Where (u => Range (5, u) && u.AuraTimeRemaining ("Rip", true) < 7.2 && (EnergyTimeToMax <= 1 || !HasSpell ("Bloodtalons")) && TimeToDie (u) - u.AuraTimeRemaining ("Rip", true) > 18).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && Rip (CycleTarget))
+					return true;
 			}
 			//	actions.finisher+=/savage_roar,if=(energy.time_to_max<=1|buff.berserk.up|cooldown.tigers_fury.remains<3)&buff.savage_roar.remains<12.6
 			if (Usable ("SavageRoar") && (EnergyTimeToMax <= 1 || Me.HasAura ("Berserk") || Cooldown ("Tiger's Fury") < 3) && Me.AuraTimeRemaining ("Savage Roar") < 12.6) {
@@ -312,32 +290,23 @@ namespace ReBot
 
 		public bool Maintains ()
 		{
-			var targets = Adds;
-			targets.Add (Target);
-
 			// actions.maintain=rake,cycle_targets=1,if=remains<3&((target.time_to_die-remains>3&active_enemies<3)|target.time_to_die-remains>6)
 			if (Usable ("Rake") && HasEnergy (35)) {
-				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Rake", true) < 3 && ((TimeToDie (u) - u.AuraTimeRemaining ("Rake", true) > 3 && EnemyInRange (5) < 3) || TimeToDie (u) > 6)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Rake (CycleTarget))
-						return true;
-				}
+				CycleTarget = Enemy.Where (u => Range (5, u) && u.AuraTimeRemaining ("Rake", true) < 3 && ((TimeToDie (u) - u.AuraTimeRemaining ("Rake", true) > 3 && ActiveEnemies (5) < 3) || TimeToDie (u) > 6)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && Rake (CycleTarget))
+					return true;
 			}
 			// actions.maintain+=/rake,cycle_targets=1,if=remains<4.5&(persistent_multiplier>=dot.rake.pmultiplier|(talent.bloodtalons.enabled&(buff.bloodtalons.up|!buff.predatory_swiftness.up)))&((target.time_to_die-remains>3&active_enemies<3)|target.time_to_die-remains>6)
 			if (Usable ("Rake") && HasEnergy (35)) {
-				CycleTarget = targets.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Rake", true) < 4.5 && (HasSpell ("Bloodtalons") && (Me.HasAura ("Bloodtalons") || !Me.HasAura ("Predatory Swiftness"))) && ((TimeToDie (u) - u.AuraTimeRemaining ("Rake", true) > 3 && EnemyInRange (5) < 3) || TimeToDie (u) > 6)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Rake (CycleTarget))
-						return true;
-				}
+				CycleTarget = Enemy.Where (u => Range (5, u) && u.AuraTimeRemaining ("Rake", true) < 4.5 && (HasSpell ("Bloodtalons") && (Me.HasAura ("Bloodtalons") || !Me.HasAura ("Predatory Swiftness"))) && ((TimeToDie (u) - u.AuraTimeRemaining ("Rake", true) > 3 && ActiveEnemies (5) < 3) || TimeToDie (u) > 6)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && Rake (CycleTarget))
+					return true;
 			}
 			// actions.maintain+=/moonfire_cat,cycle_targets=1,if=remains<4.2&active_enemies<=5&target.time_to_die-remains>tick_time*5
-			if (UseMoonfire && Usable ("Moonfire") && EnemyInRange (40) <= 5) {
-				CycleTarget = targets.Where (u => u.IsInLoS && u.CombatRange <= 40 && u.AuraTimeRemaining ("Moonfire", true) < 4.2 && TimeToDie (u) > 20).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Moonfire (CycleTarget))
-						return true;
-				}
+			if (UseMoonfire && Usable ("Moonfire") && ActiveEnemies (40) <= 5) {
+				CycleTarget = Enemy.Where (u => Range (40, u) && u.AuraTimeRemaining ("Moonfire", true) < 4.2 && TimeToDie (u) > 20).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && Moonfire (CycleTarget))
+					return true;
 			}
 			// actions.maintain+=/rake,cycle_targets=1,if=persistent_multiplier>dot.rake.pmultiplier&active_enemies=1&((target.time_to_die-remains>3&active_enemies<3)|target.time_to_die-remains>6)
 
@@ -347,12 +316,12 @@ namespace ReBot
 		public bool Generators ()
 		{
 			//	actions.generator=swipe,if=active_enemies>=3
-			if (EnemyInRange (8) >= 3) {
+			if (ActiveEnemies (8) >= 3) {
 				if (Swipe ())
 					return true;
 			}
 			//	actions.generator+=/shred,if=active_enemies<3
-			if (EnemyInRange (8) < 3) {
+			if (ActiveEnemies (8) < 3) {
 				if (Shred ())
 					return true;
 			}
