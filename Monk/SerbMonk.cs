@@ -3,8 +3,8 @@ using System.Linq;
 using Newtonsoft.Json;
 using ReBot.API;
 using System;
-using System.Security.Cryptography;
 using Geometry;
+using System.Reflection;
 
 namespace ReBot
 {
@@ -23,9 +23,29 @@ namespace ReBot
 		public Int32 CrystalOfInsanityID = 86569;
 		public DateTime StartBattle;
 		public bool InCombat;
-		public UnitObject CycleTarget;
+		public UnitObject Unit;
+		public PlayerObject Player;
+		Random Rnd = new Random ();
 
 		// Get
+
+		public List<PlayerObject> Members {
+			get {
+				return Group.GetGroupMemberObjects ();
+			}
+		}
+
+		public PlayerObject[] GrWMe {
+			get {
+				return Group.GetGroupMemberObjects ().Concat (new[] { Me }).ToArray ();
+			}
+		}
+
+		public PlayerObject LowHp {
+			get {
+				return GrWMe.OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ((p => p.Health > 0));
+			}
+		}
 
 		public double EnergyRegen {
 			get {
@@ -46,6 +66,12 @@ namespace ReBot
 			return u.HealthFraction;
 		}
 
+		public double Mana (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return u.ManaFraction;
+		}
+
 		public int Chi {
 			get { return Me.GetPower (WoWPowerType.MonkLightForceChi); }
 		}
@@ -63,9 +89,7 @@ namespace ReBot
 
 		public double Cooldown (string s)
 		{ 
-			if (SpellCooldown (s) > 0)
-				return SpellCooldown (s);
-			return 0;
+			return SpellCooldown (s) > 0 ? SpellCooldown (s) : 0;
 		}
 
 		public int Energy { 
@@ -146,6 +170,28 @@ namespace ReBot
 			}
 		}
 
+		public PlayerObject Tank {
+			get {
+				return Group.GetGroupMemberObjects ().Where (p => !p.IsDead && p.IsTank).DefaultIfEmpty (null).FirstOrDefault ();
+			}
+		}
+
+		public UnitObject ZenSphereTarget {
+			get {
+				if (Me.Focus != null) {
+					if (Me.Focus.IsPlayer && !Me.Focus.IsDead && Range (40, Me.Focus) && !Me.Focus.HasAura ("Zen Sphere", true))
+						return Me.Focus;
+					return null;
+				}
+				if (Tank != null) {
+					if (!Tank.IsDead && Range (40, Tank) && !Tank.HasAura ("Zen Sphere", true))
+						return Tank;
+					return null;
+				}
+				return null;
+			}
+		}
+
 		// Check
 
 		public bool C (string s, UnitObject u = null)
@@ -174,10 +220,10 @@ namespace ReBot
 			return false;
 		}
 
-		public bool COTPD (string s, UnitObject u = null)
+		public bool COTPD (string s, UnitObject u = null, int p = 800)
 		{
 			u = u ?? Target;
-			if (CastOnTerrainPreventDouble (s, u.Position))
+			if (CastOnTerrainPreventDouble (s, u.Position, null, p))
 				return true;
 			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range");
 			return false;
@@ -263,6 +309,43 @@ namespace ReBot
 
 		// Combo
 
+		public bool MassDispel ()
+		{
+			if (Members.Count > 0) {
+				foreach (PlayerObject p in Members) {
+					if (p.Auras.Any (x => x.IsDebuff && "Magic,Poison,Disease".Contains (x.DebuffType)) && Detox (p))
+						return true;
+				}
+			}
+			if (Me.Auras.Any (x => x.IsDebuff && "Magic,Poison,Disease".Contains (x.DebuffType)) && Detox (Me))
+				return true;
+			return false;
+		}
+
+		public bool MassResurect ()
+		{
+			if (CurrentBotName == "Combat" && Members.Count > 0) {
+				Player = Members.FirstOrDefault (x => x.IsDead);
+				if (Player != null && Resuscitate (Player))
+					return true;
+			}
+			return false;
+		}
+
+		public bool Buff (UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (Usable ("Legacy of the Emperor")) {
+				if (Range (40, u) && u.AuraTimeRemaining ("Legacy of the Emperor") < 300 && !u.HasAura ("Blessing of Kings") && !u.HasAura ("Mark of the Wild") && !u.HasAura ("Legacy of the White Tiger") && C ("Legacy of the Emperor", u))
+					return true;
+			}
+			if (Usable ("Legacy of the White Tiger")) {
+				if (Range (40, u) && u.AuraTimeRemaining ("Legacy of the White Tiger") < 300 && u.AuraTimeRemaining ("Blessing of Kings") < 300 && C ("Legacy of the White Tiger", u))
+					return true;
+			}	
+			return false;
+		}
+
 		public bool Freedom ()
 		{
 			if (!Me.CanParticipateInCombat) {
@@ -280,32 +363,95 @@ namespace ReBot
 
 		public bool Interrupt ()
 		{
-			if (Usable ("Leg Sweep") || Usable ("Spear Hand Strike")) {
-				CycleTarget = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (5, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && (SpearHandStrike (CycleTarget) || LegSweep (CycleTarget)))
+			if (Usable ("Leg Sweep") || Usable ("Spear Hand Strike") || Usable ("Ring of Peace")) {
+				Unit = Enemy.Where (u => u.IsCastingAndInterruptible () && !IsBoss (u) && Range (5, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && (SpearHandStrike (Unit) || LegSweep (Unit) || RingofPeace (Unit)))
 					return true;
 			}
-
 			return false;
 		}
 
 		public bool AggroDizzyingHaze ()
 		{
 			if (Usable ("Dizzying Haze") && Healer != null) {
-				CycleTarget = Enemy.Where (u => u.InCombat && u.Target == Healer && Range (40, u, 8)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && DizzyingHaze (CycleTarget))
+				Unit = Enemy.Where (u => u.InCombat && u.Target == Healer && Range (40, u, 8)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && DizzyingHaze (Unit))
 					return true;
 			}
+			return false;
+		}
 
+		public bool HealStatue ()
+		{
+			if (!GrWMe.Any (p => p.InCombat))
+				return false;
+		
+			const int StatueEntryID = 60849;
+		
+			var statue = API.Units.FirstOrDefault (u => u.EntryID == StatueEntryID && u.CreatedByMe);
+			if (statue == null || statue.Distance > 35) {
+				foreach (var u in GrWMe.Where(p => p.IsTank || p == Me)) {
+					if (u != null && u.Distance < 20) {
+						var pos = u.Position;
+						for (int i = 0; i < 8; i++) {
+							var StatuePos = pos;
+							StatuePos.X += (float)Rnd.NextDouble () * 10 - 5;
+							StatuePos.Y += (float)Rnd.NextDouble () * 10 - 5;
+		
+							if (SummonJadeSerpentStatue (StatuePos))
+								return true;
+						}
+					}
+				}
+			}
 			return false;
 		}
 
 		// Spell
 
+		public bool SummonJadeSerpentStatue (Vector3 p)
+		{
+			if (Usable ("Crackling Jade Lightning") && Vector3.Distance (Me.Position, p) <= 40) {
+				if (CastOnTerrainPreventDouble ("Crackling Jade Lightning", p, null, 2000))
+					return true;
+				API.Print ("False CastOnTerrain Crackling Jade Lightning with " + Vector3.Distance (Me.Position, p) + " range");
+			}
+			return false;
+		}
+
+		public bool CracklingJadeLightning (UnitObject u = null)
+		{
+			u = u ?? Me;
+			return Usable ("Crackling Jade Lightning") && Range (40, u) && C ("Crackling Jade Lightning", u);
+		}
+
+		public bool ManaTea ()
+		{
+			return Usable ("Mana Tea") && AuraStackCount ("Mana Tea") > 0 && CS ("Mana Tea");
+		}
+
+		public bool RisingSunKick (UnitObject u = null)
+		{
+			u = u ?? Me;
+			return Usable ("Rising Sun Kick") && Chi >= 2 && Range (5, u) && C ("Rising Sun Kick", u);
+		}
+
+		public bool RingofPeace (UnitObject u = null)
+		{
+			u = u ?? Me;
+			return Usable ("Ring of Peace") && Range (40, u) && C ("Ring of Peace", u);
+		}
+
+		public bool Resuscitate (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Resuscitate") && Range (40, u) && C ("Resuscitate", u);
+		}
+
 		public bool DizzyingHaze (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Dizzying Haze") && Range (40, u) && COTPD ("Dizzying Haze", u);
+			return Usable ("Dizzying Haze") && Range (40, u) && COTPD ("Dizzying Haze", u, 2000);
 		}
 
 		public bool ChiBrew ()
@@ -341,12 +487,6 @@ namespace ReBot
 		public bool EveryManforHimself ()
 		{
 			return Usable ("Every Man for Himself") && CS ("Every Man for Himself");
-		}
-
-		public bool LegacyoftheWhiteTiger (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Usable ("Legacy of the White Tiger") && u.AuraTimeRemaining ("Legacy of the White Tiger") < 300 && u.AuraTimeRemaining ("Blessing of Kings") < 300 && C ("Legacy of the White Tiger", u);
 		}
 
 		public bool OxStance ()
@@ -405,7 +545,7 @@ namespace ReBot
 
 		public bool Guard ()
 		{
-			return Usable ("Guard") && Chi >= 2 && CS ("Guard");
+			return Usable ("Guard") && Chi >= 2 && SpellCharges ("Guard") > 0 && CS ("Guard");
 		}
 
 		public bool KegSmash (UnitObject u = null)
@@ -441,10 +581,10 @@ namespace ReBot
 		public bool ZenSphere (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Zen Sphere") && Range (40, u) && !u.HasAura ("Zen Sphere") && u.IsFriendly && C ("Zen Sphere", u);
+			return Usable ("Zen Sphere") && Range (40, u) && u.IsFriendly && C ("Zen Sphere", u);
 		}
 
-		public bool ExpelHarm (UnitObject u = null)
+		public bool ExpelHarm ()
 		{
 			return Usable ("Expel Harm") && (((Me.HasAura ("Stance of the Fierce Tiger") || Me.Specialization == Specialization.MonkBrewmaster) && (Energy >= 40 || (HasGlyph (159487) && Health (Me) < 0.35 && Energy >= 35))) || Me.HasAura ("Stance of the Wise Serpent")) && CS ("Expel Harm");
 		}
@@ -458,7 +598,7 @@ namespace ReBot
 		public bool TigerPalm (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Tiger Palm") && Range (40, u) && (Chi >= 1 || Me.HasAura ("Combo Breaker: Tiger Palm") || Me.Specialization == Specialization.MonkBrewmaster) && C ("Tiger Palm", u);
+			return Usable ("Tiger Palm") && Range (5, u) && (Chi >= 1 || Me.HasAura ("Combo Breaker: Tiger Palm") || Me.Specialization == Specialization.MonkBrewmaster) && C ("Tiger Palm", u);
 		}
 
 		public bool RushingJadeWind ()

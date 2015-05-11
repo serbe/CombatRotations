@@ -26,6 +26,9 @@ namespace ReBot
 
 		public override bool OutOfCombat ()
 		{
+			if (Buff (Me))
+				return true;
+
 			if (Me.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType))) {
 				if (Detox ())
 					return true;
@@ -35,9 +38,6 @@ namespace ReBot
 				if (TigersLust ())
 					return true;
 			}
-
-			if (LegacyoftheWhiteTiger (Me))
-				return true;
 
 			if (Health (Me) <= 0.8 && !Me.IsMoving) {
 				if (SurgingMist (Me))
@@ -244,8 +244,8 @@ namespace ReBot
 			//	actions.st+=/zen_sphere,cycle_targets=1,if=!dot.zen_sphere.ticking&energy.time_to_max>2&buff.serenity.down
 			if (TimeToMaxEnergy > 2 && !Me.HasAura ("Serenity")) {
 				var players = Group.GetGroupMemberObjects ();
-				CycleTarget = players.Where (p => !p.IsDead && Range (40, p) && !p.HasAura ("Zen Sphere", true) && Health (p) < 0.95).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && ZenSphere (CycleTarget))
+				Unit = players.Where (p => !p.IsDead && Range (40, p) && !p.HasAura ("Zen Sphere", true) && Health (p) < 0.95).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && ZenSphere (Unit))
 					return;
 				if (!Me.HasAura ("Zen Sphere", true)) {
 					if (ZenSphere (Me))
@@ -343,8 +343,8 @@ namespace ReBot
 			//	actions.aoe+=/zen_sphere,cycle_targets=1,if=!dot.zen_sphere.ticking&energy.time_to_max>2&buff.serenity.down
 			if (TimeToMaxEnergy > 2 && !Me.HasAura ("Serenity")) {
 				var players = Group.GetGroupMemberObjects ();
-				CycleTarget = players.Where (p => !p.IsDead && Range (40, p) && !p.HasAura ("Zen Sphere", true) && Health (p) < 0.95).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && ZenSphere (CycleTarget))
+				Unit = players.Where (p => !p.IsDead && Range (40, p) && !p.HasAura ("Zen Sphere", true) && Health (p) < 0.95).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && ZenSphere (Unit))
 					return;
 				if (!Me.HasAura ("Zen Sphere", true)) {
 					if (ZenSphere (Me))
@@ -369,8 +369,8 @@ namespace ReBot
 
 
 			if (InInstance && CombatRole == CombatRole.Tank) {
-				CycleTarget = Enemy.Where (u => u.Target != Me && Range (5, u)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && TigerPalm (CycleTarget))
+				Unit = Enemy.Where (u => u.Target != Me && Range (5, u)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && TigerPalm (Unit))
 					return;
 			}
 
