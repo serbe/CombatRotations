@@ -38,7 +38,7 @@ namespace ReBot
 			//actions.precombat=flask,type=greater_draenic_agility_flask
 			//actions.precombat+=/food,type=pickled_eel
 			//actions.precombat+=/mark_of_the_wild,if=!aura.str_agi_int.up
-			if (MarkoftheWild ())
+			if (MarkoftheWild (Me))
 				return true;
 			//actions.precombat+=/healing_touch,if=talent.bloodtalons.enabled
 			//actions.precombat+=/cat_form

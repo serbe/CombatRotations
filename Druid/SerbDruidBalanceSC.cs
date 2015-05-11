@@ -29,7 +29,7 @@ namespace ReBot
 			// actions.precombat=flask,type=greater_draenic_intellect_flask
 			// actions.precombat+=/food,type=sleeper_sushi
 			// actions.precombat+=/mark_of_the_wild,if=!aura.str_agi_int.up
-			if (MarkoftheWild ())
+			if (MarkoftheWild (Me))
 				return true;
 			// actions.precombat+=/moonkin_form
 			// # Snapshot raid buffed stats before combat begins and pre-potting is done.

@@ -30,6 +30,9 @@ namespace ReBot
 			//	# Snapshot raid buffed stats before combat begins and pre-potting is done.
 			//	actions.precombat+=/snapshot_stats
 			//	actions.precombat+=/cenarion_ward
+			if (MarkoftheWild (Me))
+				return true;
+
 			if (Health (Me) < 0.9) {
 				if (Rejuvenation (Me))
 					return true;
