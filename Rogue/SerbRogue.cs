@@ -2,8 +2,9 @@
 using System.Linq;
 using Newtonsoft.Json;
 using ReBot.API;
+using System.Collections.Generic;
 
-namespace ReBot.Rogue
+namespace ReBot
 {
 
 	public enum PoisonMaindHand
@@ -24,7 +25,7 @@ namespace ReBot.Rogue
 	{
 
 		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
-		public int Ttd = 10;
+		int Ttd = 10;
 		[JsonProperty ("Use range attack")]
 		public bool UseRangedAttack;
 		[JsonProperty ("Run to enemy")]
@@ -38,20 +39,41 @@ namespace ReBot.Rogue
 		[JsonProperty ("Use GCD")]
 		public bool Gcd = true;
 
-		public int BossHealthPercentage = 500;
-		public int BossLevelIncrease = 5;
+		const int BossHealthPercentage = 500;
+		const int BossLevelIncrease = 5;
 		public DateTime StartBattle;
 		public DateTime StartSleepTime;
 		public bool InCombat;
-		public UnitObject CycleTarget;
+		public UnitObject Unit;
 		public String RangedAttack = "Throw";
-		public Int32 OraliusWhisperingCrystalId = 118922;
-		public Int32 CrystalOfInsanityId = 86569;
+		const Int32 OraliusWhisperingCrystalID = 118922;
+		const Int32 CrystalOfInsanityID = 86569;
 
-		public bool IsSolo {
+		// Get
+
+		public List<UnitObject> Enemy {
 			get {
-				return Group.GetNumGroupMembers () != 1;
+				var targets = Adds;
+				targets.Add (Target);
+				return targets;
 			}
+		}
+
+		public int ActiveEnemies (int range)
+		{
+			int x = 0;
+			foreach (UnitObject u in API.CollectUnits(range)) {
+				if ((u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable && u.InCombat) {
+					x++;
+				}
+			}
+			return x;
+		}
+
+		public double TimeToDie (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return u.Health / Ttd;
 		}
 
 		public int EnergyMax {
@@ -65,68 +87,10 @@ namespace ReBot.Rogue
 			}
 		}
 
-		public bool InRaid {
-			get {
-				return API.MapInfo.Type == MapType.Raid;
-			}
-		}
-
-		public bool InInstance {
-			get {
-				return API.MapInfo.Type == MapType.Instance;
-			}
-		}
-
-		public bool InArena {
-			get {
-				return API.MapInfo.Type == MapType.Arena;
-			}
-		}
-
-		public bool InBg {
-			get {
-				return API.MapInfo.Type == MapType.PvP;
-			}
-		}
-
 		public double Health (UnitObject u = null)
 		{
-			u = u ?? Me;
+			u = u ?? Target;
 			return u.HealthFraction;
-		}
-
-		public bool IsBoss (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return(u.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || u.Level >= Me.Level + BossLevelIncrease;
-		}
-
-		public bool IsPlayer (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.IsPlayer;
-		}
-
-		public bool IsElite (UnitObject u = null)
-		{
-			u = u ?? Target;	
-			return u.IsElite ();
-		}
-
-		public bool IsInEnrage (UnitObject o = null)
-		{
-			o = o ?? Target;
-			if (o.HasAura ("Enrage") || o.HasAura ("Berserker Rage") || o.HasAura ("Demonic Enrage") || o.HasAura ("Aspect of Thekal") || o.HasAura ("Charge Rage") || o.HasAura ("Electric Spur") || o.HasAura ("Cornered and Enraged!") || o.HasAura ("Draconic Rage") || o.HasAura ("Brood Rage") || o.HasAura ("Determination") || o.HasAura ("Charged Fists") || o.HasAura ("Beatdown") || o.HasAura ("Consuming Bite") || o.HasAura ("Delirious") || o.HasAura ("Angry") || o.HasAura ("Blood Rage") || o.HasAura ("Berserking Howl") || o.HasAura ("Bloody Rage") || o.HasAura ("Brewrific") || o.HasAura ("Desperate Rage") || o.HasAura ("Blood Crazed") || o.HasAura ("Combat Momentum") || o.HasAura ("Dire Rage") || o.HasAura ("Dominate Slave") || o.HasAura ("Blackrock Rabies") || o.HasAura ("Burning Rage") || o.HasAura ("Bloodletting Howl"))
-				return true;
-			return false;
-		}
-
-		public bool IsNotForDamage (UnitObject o = null)
-		{
-			o = o ?? Target;
-			if (o.HasAura ("Fear") || o.HasAura ("Polymorph") || o.HasAura ("Gouge") || o.HasAura ("Paralysis") || o.HasAura ("Blind") || o.HasAura ("Hex"))
-				return true;
-			return false;
 		}
 
 		public int Energy {
@@ -170,9 +134,28 @@ namespace ReBot.Rogue
 
 		public double TimeToRegen (double e)
 		{ 
-			if (e > Energy)
-				return (e - Energy) / EnergyRegen;
-			return 0;
+			return e > Energy ? (e - Energy) / EnergyRegen : 0;
+		}
+
+		public int AmbushCost {
+			get {
+				int cost = 60;
+				if (HasSpell ("Shadow Focus"))
+					cost = 15;
+				if (HasSpell ("Shadow Dance") && Me.HasAura ("Shadow Dance"))
+					cost = 40;
+				return cost;
+			}
+		}
+
+		public double Cooldown (string s)
+		{ 
+			return SpellCooldown (s) < 0 ? 0 : SpellCooldown (s);
+		}
+
+		public double CooldownById (Int32 i)
+		{ 
+			return SpellCooldown (i) < 0 ? 0 : SpellCooldown (i);
 		}
 
 		public double TimeToStartBattle {
@@ -181,15 +164,139 @@ namespace ReBot.Rogue
 			}
 		}
 
-		public int EnemyInRange (int range)
+		public double Cost (double i)
 		{
-			int x = 0;
-			foreach (UnitObject mob in API.CollectUnits(range)) {
-				if ((mob.IsEnemy || Me.Target == mob) && !mob.IsDead && mob.IsAttackable) {
-					x++;
-				}
+			if (Me.HasAura ("Shadow Focus"))
+				i = Math.Floor (i * 0.25);
+			return i;
+		}
+
+		// Check
+
+		public bool C (string s, UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (Cast (s, u))
+				return true;
+			API.Print ("False Cast " + s + " with " + u.CombatRange + " range");
+			return false;
+		}
+
+		public bool CPD (string s, UnitObject u = null, int d = 800)
+		{
+			u = u ?? Target;
+			if (CastPreventDouble (s, null, u, d))
+				return true;
+			API.Print ("False CastPreventDouble " + s + " with " + u.CombatRange + " range " + d + " delay");
+			return false;
+		}
+
+		public bool CS (string s)
+		{
+			if (CastSelf (s))
+				return true;
+			API.Print ("False CastSelf " + s);
+			return false;
+		}
+
+		public bool COT (string s, UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (CastOnTerrain (s, u.Position))
+				return true;
+			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range");
+			return false;
+		}
+
+		public bool COTPD (string s, UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (CastOnTerrainPreventDouble (s, u.Position))
+				return true;
+			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range");
+			return false;
+		}
+
+		public bool Range (int r, UnitObject u = null, int l = 0)
+		{
+			u = u ?? Target;
+			if (l != 0)
+				return u.IsInLoS && u.CombatRange <= r && u.CombatRange >= l;
+			return u.IsInLoS && u.CombatRange <= r;
+		}
+
+		public bool Danger (UnitObject u = null, int r = 0, int e = 2)
+		{
+			u = u ?? Target;
+			if (r != 0)
+				return Range (r, u) && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
+			return u.IsInCombatRangeAndLoS && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
+		}
+
+		public bool DangerBoss (UnitObject u = null, int r = 0, int e = 6)
+		{
+			u = u ?? Target;
+			if (r != 0)
+				return Range (r, u) && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e);
+			return u.IsInCombatRangeAndLoS && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e);
+		}
+
+		public bool InRaid {
+			get {
+				return API.MapInfo.Type == MapType.Raid;
 			}
-			return x;
+		}
+
+		public bool InInstance {
+			get {
+				return API.MapInfo.Type == MapType.Instance;
+			}
+		}
+
+		public bool InArena {
+			get {
+				return API.MapInfo.Type == MapType.Arena;
+			}
+		}
+
+		public bool InBg {
+			get {
+				return API.MapInfo.Type == MapType.PvP;
+			}
+		}
+
+		public bool IsBoss (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return(u.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || u.Level >= Me.Level + BossLevelIncrease;
+		}
+
+		public bool IsPlayer (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return u.IsPlayer;
+		}
+
+		public bool IsElite (UnitObject u = null)
+		{
+			u = u ?? Target;	
+			return u.IsElite ();
+		}
+
+		public bool IsInEnrage (UnitObject o = null)
+		{
+			o = o ?? Target;
+			if (o.HasAura ("Enrage") || o.HasAura ("Berserker Rage") || o.HasAura ("Demonic Enrage") || o.HasAura ("Aspect of Thekal") || o.HasAura ("Charge Rage") || o.HasAura ("Electric Spur") || o.HasAura ("Cornered and Enraged!") || o.HasAura ("Draconic Rage") || o.HasAura ("Brood Rage") || o.HasAura ("Determination") || o.HasAura ("Charged Fists") || o.HasAura ("Beatdown") || o.HasAura ("Consuming Bite") || o.HasAura ("Delirious") || o.HasAura ("Angry") || o.HasAura ("Blood Rage") || o.HasAura ("Berserking Howl") || o.HasAura ("Bloody Rage") || o.HasAura ("Brewrific") || o.HasAura ("Desperate Rage") || o.HasAura ("Blood Crazed") || o.HasAura ("Combat Momentum") || o.HasAura ("Dire Rage") || o.HasAura ("Dominate Slave") || o.HasAura ("Blackrock Rabies") || o.HasAura ("Burning Rage") || o.HasAura ("Bloodletting Howl"))
+				return true;
+			return false;
+		}
+
+		public bool IsNotForDamage (UnitObject o = null)
+		{
+			o = o ?? Target;
+			if (o.HasAura ("Fear") || o.HasAura ("Polymorph") || o.HasAura ("Gouge") || o.HasAura ("Paralysis") || o.HasAura ("Blind") || o.HasAura ("Hex"))
+				return true;
+			return false;
 		}
 
 		public bool IncapacitatedInRange (int range)
@@ -201,16 +308,6 @@ namespace ReBot.Rogue
 				}
 			}
 			return x > 0;
-		}
-
-		public double Cooldown (string s)
-		{ 
-			return SpellCooldown (s) < 0 ? 0 : SpellCooldown (s);
-		}
-
-		public double CooldownById (Int32 i)
-		{ 
-			return SpellCooldown (i) < 0 ? 0 : SpellCooldown (i);
 		}
 
 		public bool Usable (string s, double d = 0)
@@ -226,24 +323,6 @@ namespace ReBot.Rogue
 			}
 		}
 
-		public int AmbushCost {
-			get {
-				int cost = 60;
-				if (HasSpell ("Shadow Focus"))
-					cost = 15;
-				if (HasSpell ("Shadow Dance") && Me.HasAura ("Shadow Dance"))
-					cost = 40;
-				return cost;
-			}
-		}
-
-		public double Cost (double i)
-		{
-			if (Me.HasAura ("Shadow Focus"))
-				i = Math.Floor (i * 0.25);
-			return i;
-		}
-
 		public bool HasCost (double i)
 		{
 			if (Me.HasAura ("Shadow Focus"))
@@ -251,87 +330,44 @@ namespace ReBot.Rogue
 			return Energy >= i;
 		}
 
-		public double TimeToDie (UnitObject o)
-		{
-			if (o != null)
-				return o.Health / Ttd;
-			return 0;
-		}
+		// Combo
 
 		public bool Interrupt ()
 		{
-			var targets = Adds;
-			targets.Add (Target);
-
 			if (Usable ("Kick")) {
-				if (EnemyInRange (6) > 1 && Multitarget) {
-					CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null) {
-						if (Kick (CycleTarget))
-							return true;
-					}
-				} else if (Target.IsCastingAndInterruptible () && Target.IsInCombatRangeAndLoS && Target.RemainingCastTime > 0)
+				if (ActiveEnemies (6) > 1 && Multitarget) {
+					Unit = Enemy.Where (u => Range (5, u) && u.IsCastingAndInterruptible () && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null && Kick (Unit))
+						return true;
+				} else if (Target.IsCastingAndInterruptible () && Range (5, Target) && Target.RemainingCastTime > 0)
 				if (Kick (Target))
 					return true;
 			}
 			if (Usable ("Deadly Throw") && (ComboPoints == 5 || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") > 0))) {
-				if (EnemyInRange (6) > 1 && Multitarget) {
-					CycleTarget = targets.Where (x => x.IsInLoS && x.CombatRange <= 30 && x.IsCasting && !IsBoss (x) && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null) {
-						if (DeadlyThrow (CycleTarget))
-							return true;
-					}
-				} else if (Target.IsCasting && Target.IsInLoS && Target.CombatRange <= 30 && !IsBoss (Target) && Target.RemainingCastTime > 0)
+				if (ActiveEnemies (6) > 1 && Multitarget) {
+					Unit = Enemy.Where (u => Range (30, u) && u.IsCasting && !IsBoss (u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null && DeadlyThrow (Unit))
+						return true;
+				} else if (Target.IsCasting && Range (30, Target) && !IsBoss (Target) && Target.RemainingCastTime > 0)
 				if (DeadlyThrow (Target))
 					return true;
 			}
 			if (Usable ("Gouge") && (InArena || InBg) && Multitarget) {
-				CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && x.IsCasting && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Gouge (CycleTarget))
-						return true;
-				}
+				Unit = Enemy.Where (u => Range (5, u) && u.IsCasting && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && Gouge (Unit))
+					return true;
 			}
 
 			return false;
 		}
 
-		public bool Kick (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Kick", () => Usable ("Kick") && u.IsInLoS && u.CombatRange <= 5, u);
-		}
-
-		public bool Shiv (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Shiv", () => Usable ("Shiv") && HasCost (20) && u.IsInLoS && u.CombatRange <= 5, u);
-		}
-
-		public  bool DeadlyThrow (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Deadly Throw", () => Usable ("Deadly Throw") && HasCost (35) && u.IsInLoS && u.CombatRange <= 30, u);
-		}
-
-		public  bool Gouge (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Gouge", () => Usable ("Gouge") && HasCost (45) && u.IsInLoS && u.CombatRange <= 5, u);
-		}
-
 		public  bool UnEnrage ()
 		{
-			var targets = Adds;
-			targets.Add (Target);
-
 			if (HasSpell ("Shiv") && Cooldown ("Shiv") == 0 && HasCost (20)) {
-				if (EnemyInRange (6) > 1 && Multitarget) {
-					CycleTarget = targets.Where (x => x.IsInLoS && x.CombatRange <= 5 && IsInEnrage (x) && !IsBoss (x)).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null) {
-						if (Shiv (CycleTarget))
-							return true;
-					}
+				if (ActiveEnemies (6) > 1 && Multitarget) {
+					Unit = Enemy.Where (u => Range (5, u) && IsInEnrage (u) && !IsBoss (u)).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null && Shiv (Unit))
+						return true;
 				} else if (!IsBoss () && IsInEnrage ()) {
 					if (Shiv ())
 						return true;
@@ -340,276 +376,9 @@ namespace ReBot.Rogue
 			return false;
 		}
 
-		public bool MainHandPoison (PoisonMaindHand mH)
-		{
-			return HasSpell ((int)mH) && CastSelfPreventDouble ((int)mH, () => !Me.HasAura ((int)mH) || Me.AuraTimeRemaining ((int)mH) < 300);
-		}
-
-		public bool OffHandPoison (PoisonOffHand oH)
-		{
-			return HasSpell ((int)oH) && CastSelfPreventDouble ((int)oH, () => !Me.HasAura ((int)oH) || Me.AuraTimeRemaining ((int)oH) < 300);
-		}
-
-		public bool Stealth ()
-		{
-			return CastSelf ("Stealth", () => Usable ("Stealth") && !Me.HasAura ("Vanish") && !MeInStealth);
-		}
-
-		public bool CloakofShadows ()
-		{
-			return CastSelf ("Cloak of Shadows", () => Usable ("Cloak of Shadows"));
-		}
-
-		public bool CombatReadiness ()
-		{
-			return CastSelf ("Combat Readiness", () => Usable ("Combat Readiness"));
-		}
-
-		public bool Evasion ()
-		{
-			return CastSelf ("Evasion", () => Usable ("Evasion"));
-		}
-
-		public bool Ambush (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Ambush", () => Energy >= AmbushCost && (Me.HasAura ("Vanish") || MeInStealth) && u.IsInLoS && (u.CombatRange <= 5 || (HasGlyph (56813) && u.CombatRange <= 10) || (HasSpell ("Cloak and Dagger") && u.CombatRange <= 40)), u);
-		}
-
-		public bool Recuperate ()
-		{
-			return Cast ("Recuperate", () => HasCost (30) && ComboPoints > 0 && !Me.HasAura ("Recuperate"));
-		}
-
-		public bool BurstofSpeed ()
-		{
-			return CastSelf ("Burst of Speed", () => Usable ("Burst of Speed") && !Me.HasAura ("Sprint") && !Me.HasAura ("Burst of Speed") && HasCost (30));
-		}
-
-		public bool Preparation ()
-		{
-			return CastSelf ("Preparation", () => Usable ("Preparation"));
-		}
-
-		public bool BloodFury (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return CastSelf ("BloodFury", () => Usable ("Blood Fury") && (IsElite (u) || IsPlayer (u) || EnemyInRange (10) > 2) && u.IsInLoS && u.CombatRange <= 5);
-		}
-
-		public bool Berserking (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return CastSelf ("Berserking", () => Usable ("Berserking") && (IsElite (u) || IsPlayer (u) || EnemyInRange (10) > 2) && u.IsInLoS && u.CombatRange <= 5);
-		}
-
-		public bool ArcaneTorrent (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && (IsElite (u) || IsPlayer (u) || EnemyInRange (10) > 2) && u.IsInLoS && u.CombatRange <= 5);
-		}
-
-		public bool BladeFlurry ()
-		{
-			return CastSelf ("Blade Flurry", () => Usable ("Blade Flurry"));
-		}
-
-		public bool ShadowReflection (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Shadow Reflection", () => Usable ("Shadow Reflection") && u.IsInLoS && u.CombatRange <= 20 && (IsElite (u) || IsPlayer (u) || EnemyInRange (10) > 2));
-		}
-
-		public bool Vanish ()
-		{
-			return CastSelf ("Vanish", () => Usable ("Vanish") && !MeInStealth);
-		}
-
-		public bool SliceandDice ()
-		{
-			return Cast ("Slice and Dice", () => HasCost (25) && ComboPoints > 0);
-		}
-
-		public bool MarkedforDeath (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Marked for Death", () => Usable ("Marked for Death") && u.IsInLoS && u.CombatRange <= 30, u);
-		}
-
-		public bool AdrenalineRush (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return CastSelf ("Adrenaline Rush", () => Usable ("Adrenaline Rush") && (IsPlayer (u) || IsElite (u) || EnemyInRange (10) > 2) && u.IsInLoS && u.CombatRange <= 5);
-		}
-
-		public bool KillingSpree (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Killing Spree", () => Usable ("Killing Spree") && (IsPlayer (u) || IsElite (u) || EnemyInRange (10) > 2) && u.IsInLoS && u.CombatRange <= 10, u);
-		}
-
-		public bool RevealingStrike (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Revealing Strike", () => Usable ("Revealing Strike") && HasCost (40) && u.IsInLoS && u.CombatRange <= 5, u);
-		}
-
-		public bool SinisterStrike (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Sinister Strike", () => Usable ("Sinister Strike") && HasCost (50) && u.IsInLoS && u.CombatRange <= 5, u);
-		}
-
-		public bool DeathfromAbove (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Death from Above", () => Usable ("Death from Above") && HasCost (50) && u.IsInLoS && u.CombatRange <= 15 && ComboPoints > 0, u);
-		}
-
-		public bool Eviscerate (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Eviscerate", () => Usable ("Eviscerate") && HasCost (35) && ComboPoints > 0 && u.IsInLoS && u.CombatRange <= 5, u);
-		}
-
-		public bool KidneyShot (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Kidney Shot", () => Usable ("Kidney Shot") && HasCost (25) && ComboPoints > 0 && !Me.HasAura ("Vanish") && !MeInStealth && u.IsInLoS && u.CombatRange <= 5, u);
-		}
-
-		public bool CrimsonTempest (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Crimson Tempest", () => Usable ("Crimson Tempest") && HasCost (35) && ComboPoints > 0 && u.IsInLoS && u.CombatRange <= 5, u);
-		}
-
-		public bool Shadowstep (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Shadowstep", () => Usable ("Shadowstep") && u.IsInLoS && u.CombatRange <= 25, u);
-		}
-
-		public bool Sprint ()
-		{
-			return CastSelf ("Sprint", () => Usable ("Sprint"));
-		}
-
-		public bool Healthstone ()
-		{
-			if (API.HasItem (5512) && API.ItemCooldown (5512) == 0)
-				return API.UseItem (5512);
-			return false;
-		}
-
-		public bool CrystalOfInsanity ()
-		{
-			if (!InArena && API.HasItem (CrystalOfInsanityId) && !HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityId) == 0)
-				return (API.UseItem (CrystalOfInsanityId));
-			return false;
-		}
-
-		public bool OraliusWhisperingCrystal ()
-		{
-			if (API.HasItem (OraliusWhisperingCrystalId) && !HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalId) == 0)
-				return API.UseItem (OraliusWhisperingCrystalId);
-			return false;
-		}
-
-		public bool TricksoftheTrade ()
-		{
-			if (Usable ("Tricks of the Trade")) {
-				CycleTarget = Group.GetGroupMemberObjects ().Where (x => !x.IsDead && x.IsInLoS && x.CombatRange < 100 && x.IsTank).OrderBy (x => Health (x)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Cast ("Tricks of the Trade", CycleTarget, () => CycleTarget != null))
-					return true;
-			}
-			return false;
-		}
-
-		public bool FanofKnives ()
-		{
-			return Cast ("Fan of Knives", () => Usable ("Fan of Knives") && HasCost (35));
-		}
-
-		public bool Backstab (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Backstab", () => Usable ("Backstab") && HasCost (35) && Me.IsNotInFront (u) && u.IsInLoS && u.CombatRange <= 5, u);
-		}
-
-		public bool Hemorrhage (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Hemorrhage", () => Usable ("Hemorrhage") && HasCost (30) && u.IsInLoS && u.CombatRange <= 5, u);
-		}
-
-		public bool ShurikenToss ()
-		{
-			return Cast ("Shuriken Toss", () => Usable ("Shuriken Toss") && HasCost (40) && Target.IsInLoS && Target.CombatRange > 10 && Target.CombatRange <= 30);
-		}
-
-		public  bool Rupture (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Rupture", () => Usable ("Rupture") && HasCost (25) && u.IsInLoS && u.CombatRange <= 5, u);
-		}
-
 		public  bool Freedom ()
 		{
 			return WilloftheForsaken () || EveryManforHimself ();
-		}
-
-		public  bool WilloftheForsaken ()
-		{
-			return CastSelf ("Will of the Forsaken", () => Usable ("Will of the Forsaken"));
-		}
-
-		public  bool EveryManforHimself ()
-		{
-			return CastSelf ("Every Man for Himself", () => Usable ("Every Man for Himself"));
-		}
-
-		public  bool SmokeBomb ()
-		{
-			return CastSelf ("Smoke Bomb", () => Usable ("Smoke Bomb"));
-		}
-
-		public  bool Premeditation ()
-		{
-			return CastSelf ("Premeditation", () => Usable ("Premeditation") && MeInStealth);
-		}
-
-		public  bool Feint ()
-		{
-			return CastSelf ("Feint", () => Usable ("Feint") && HasCost (20) && !Me.HasAura ("Feint"));
-		}
-
-		public  bool CheapShot (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Cheap Shot", () => Usable ("Cheap Shot") && HasCost (40) && MeInStealth && u.IsInLoS && (u.CombatRange <= 5 || (HasSpell ("Cloak and Dagger") && u.CombatRange <= 40)), u);
-		}
-
-		public  bool Blind (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Blind", () => Usable ("Blind") && HasCost (15) && u.IsInLoS && u.CombatRange <= 5, u);
-		}
-
-		public  bool ShadowDance ()
-		{
-			return CastSelf ("Shadow Dance", () => Usable ("Shadow Dance"));
-		}
-
-		public  bool Garrote (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Garrote", () => Usable ("Garrote") && HasCost (45) && u.IsInLoS && (u.CombatRange <= 5 || (HasSpell ("Cloak and Dagger") && u.CombatRange <= 40)), u);
-		}
-
-		public  bool Shadowmeld ()
-		{
-			return CastSelf ("Shadowmeld", () => Usable ("Shadowmeld"));
 		}
 
 		public  bool CastSpell (String s)
@@ -629,64 +398,35 @@ namespace ReBot.Rogue
 			return false;
 		}
 
-		public bool Mutilate (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Mutilate", () => Usable ("Mutilate") && HasCost (55) && u.IsInLoS && u.CombatRange <= 5, u);
-		}
-
-		public  bool Vendetta (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Vendetta", () => Usable ("Vendetta") && (IsPlayer (u) || IsElite (u)) && u.IsInLoS && u.CombatRange <= 5, u);
-		}
-
-		public  bool Envenom (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Envenom", () => Usable ("Envenom") && HasCost (35) && ComboPoints > 0 && u.IsInLoS && u.CombatRange <= 5, u);
-		}
-
-		public bool Dispatch (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Cast ("Dispatch", () => Usable ("Dispatch") && ((HasCost (30) && Health (u) < 0.35) || Me.HasAura ("Blindside")) && u.IsInLoS && u.CombatRange <= 5, u);
-		}
-
 		public bool Heal ()
 		{
-			var targets = Adds;
-			targets.Add (Target);
-
-			if ((!InRaid && !InInstance && Health () < 0.9) || (!InRaid && Health () < 0.3)) {
-				if (Recuperate ())
+			if ((!InRaid && !InInstance && Health (Me) < 0.9) || (!InRaid && Health (Me) < 0.3)) {
+				if (ComboPoints > 0 && Recuperate ())
 					return true;
 			}
-			if (Health () < 0.6 && Me.Auras.Any (x => x.IsDebuff && x.DebuffType.Contains ("magic")))
+			if (Health (Me) < 0.6 && Me.Auras.Any (a => a.IsDebuff && a.DebuffType.Contains ("magic")))
 				CloakofShadows ();
-			if (Health () < 0.65)
+			if (Health (Me) < 0.65)
 				CombatReadiness ();
-			if (Health () < 0.4)
+			if (Health (Me) < 0.4)
 				Evasion ();
-			if (Health () < 0.45) {
+			if (Health (Me) < 0.45) {
 				if (Healthstone ())
 					return true;
 			}
-			if (!Me.IsMoving && Health () < 0.5) {
+			if (!Me.IsMoving && Health (Me) < 0.5) {
 				if (SmokeBomb ())
 					return true;
 			}
 			if (Usable ("Feint")) {
-				if ((InArena || InBg) && Health () < 0.7) {
+				if ((InArena || InBg) && Health (Me) < 0.7) {
 					if (Feint ())
 						return true;
 				}
-				if (Health () < 0.8 && (InRaid || InInstance)) {
-					var useFeint = targets.Where (x => IsBoss (x) && x.CombatRange <= 30 && x.IsCasting && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (useFeint != null) {
-						if (Feint ())
-							return true;
-					}
+				if (Health (Me) < 0.8 && (InRaid || InInstance)) {
+					var useFeint = Enemy.Where (u => IsBoss (u) && Range (30, u) && u.IsCasting && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (useFeint != null && Feint ())
+						return true;
 				}
 				if (IsBoss (Target) && Target.IsCasting && Target.RemainingCastTime > 0) {
 					if (Feint ())
@@ -699,43 +439,38 @@ namespace ReBot.Rogue
 
 		public bool Cc ()
 		{
+			
 			if (Target.CanParticipateInCombat) {
 				if (CheapShot ())
 					return true;
 			}
 
-			if (InArena || InBg) {
-				if (Usable ("Gouge") && EnemyInRange (8) == 2 && Multitarget) {
-					CycleTarget = API.Players.Where (p => p.IsPlayer && p.IsEnemy && !p.IsDead && p.IsInCombatRangeAndLoS && p.CanParticipateInCombat && Target != p).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null) {
-						if (Gouge (CycleTarget))
+			if (!Me.HasAura ("Blade Flurry")) {
+				if (InArena || InBg) {
+					if (Usable ("Gouge") && ActiveEnemies (8) == 2 && Multitarget) {
+						Unit = API.Players.Where (p => p.IsPlayer && p.IsEnemy && !p.IsDead && Range (5, p) && p.CanParticipateInCombat && p != Target).DefaultIfEmpty (null).FirstOrDefault ();
+						if (Unit != null && Gouge (Unit))
 							return true;
 					}
-				}
 
-				if (Usable ("Blind") && EnemyInRange (8) == 2 && Multitarget) {
-					CycleTarget = API.Players.Where (p => p.IsPlayer && p.IsEnemy && !p.IsDead && p.IsInLoS && p.CombatRange <= 15 && p.CanParticipateInCombat && Target != p).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null) {
-						if (Blind (CycleTarget))
+					if (Usable ("Blind") && ActiveEnemies (8) == 2 && Multitarget) {
+						Unit = API.Players.Where (p => p.IsPlayer && p.IsEnemy && !p.IsDead && p.IsInLoS && p.CombatRange <= 15 && p.CanParticipateInCombat && p != Target).DefaultIfEmpty (null).FirstOrDefault ();
+						if (Unit != null && Blind (Unit))
 							return true;
 					}
-				}
-			} else {
-				if (!InRaid && Usable ("Gouge") && EnemyInRange (8) == 2 && Multitarget) {
-					CycleTarget = Adds.Where (x => x.IsInCombatRangeAndLoS && x.CanParticipateInCombat && Target != x).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null) {
-						if (Gouge (CycleTarget))
+				} else {
+					if (!InRaid && Usable ("Gouge") && ActiveEnemies (8) == 2 && Multitarget) {
+						Unit = Enemy.Where (u => Range (5, u) && u.CanParticipateInCombat && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+						if (Unit != null && Gouge (Unit))
 							return true;
 					}
-				}
 
-				if (!InRaid && Usable ("Blind") && EnemyInRange (8) == 2 && Multitarget) {
-					CycleTarget = Adds.Where (x => x.IsInLoS && x.CombatRange <= 15 && x.CanParticipateInCombat && Target != x).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null) {
-						if (Blind (CycleTarget))
+					if (!InRaid && Usable ("Blind") && ActiveEnemies (8) == 2 && Multitarget) {
+						Unit = Enemy.Where (u => Range (15, u) && u.CanParticipateInCombat && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+						if (Unit != null && Blind (Unit))
 							return true;
-					}
-				}			
+					}			
+				}
 			}
 
 			return false;
@@ -746,11 +481,328 @@ namespace ReBot.Rogue
 			return ShurikenToss () || Throw ();
 		}
 
+		// Skills
+
+		public bool Kick (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Kick") && Range (5, u) && C ("Kick", u);
+		}
+
+		public bool Shiv (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Shiv") && HasCost (20) && Range (5, u) && C ("Shiv", u);
+		}
+
+		public  bool DeadlyThrow (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Deadly Throw") && HasCost (35) && Range (30, u) && C ("Deadly Throw", u);
+		}
+
+		public  bool Gouge (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Gouge") && HasCost (45) && Range (5, u) && C ("Gouge", u);
+		}
+
+		public bool MainHandPoison (PoisonMaindHand mH)
+		{
+			return HasSpell ((int)mH) && CastSelfPreventDouble ((int)mH, () => !Me.HasAura ((int)mH) || Me.AuraTimeRemaining ((int)mH) < 300);
+		}
+
+		public bool OffHandPoison (PoisonOffHand oH)
+		{
+			return HasSpell ((int)oH) && CastSelfPreventDouble ((int)oH, () => !Me.HasAura ((int)oH) || Me.AuraTimeRemaining ((int)oH) < 300);
+		}
+
+		public bool Stealth ()
+		{
+			return Usable ("Stealth") && !Me.HasAura ("Vanish") && !MeInStealth && CS ("Stealth");
+		}
+
+		public bool CloakofShadows ()
+		{
+			return Usable ("Cloak of Shadows") && CS ("Cloak of Shadows");
+		}
+
+		public bool CombatReadiness ()
+		{
+			return Usable ("Combat Readiness") && CS ("Combat Readiness");
+		}
+
+		public bool Evasion ()
+		{
+			return Usable ("Evasion") && CS ("Evasion");
+		}
+
+		public bool Ambush (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Cast ("Ambush", () => Energy >= AmbushCost && (Me.HasAura ("Vanish") || MeInStealth) && (Range (5, u) || (HasGlyph (56813) && Range (10, u)) || (HasSpell ("Cloak and Dagger") && Range (40, u))), u);
+		}
+
+		public bool Recuperate ()
+		{
+			return HasCost (30) && ComboPoints > 0 && !Me.HasAura ("Recuperate") && C ("Recuperate");
+		}
+
+		public bool BurstofSpeed ()
+		{
+			return Usable ("Burst of Speed") && !Me.HasAura ("Sprint") && !Me.HasAura ("Burst of Speed") && HasCost (30) && CS ("Burst of Speed");
+		}
+
+		public bool Preparation ()
+		{
+			return Usable ("Preparation") && CS ("Preparation");
+		}
+
+		public bool BloodFury ()
+		{
+			return Usable ("Blood Fury") && Danger () && Range (5) && CS ("BloodFury");
+		}
+
+		public bool Berserking ()
+		{
+			return Usable ("Berserking") && Danger () && Range (5) && CS ("Berserking");
+		}
+
+		public bool ArcaneTorrent ()
+		{
+			return Usable ("Arcane Torrent") && Danger () && Range (5) && CS ("Arcane Torrent");
+		}
+
+		public bool BladeFlurry ()
+		{
+			return Usable ("Blade Flurry") && CS ("Blade Flurry");
+		}
+
+		public bool ShadowReflection (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Shadow Reflection") && Range (20, u) && Danger (u) && C ("Shadow Reflection", u);
+		}
+
+		public bool Vanish ()
+		{
+			return Usable ("Vanish") && !MeInStealth && CS ("Vanish");
+		}
+
+		public bool SliceandDice ()
+		{
+			return HasCost (25) && ComboPoints > 0 && C ("Slice and Dice");
+		}
+
+		public bool MarkedforDeath (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Marked for Death") && Range (30, u) && C ("Marked for Death", u);
+		}
+
+		public bool AdrenalineRush (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Adrenaline Rush") && Danger (u) && Range (5, u) && CS ("Adrenaline Rush");
+		}
+
+		public bool KillingSpree (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Killing Spree") && Danger (u) && Range (10, u) && C ("Killing Spree", u);
+		}
+
+		public bool RevealingStrike (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Revealing Strike") && HasCost (40) && Range (5, u) && C ("Revealing Strike", u);
+		}
+
+		public bool SinisterStrike (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Sinister Strike") && HasCost (50) && Range (5, u) && C ("Sinister Strike", u);
+		}
+
+		public bool DeathfromAbove (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Death from Above") && HasCost (50) && Range (15, u) && ComboPoints > 0 && C ("Death from Above", u);
+		}
+
+		public bool Eviscerate (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Eviscerate") && HasCost (35) && ComboPoints > 0 && Range (5, u) && C ("Eviscerate", u);
+		}
+
+		public bool KidneyShot (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Kidney Shot") && HasCost (25) && ComboPoints > 0 && !Me.HasAura ("Vanish") && !MeInStealth && Range (5, u) && C ("Kidney Shot", u);
+		}
+
+		public bool CrimsonTempest (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Crimson Tempest") && HasCost (35) && ComboPoints > 0 && Range (5, u) && C ("Crimson Tempest");
+		}
+
+		public bool Shadowstep (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Shadowstep") && Range (25, u) && C ("Shadowstep", u);
+		}
+
+		public bool Sprint ()
+		{
+			return Usable ("Sprint") && CS ("Sprint");
+		}
+
+		public bool TricksoftheTrade ()
+		{
+			if (Usable ("Tricks of the Trade")) {
+				Unit = Group.GetGroupMemberObjects ().Where (u => !u.IsDead && Range (100, u) && u.IsTank).OrderBy (u => Health (u)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && C ("Tricks of the Trade", Unit))
+					return true;
+			}
+			return false;
+		}
+
+		public bool FanofKnives ()
+		{
+			return Usable ("Fan of Knives") && HasCost (35) && C ("Fan of Knives");
+		}
+
+		public bool Backstab (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Backstab") && HasCost (35) && Me.IsNotInFront (u) && Range (5, u) && C ("Backstab", u);
+		}
+
+		public bool Hemorrhage (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Hemorrhage") && HasCost (30) && Range (5, u) && C ("Hemorrhage", u);
+		}
+
+		public bool ShurikenToss (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Shuriken Toss") && HasCost (40) && Range (30, u, 10) && C ("Shuriken Toss", u);
+		}
+
+		public  bool Rupture (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Rupture") && HasCost (25) && Range (5, u) && C ("Rupture", u);
+		}
+
+		public  bool WilloftheForsaken ()
+		{
+			return Usable ("Will of the Forsaken") && CS ("Will of the Forsaken");
+		}
+
+		public  bool EveryManforHimself ()
+		{
+			return Usable ("Every Man for Himself") && CS ("Every Man for Himself");
+		}
+
+		public  bool SmokeBomb ()
+		{
+			return Usable ("Smoke Bomb") && CS ("Smoke Bomb");
+		}
+
+		public  bool Premeditation ()
+		{
+			return Usable ("Premeditation") && MeInStealth && CS ("Premeditation");
+		}
+
+		public  bool Feint ()
+		{
+			return Usable ("Feint") && HasCost (20) && !Me.HasAura ("Feint") && CS ("Feint");
+		}
+
+		public  bool CheapShot (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Cheap Shot") && HasCost (40) && MeInStealth && (Range (5, u) || (HasSpell ("Cloak and Dagger") && Range (40, u))) && C ("Cheap Shot", u);
+		}
+
+		public  bool Blind (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Blind") && HasCost (15) && Range (5, u) && C ("Blind", u);
+		}
+
+		public  bool ShadowDance ()
+		{
+			return Usable ("Shadow Dance") && CS ("Shadow Dance");
+		}
+
+		public  bool Garrote (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Garrote") && HasCost (45) && (Range (5, u) || (HasSpell ("Cloak and Dagger") && Range (40, u))) && C ("Garrote", u);
+		}
+
+		public  bool Shadowmeld ()
+		{
+			return Usable ("Shadowmeld") && CS ("Shadowmeld");
+		}
+
+		public bool Mutilate (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Mutilate") && HasCost (55) && Range (5, u) && C ("Mutilate", u);
+		}
+
+		public  bool Vendetta (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Vendetta") && Danger (u) && Range (5, u) && C ("Vendetta", u);
+		}
+
+		public  bool Envenom (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Envenom") && HasCost (35) && ComboPoints > 0 && Range (5, u) && C ("Envenom", u);
+		}
+
+		public bool Dispatch (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Dispatch") && ((HasCost (30) && Health (u) < 0.35) || Me.HasAura ("Blindside")) && Range (5, u) && C ("Dispatch", u);
+		}
+
 		public bool Throw (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Cast ("Throw", () => Usable ("Throw") && !Me.IsMoving && u.IsInLoS && u.CombatRange > 10 && u.CombatRange <= 30);
+			return Usable ("Throw") && !Me.IsMoving && Range (30, u, 10) && C ("Throw", u);
 
+		}
+
+		// Items
+
+		public bool Healthstone ()
+		{
+			if (API.HasItem (5512) && API.ItemCooldown (5512) == 0)
+				return API.UseItem (5512);
+			return false;
+		}
+
+		public bool CrystalOfInsanity ()
+		{
+			if (!InArena && API.HasItem (CrystalOfInsanityID) && !HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityID) == 0)
+				return API.UseItem (CrystalOfInsanityID);
+			return false;
+		}
+
+		public bool OraliusWhisperingCrystal ()
+		{
+			if (API.HasItem (OraliusWhisperingCrystalID) && !HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalID) == 0)
+				return API.UseItem (OraliusWhisperingCrystalID);
+			return false;
 		}
 	}
 }

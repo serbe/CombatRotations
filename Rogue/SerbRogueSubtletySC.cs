@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using ReBot.API;
 
-namespace ReBot.Rogue
+namespace ReBot
 {
 	[Rotation ("Serb Subtlety Rogue SC", "Serb", WoWClass.Rogue, Specialization.RogueSubtlety, 5, 25)]
 
@@ -213,7 +213,7 @@ namespace ReBot.Rogue
 			if (ComboPoints == 0)
 				MarkedforDeath ();
 
-			if (!Me.HasAura ("Slice and Dice") && EnemyInRange (10) > 1) {
+			if (!Me.HasAura ("Slice and Dice") && ActiveEnemies (10) > 1) {
 				if (SliceandDice ())
 					return;
 			}
@@ -262,7 +262,7 @@ namespace ReBot.Rogue
 			// actions.generator+=/ambush
 			// # If simulating AoE, it is recommended to use Anticipation as the level 90 talent.
 			// actions.generator+=/fan_of_knives,if=active_enemies>1
-			if (EnemyInRange (10) > 1 && Aoe && !IncapacitatedInRange (10)) {
+			if (ActiveEnemies (10) > 1 && Aoe && !IncapacitatedInRange (10)) {
 				if (FanofKnives ())
 					return true;
 			}
@@ -303,9 +303,9 @@ namespace ReBot.Rogue
 
 			// actions.finisher=rupture,cycle_targets=1,if=(!ticking|remains<duration*0.3|(buff.shadow_reflection.remains>8&dot.rupture.remains<12))&target.time_to_die>=8
 			if (Multitarget && Aoe) {
-				CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && !IsNotForDamage (x) && (!x.HasAura ("Rupture", true) || (x.AuraTimeRemaining ("Rupture", true) < 7.2 || (Me.AuraTimeRemaining ("Shadow Reflection") > 8 && x.AuraTimeRemaining ("Rupture", true) < 12)))).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Rupture (CycleTarget))
+				Unit = targets.Where (x => x.IsInCombatRangeAndLoS && !IsNotForDamage (x) && (!x.HasAura ("Rupture", true) || (x.AuraTimeRemaining ("Rupture", true) < 7.2 || (Me.AuraTimeRemaining ("Shadow Reflection") > 8 && x.AuraTimeRemaining ("Rupture", true) < 12)))).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null) {
+					if (Rupture (Unit))
 						return true;
 				}
 			} else if (!Target.HasAura ("Rupture", true) || (Target.AuraTimeRemaining ("Rupture", true) < 7.2 || (Me.AuraTimeRemaining ("Shadow Reflection") > 8 && Target.AuraTimeRemaining ("Rupture", true) < 12))) {
@@ -323,7 +323,7 @@ namespace ReBot.Rogue
 					return true;
 			}
 			// actions.finisher+=/crimson_tempest,if=(active_enemies>=2&debuff.find_weakness.down)|active_enemies>=3&(cooldown.death_from_above.remains>0|!talent.death_from_above.enabled)
-			if (Aoe && ((EnemyInRange (10) >= 2 && !Target.HasAura ("Find Weakness")) || EnemyInRange (10) >= 3 && (Cooldown ("Death from Above") > 0 || !HasSpell ("Death from Above"))) && !IncapacitatedInRange (10)) {
+			if (Aoe && ((ActiveEnemies (10) >= 2 && !Target.HasAura ("Find Weakness")) || ActiveEnemies (10) >= 3 && (Cooldown ("Death from Above") > 0 || !HasSpell ("Death from Above"))) && !IncapacitatedInRange (10)) {
 				if (CrimsonTempest ())
 					return true;
 			}

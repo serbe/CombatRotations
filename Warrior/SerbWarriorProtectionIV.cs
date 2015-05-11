@@ -87,7 +87,7 @@ namespace ReBot
 				CycleTarget = Enemy.Where (u => Range (30, u, 8) && u.Target != Me && u.InCombat).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CycleTarget != null) {
 					if (HeroicThrow (CycleTarget))
-						;
+						return;
 				}
 			}
 

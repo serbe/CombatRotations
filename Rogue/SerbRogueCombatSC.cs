@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using ReBot.API;
 
-namespace ReBot.Rogue
+namespace ReBot
 {
 	[Rotation ("Serb Combat Rogue SC", "Serb", WoWClass.Rogue, Specialization.RogueCombat, 5, 25)]
 
@@ -66,7 +66,7 @@ namespace ReBot.Rogue
 			// }
 
 			// Heal
-			if ((!InRaid && Health () < 0.8) || (Health () < 0.3)) {
+			if ((!InRaid && Health (Me) < 0.8) || (Health (Me) < 0.3)) {
 				if (Recuperate ())
 					return true;
 			}
@@ -97,7 +97,6 @@ namespace ReBot.Rogue
 
 			if (InCombat) {
 				InCombat = false;
-				return true;
 			}
 
 			return false;
@@ -109,9 +108,6 @@ namespace ReBot.Rogue
 				InCombat = true;
 				StartBattle = DateTime.Now;
 			}
-
-			var targets = Adds;
-			targets.Add (Target);
 
 			if (Health (Me) < 0.9) {
 				if (Heal ())
@@ -129,18 +125,18 @@ namespace ReBot.Rogue
 			if (ComboPoints < 4)
 				Premeditation ();
 
-			if (InRaid && InInstance)
+			if (InRaid || InInstance)
 				TricksoftheTrade ();
 
 			if (HasGlobalCooldown () && Gcd)
 				return;
 
-			if (InArena) {
-				if (Cc ())
-					return;
-			}
+////			if (InArena) {
+			if (Cc ())
+				return;
+////			}
 
-			if (HasAura ("Blade Flurry") && !InRaid && !InInstance && IncapacitatedInRange (8) && EnemyInRange (8) < 3)
+			if (HasAura ("Blade Flurry") && !InRaid && !InInstance && IncapacitatedInRange (8) && ActiveEnemies (8) < 3)
 				CancelAura ("Blade Flurry");
 			
 			// actions=potion,name=draenic_agility,if=buff.bloodlust.react|target.time_to_die<40|(buff.adrenaline_rush.up&(trinket.proc.any.react|trinket.stacking_proc.any.react|buff.archmages_greater_incandescence_agi.react))
@@ -163,13 +159,13 @@ namespace ReBot.Rogue
 					return;
 			}
 			// actions+=/blade_flurry,if=(active_enemies>=2&!buff.blade_flurry.up)|(active_enemies<2&buff.blade_flurry.up)
-			if (!Me.HasAura ("Blade Flurry") && EnemyInRange (8) >= 2) {
-				if (!IncapacitatedInRange (8) && (!InArena || (InArena && EnemyInRange (8) > 2))) {
+			if (!Me.HasAura ("Blade Flurry") && ActiveEnemies (8) >= 2) {
+				if (!IncapacitatedInRange (8) && (!InArena || (InArena && ActiveEnemies (8) > 2))) {
 					if (BladeFlurry ())
 						return;
 				}
 			}
-			if (HasAura ("Blade Flurry") && EnemyInRange (8) < 2)
+			if (HasAura ("Blade Flurry") && ActiveEnemies (8) < 2)
 				CancelAura ("Blade Flurry");
 			// actions+=/shadow_reflection,if=(cooldown.killing_spree.remains<10&combo_points>3)|buff.adrenaline_rush.up
 			if ((HasSpell ("Killing Spree") && Cooldown ("Killing Spree") < 10 && ComboPoints > 3) || HasAura ("Adrenaline Rush")) {
@@ -300,7 +296,7 @@ namespace ReBot.Rogue
 			if (DeathfromAbove ())
 				return true;
 
-			if (!InArena && EnemyInRange (10) >= 5) {
+			if (!InArena && ActiveEnemies (10) >= 5) {
 				if (CrimsonTempest ())
 					return true;
 			}

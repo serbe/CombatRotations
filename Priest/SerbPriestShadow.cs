@@ -92,7 +92,7 @@ namespace ReBot
 				API.Print (ShadowApparitions);
 			}
 
-			if (Spell != "") {
+			if (Spell.Length = 0) {
 				if (HasSpell (Spell) && Cooldown (Spell) != 0)
 					return;
 				CastSpell (Spell);
@@ -111,7 +111,7 @@ namespace ReBot
 					return;
 			}
 
-			if (IfInterrupt != "") {
+			if (IfInterrupt.Length = 0) {
 				if (!CaseInterrupt (InterruptTarget))
 					return;
 			}
