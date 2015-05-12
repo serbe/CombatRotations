@@ -118,7 +118,7 @@ namespace ReBot
 			if (HasGlobalCooldown () && Gcd)
 				return;
 			
-			if (IsCatForm ()) {
+			if (IsCatForm) {
 				if (Energy < Sleep)
 					return;
 				if (Sleep > 0) {

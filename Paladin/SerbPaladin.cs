@@ -352,7 +352,7 @@ namespace ReBot
 
 		public bool Consecration ()
 		{
-			return Usable ("Consecration") && CS ("Consecration");
+			return Usable ("Consecration") && Range (8) && CS ("Consecration");
 		}
 
 		public bool SealofRighteousness ()
@@ -416,7 +416,7 @@ namespace ReBot
 
 		public bool HolyWrath ()
 		{
-			return Usable ("Holy Wrath") && CS ("Holy Wrath");
+			return Usable ("Holy Wrath") && Range (8) && CS ("Holy Wrath");
 		}
 
 		public bool Cleanse (UnitObject u = null)

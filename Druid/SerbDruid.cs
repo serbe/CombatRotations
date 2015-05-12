@@ -139,7 +139,7 @@ namespace ReBot
 
 		public bool HasEnergy (double i)
 		{
-			if (IsCatForm () && Me.HasAura ("Berserk"))
+			if (IsCatForm && Me.HasAura ("Berserk"))
 				i = Math.Floor (i / 2);
 			if (CatForm () && Me.HasAura ("Clearcasting"))
 				i = 0;
@@ -148,14 +148,15 @@ namespace ReBot
 
 		public bool HasEnergyB (double i)
 		{
-			if (IsCatForm () && Me.HasAura ("Berserk"))
+			if (IsCatForm && Me.HasAura ("Berserk"))
 				i = Math.Floor (i / 2);
 			return Energy >= i;
 		}
 
-		public bool IsCatForm ()
-		{
-			return (HasAura ("Cat Form") || HasAura ("Claws of Shirvallah"));
+		public bool IsCatForm {
+			get {
+				return (HasAura ("Cat Form") || HasAura ("Claws of Shirvallah"));
+			}
 		}
 
 		public bool Range (int r, UnitObject u = null, int l = 0)
@@ -449,7 +450,7 @@ namespace ReBot
 		public bool RunToTarget (UnitObject u = null)
 		{
 			u = u ?? Target;
-			if (IsCatForm () && !Me.HasAura ("Prowl") && u.CombatRange >= 20 && u.IsFleeing) {
+			if (IsCatForm && !Me.HasAura ("Prowl") && u.CombatRange >= 20 && u.IsFleeing) {
 				if (Dash ())
 					return true;
 			}
@@ -525,7 +526,7 @@ namespace ReBot
 
 		public bool CatForm ()
 		{
-			return !Me.HasAura ("Claws of Shirvallah") && !Me.HasAura ("Cat Form") && CS ("Cat Form");
+			return !IsCatForm && CS ("Cat Form");
 		}
 
 		public bool BearForm ()
@@ -728,7 +729,7 @@ namespace ReBot
 
 		public bool SavageRoar ()
 		{
-			return Usable ("Savage Roar") && HasEnergyB (25) && ComboPoints > 0 && CS ("Savage Roar");
+			return Usable ("Savage Roar") && HasEnergyB (25) && Range (20) && ComboPoints > 0 && CS ("Savage Roar");
 		}
 
 		public bool Rip (UnitObject u = null)
@@ -773,7 +774,7 @@ namespace ReBot
 		public bool Thrash (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Thrash") && ((IsCatForm () && HasEnergy (50))) && Range (10, u) && C ("Thrash", u);
+			return Usable ("Thrash") && ((IsCatForm && HasEnergy (50))) && Range (10, u) && C ("Thrash", u);
 		}
 
 		public bool SurvivalInstincts ()
