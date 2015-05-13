@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Geometry;
 using Newtonsoft.Json;
 using ReBot.API;
-using Geometry;
-using System.Collections.Generic;
 
 namespace ReBot
 {
@@ -139,7 +139,7 @@ namespace ReBot
 
 		public bool HasEnergy (double i)
 		{
-			if (IsCatForm && Me.HasAura ("Berserk"))
+			if (InCatForm && Me.HasAura ("Berserk"))
 				i = Math.Floor (i / 2);
 			if (CatForm () && Me.HasAura ("Clearcasting"))
 				i = 0;
@@ -148,14 +148,14 @@ namespace ReBot
 
 		public bool HasEnergyB (double i)
 		{
-			if (IsCatForm && Me.HasAura ("Berserk"))
+			if (InCatForm && Me.HasAura ("Berserk"))
 				i = Math.Floor (i / 2);
 			return Energy >= i;
 		}
 
-		public bool IsCatForm {
+		public bool InCatForm {
 			get {
-				return (HasAura ("Cat Form") || HasAura ("Claws of Shirvallah"));
+				return HasAura ("Cat Form") || HasAura ("Claws of Shirvallah");
 			}
 		}
 
@@ -450,7 +450,7 @@ namespace ReBot
 		public bool RunToTarget (UnitObject u = null)
 		{
 			u = u ?? Target;
-			if (IsCatForm && !Me.HasAura ("Prowl") && u.CombatRange >= 20 && u.IsFleeing) {
+			if (InCatForm && !Me.HasAura ("Prowl") && u.CombatRange >= 20 && u.IsFleeing) {
 				if (Dash ())
 					return true;
 			}
@@ -526,7 +526,7 @@ namespace ReBot
 
 		public bool CatForm ()
 		{
-			return !IsCatForm && CS ("Cat Form");
+			return !InCatForm && CS ("Cat Form");
 		}
 
 		public bool BearForm ()
@@ -774,7 +774,7 @@ namespace ReBot
 		public bool Thrash (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Thrash") && ((IsCatForm && HasEnergy (50))) && Range (10, u) && C ("Thrash", u);
+			return Usable ("Thrash") && ((InCatForm && HasEnergy (50))) && Range (10, u) && C ("Thrash", u);
 		}
 
 		public bool SurvivalInstincts ()
