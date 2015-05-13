@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Linq;
 using Newtonsoft.Json;
 using ReBot.API;
 using Geometry;
 
-namespace ReBot.Warlock
+namespace ReBot
 {
 	public abstract class SerbWarlock : CombatRotation
 	{
@@ -28,6 +27,8 @@ namespace ReBot.Warlock
 		public UnitObject CycleTarget;
 		public Int32 OraliusWhisperingCrystalId = 118922;
 		public Int32 CrystalOfInsanityId = 86569;
+
+		// Check
 
 		public bool IsSolo {
 			get {

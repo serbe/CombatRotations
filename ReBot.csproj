@@ -75,6 +75,7 @@
     <Compile Include="Paladin\SerbPaladinProtectionSC.cs" />
     <Compile Include="Warrior\SerbWarriorFury.cs" />
     <Compile Include="Monk\SerbMonkMistweaver.cs" />
+    <Compile Include="Warlock\SerbWarlockAffliction.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

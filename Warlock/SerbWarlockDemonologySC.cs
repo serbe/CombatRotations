@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
+using ReBot.API;
 
-namespace ReBot.Warlock
+namespace ReBot
 {
+	[Rotation ("Serb Warlock Demonology SC", "Serb", WoWClass.Warlock, Specialization.WarlockDemonology, 40)]
+
 	public class SerbWarlockDemonologySc : SerbWarlock
 	{
 		public SerbWarlockDemonologySc ()
