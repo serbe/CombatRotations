@@ -412,7 +412,7 @@ namespace ReBot
 			if (StormBolt ())
 				return true;
 			//	actions.single+=/dragon_roar,if=buff.unyielding_strikes.stack>=4&buff.unyielding_strikes.stack<6
-			if (Me.GetAura ("Unyielding Strikes").StackCount >= 4 && Me.GetAura ("Unyielding Strikes").StackCount < 6)
+			if (AuraStackCount ("Unyielding Strikes") >= 4 && Me.GetAura ("Unyielding Strikes").StackCount < 6)
 				DragonRoar ();
 			//	actions.single+=/execute,if=rage>60&target.health.pct<20
 			if (Execute ())
@@ -426,9 +426,6 @@ namespace ReBot
 
 		public bool GladAoe ()
 		{
-			var targets = Adds;
-			targets.Add (Target);
-
 			//	actions.aoe=revenge
 			if (Revenge ())
 				return true;
@@ -445,7 +442,7 @@ namespace ReBot
 			}
 			//	actions.aoe+=/thunder_clap,cycle_targets=1,if=dot.deep_wounds.remains<3&active_enemies>4
 			if (ActiveEnemies (8) > 4) {
-				CycleTarget = targets.Where (u => Me.Level >= 32 & u.AuraTimeRemaining ("Deep Wounds", true) < 3).DefaultIfEmpty (null).FirstOrDefault ();
+				CycleTarget = Enemy.Where (u => Me.Level >= 32 & u.AuraTimeRemaining ("Deep Wounds", true) < 3).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CycleTarget != null) {
 					if (ThunderClap ())
 						return true;
@@ -467,7 +464,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.aoe+=/devastate,cycle_targets=1,if=dot.deep_wounds.remains<5&cooldown.shield_slam.remains>execute_time*0.4
-			CycleTarget = targets.Where (u => Me.Level >= 32 && u.AuraTimeRemaining ("Deep Wounds", true) < 5 && Cooldown ("Shield Slam") > 1.5 * 0.4).DefaultIfEmpty (null).FirstOrDefault ();
+			CycleTarget = Enemy.Where (u => Me.Level >= 32 && u.AuraTimeRemaining ("Deep Wounds", true) < 5 && Cooldown ("Shield Slam") > 1.5 * 0.4).DefaultIfEmpty (null).FirstOrDefault ();
 			if (CycleTarget != null) {
 				if (Devastate (CycleTarget))
 					return true;

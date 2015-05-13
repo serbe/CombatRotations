@@ -70,7 +70,7 @@ namespace ReBot
 		public int ActiveEnemies (int range)
 		{
 			int x = 0;
-			foreach (UnitObject u in API.CollectUnits(range)) {
+			foreach (UnitObject u in API.CollectUnits (range)) {
 				if ((u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable && u.InCombat) {
 					x++;
 				}
@@ -85,10 +85,10 @@ namespace ReBot
 
 		public double Frac (string s)
 		{
-			string scurrentCharges = "local currentCharges, maxCharges, cooldownStart, cooldownDuration = GetSpellCharges(\"" + s + "\"); return currentCharges";
-			string smaxCharges = "local currentCharges, maxCharges, cooldownStart, cooldownDuration = GetSpellCharges(\"" + s + "\"); return maxCharges";
-			string scooldownStart = "local currentCharges, maxCharges, cooldownStart, cooldownDuration = GetSpellCharges(\"" + s + "\"); return cooldownStart";
-			string scooldownDuration = "local currentCharges, maxCharges, cooldownStart, cooldownDuration = GetSpellCharges(\"" + s + "\"); return cooldownDuration";
+			string scurrentCharges = "local currentCharges, maxCharges, cooldownStart, cooldownDuration = GetSpellCharges (\"" + s + "\"); return currentCharges";
+			string smaxCharges = "local currentCharges, maxCharges, cooldownStart, cooldownDuration = GetSpellCharges (\"" + s + "\"); return maxCharges";
+			string scooldownStart = "local currentCharges, maxCharges, cooldownStart, cooldownDuration = GetSpellCharges (\"" + s + "\"); return cooldownStart";
+			string scooldownDuration = "local currentCharges, maxCharges, cooldownStart, cooldownDuration = GetSpellCharges (\"" + s + "\"); return cooldownDuration";
 
 			double currentCharges = API.ExecuteLua<double> (scurrentCharges);
 			double maxCharges = API.ExecuteLua<double> (smaxCharges);
@@ -98,7 +98,7 @@ namespace ReBot
 			double f = currentCharges;
 
 			if (f != maxCharges) {
-				double currentTime = API.ExecuteLua<double> ("return GetTime()");
+				double currentTime = API.ExecuteLua<double> ("return GetTime ()");
 				f = f + ((currentTime - cooldownStart) / cooldownDuration);
 			}
 
@@ -107,7 +107,7 @@ namespace ReBot
 
 		public double DamageTaken (float t)
 		{
-			var damage = API.ExecuteLua<double> ("local ResolveName = GetSpellInfo(158300);local n,_,_,_,_,dur,expi,_,_,_,id,_,_,_,val1,val2,val3 = UnitAura(\"player\", ResolveName, nil, \"HELPFUL\");return val2");
+			var damage = API.ExecuteLua<double> ("local ResolveName = GetSpellInfo (158300);local n,_,_,_,_,dur,expi,_,_,_,id,_,_,_,val1,val2,val3 = UnitAura (\"player\", ResolveName, nil, \"HELPFUL\");return val2");
 			if (Time < 10) {
 				if (Time < t / 1000)
 					return damage;
@@ -135,7 +135,7 @@ namespace ReBot
 		public bool UseShieldBlock {
 			get {
 				int x = 0;
-				foreach (UnitObject u in API.CollectUnits(5)) {
+				foreach (UnitObject u in API.CollectUnits (5)) {
 					if (!u.IsDead && u.MaxMana == 0 && u.Target == Me && u.InCombat) {
 						x++;
 					}
@@ -216,7 +216,7 @@ namespace ReBot
 		public bool IsBoss (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return(u.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || u.Level >= Me.Level + BossLevelIncrease;
+			return (u.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || u.Level >= Me.Level + BossLevelIncrease;
 		}
 
 		public bool IsPlayer (UnitObject u = null)
@@ -288,7 +288,7 @@ namespace ReBot
 					return true;
 			}
 			if (Usable ("Storm Bolt")) {
-				CycleTarget = Enemy.Where (u => u.IsCasting && !IsBoss (u) && Range (30, u) && u.RemainingCastTime > 0 && (u.Target == (UnitObject)Me && !Me.HasAura ("Spell Reflect")) && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
+				CycleTarget = Enemy.Where (u => u.IsCasting && !IsBoss (u) && Range (30, u) && u.RemainingCastTime > 0 && (u.Target == Me && !Me.HasAura ("Spell Reflect")) && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CycleTarget != null && StormBolt (CycleTarget))
 					return true;
 			}
@@ -323,9 +323,7 @@ namespace ReBot
 
 		public bool Healthstone ()
 		{
-			if (API.HasItem (5512) && API.ItemCooldown (5512) == 0)
-				return API.UseItem (5512);
-			return false;
+			return API.HasItem (5512) && API.ItemCooldown (5512) == 0 && API.UseItem (5512);
 		}
 
 		public bool CrystalOfInsanity ()
@@ -423,7 +421,7 @@ namespace ReBot
 		public bool HeroicStrike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Heroic Strike") && HasRage (30) && u.IsInCombatRangeAndLoS && C ("Heroic Strike", u);
+			return Usable ("Heroic Strike") && HasRage (30) && Range (5, u) && C ("Heroic Strike", u);
 		}
 
 		public bool Bloodbath ()
@@ -439,19 +437,19 @@ namespace ReBot
 		public bool ShieldSlam (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Shield Slam") && u.IsInCombatRangeAndLoS && C ("Shield Slam", u);
+			return Usable ("Shield Slam") && Range (5, u) && C ("Shield Slam", u);
 		}
 
 		public bool Revenge (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Revenge") && u.IsInCombatRangeAndLoS && C ("Revenge", u);
+			return Usable ("Revenge") && Range (5, u) && C ("Revenge", u);
 		}
 
 		public bool Ravager (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Ravager") && u.IsInCombatRangeAndLoS && C ("Ravager", u);
+			return Usable ("Ravager") && Range (5, u) && C ("Ravager", u);
 		}
 
 		public bool StormBolt (UnitObject u = null)
@@ -468,25 +466,25 @@ namespace ReBot
 		public bool ImpendingVictory (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Impending Victory") && HasRage (10) && u.IsInCombatRangeAndLoS && C ("Impending Victory", u);
+			return Usable ("Impending Victory") && HasRage (10) && Range (5, u) && C ("Impending Victory", u);
 		}
 
 		public bool VictoryRush (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Victory Rush") && u.IsInCombatRangeAndLoS && Me.HasAura ("Victorious") && C ("Victory Rush", u);
+			return Usable ("Victory Rush") && Range (5, u) && Me.HasAura ("Victorious") && C ("Victory Rush", u);
 		}
 
 		public bool Execute (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Execute") && u.IsInCombatRangeAndLoS && ((HasRage (30) && Health (u) <= 0.2) || Me.HasAura ("Sudden Death")) && C ("Execute", u);
+			return Usable ("Execute") && Range (5, u) && ((HasRage (30) && Health (u) <= 0.2) || Me.HasAura ("Sudden Death")) && C ("Execute", u);
 		}
 
 		public bool Devastate (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Devastate") && u.IsInCombatRangeAndLoS && C ("Devastate", u);
+			return Usable ("Devastate") && Range (5, u) && C ("Devastate", u);
 		}
 
 		public bool ThunderClap (UnitObject u = null)

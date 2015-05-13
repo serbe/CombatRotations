@@ -36,8 +36,12 @@ namespace ReBot
 			//	actions+=/berserking
 			Berserking ();
 			//	actions+=/blood_fury
+			BloodFury ();
 			//	actions+=/arcane_torrent
+			ArcaneTorrent ();
 			//	actions+=/mannoroths_fury
+			if (MannorothsFury ())
+				return;
 			//	actions+=/dark_soul,if=!talent.archimondes_darkness.enabled|(talent.archimondes_darkness.enabled&(charges=2|target.time_to_die<40|((trinket.proc.any.react|trinket.stacking_proc.any.react)&(!talent.grimoire_of_service.enabled|!talent.demonic_servitude.enabled|pet.service_doomguard.active|recharge_time<=cooldown.service_pet.remains))))
 			//	actions+=/service_pet,if=talent.grimoire_of_service.enabled&(target.time_to_die>120|target.time_to_die<=25|(buff.dark_soul.remains&target.health.pct<20))
 			//	actions+=/summon_doomguard,if=!talent.demonic_servitude.enabled&active_enemies<9
@@ -61,6 +65,8 @@ namespace ReBot
 			//	actions+=/drain_soul,interrupt=1,chain=1
 			//	actions+=/agony,cycle_targets=1,moving=1,if=mana.pct>50
 			//	actions+=/life_tap
+			if (LifeTap ())
+				return;
 
 		}
 	}

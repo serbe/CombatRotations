@@ -71,11 +71,8 @@ namespace ReBot
 					HandInFlight = false;
 			}
 
-			if (Me.HasAura ("Hellfire") && !Me.IsMoving && EnemyInRange (10) < 4)
+			if (Me.HasAura ("Hellfire") && !Me.IsMoving && ActiveEnemies (10) < 4)
 				CancelAura ("Hellfire");
-			
-			var targets = Adds;
-			targets.Add (Target);
 
 			//	actions=potion,name=draenic_intellect,if=buff.bloodlust.remains>30|(((buff.dark_soul.up&(trinket.proc.any.react|trinket.stacking_proc.any.react>6)&!buff.demonbolt.remains)|target.health.pct<20)&(!talent.grimoire_of_service.enabled|!talent.demonic_servitude.enabled|pet.service_doomguard.active))
 			//	actions+=/berserking
@@ -149,10 +146,10 @@ namespace ReBot
 					return;
 			}
 			//	actions+=/summon_doomguard,if=!talent.demonic_servitude.enabled&active_enemies<9
-			if (!HasSpell ("Demonic Servitude") && EnemyInRange (40) < 9)
+			if (!HasSpell ("Demonic Servitude") && ActiveEnemies (40) < 9)
 				SummonDoomguard ();
 			//	actions+=/summon_infernal,if=!talent.demonic_servitude.enabled&active_enemies>=9
-			if (!HasSpell ("Demonic Servitude") && EnemyInRange (40) >= 9)
+			if (!HasSpell ("Demonic Servitude") && ActiveEnemies (40) >= 9)
 				SummonInfernal ();
 			//	actions+=/call_action_list,name=db,if=talent.demonbolt.enabled
 			if (HasSpell ("Demonbolt")) {
@@ -168,7 +165,7 @@ namespace ReBot
 					return;
 			}
 			//	actions+=/immolation_aura,if=demonic_fury>450&active_enemies>=3&buff.immolation_aura.down
-			if (Fury > 450 && EnemyInRange (10) >= 3 && !Me.HasAura ("Immolation Aura")) {
+			if (Fury > 450 && ActiveEnemies (10) >= 3 && !Me.HasAura ("Immolation Aura")) {
 				if (ImmolationAura ())
 					return;
 			}
@@ -179,7 +176,7 @@ namespace ReBot
 			}
 			//	actions+=/corruption,cycle_targets=1,if=target.time_to_die>=6&remains<=(0.3*duration)&buff.metamorphosis.down
 			if (Usable ("Corruption") && !Me.HasAura ("Metamorphosis")) {
-				CycleTarget = targets.Where (u => u.IsInLoS && u.CombatRange <= 40 && u.AuraTimeRemaining ("Corruption", true) < (18 * 0.3) && TimeToDie (u) >= 6).DefaultIfEmpty (null).FirstOrDefault ();
+				CycleTarget = Enemy.Where (u => u.IsInLoS && u.CombatRange <= 40 && u.AuraTimeRemaining ("Corruption", true) < (18 * 0.3) && TimeToDie (u) >= 6).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CycleTarget != null) {
 					if (Corruption (CycleTarget))
 						return;
@@ -197,14 +194,14 @@ namespace ReBot
 				CancelAura ("Metamorphosis");
 			}
 			//	actions+=/chaos_wave,if=buff.metamorphosis.up&(buff.dark_soul.up&active_enemies>=2|(charges=3|set_bonus.tier17_4pc=0&charges=2))
-			if (Me.HasAura ("Metamorphosis") && (Me.HasAura ("Dark Soul: Instability") && EnemyInRange (40) >= 2 || (SpellCharges ("Chaos Wave") == 3 || !HasSpell (165451) && SpellCharges ("Chaos Wave") == 2))) {
+			if (Me.HasAura ("Metamorphosis") && (Me.HasAura ("Dark Soul: Instability") && ActiveEnemies (40) >= 2 || (SpellCharges ("Chaos Wave") == 3 || !HasSpell (165451) && SpellCharges ("Chaos Wave") == 2))) {
 				if (ChaosWave ())
 					return;
 			}
 			//	actions+=/soul_fire,if=buff.metamorphosis.up&buff.molten_core.react&(buff.dark_soul.remains>execute_time|target.health.pct<=25)&(((buff.molten_core.stack*execute_time>=trinket.stacking_proc.multistrike.remains-1|demonic_fury<=ceil((trinket.stacking_proc.multistrike.remains-buff.molten_core.stack*execute_time)*40)+80*buff.molten_core.stack)|target.health.pct<=25)&trinket.stacking_proc.multistrike.remains>=execute_time|trinket.stacking_proc.multistrike.down|!trinket.has_stacking_proc.multistrike)
 			//	actions+=/touch_of_chaos,cycle_targets=1,if=buff.metamorphosis.up&dot.corruption.remains<17.4&demonic_fury>750
 			if (Me.HasAura ("Metamorphosis") && Fury > 750) {
-				CycleTarget = targets.Where (x => x.IsInLoS && x.CombatRange <= 40 && x.AuraTimeRemaining ("Corruption", true) < 17.4).DefaultIfEmpty (null).FirstOrDefault ();
+				CycleTarget = Enemy.Where (x => x.IsInLoS && x.CombatRange <= 40 && x.AuraTimeRemaining ("Corruption", true) < 17.4).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CycleTarget != null) {
 					if (TouchofChaos (CycleTarget))
 						return;
@@ -248,7 +245,7 @@ namespace ReBot
 			if (ImpSwarm ())
 				return;
 			//	actions+=/hellfire,interrupt=1,if=active_enemies>=5
-			if (EnemyInRange (10) >= 5) {
+			if (ActiveEnemies (10) >= 5) {
 				if (Hellfire ())
 					return;
 			}
@@ -264,7 +261,7 @@ namespace ReBot
 					return;
 			}
 			//	actions+=/hellfire,interrupt=1,if=active_enemies>=4
-			if (EnemyInRange (10) >= 4) {
+			if (ActiveEnemies (10) >= 4) {
 				if (Hellfire ())
 					return;
 			}
@@ -285,17 +282,14 @@ namespace ReBot
 
 		public bool DB_Action ()
 		{
-			var targets = Adds;
-			targets.Add (Target);
-
 			//	actions.db=immolation_aura,if=demonic_fury>450&active_enemies>=5&buff.immolation_aura.down
-			if (Fury > 450 && EnemyInRange (10) >= 5 && !Me.HasAura ("Immolation Aura")) {
+			if (Fury > 450 && ActiveEnemies (10) >= 5 && !Me.HasAura ("Immolation Aura")) {
 				if (ImmolationAura ())
 					return true;
 			}
 			//	actions.db+=/doom,cycle_targets=1,if=buff.metamorphosis.up&active_enemies>=6&target.time_to_die>=30*spell_haste&remains<=(duration*0.3)&(buff.dark_soul.down|!glyph.dark_soul.enabled)
-			if (Me.HasAura ("Metamorphosis") && EnemyInRange (40) >= 6 && (Me.HasAura ("Dark Soul: Instability") || !HasSpell (165451))) {
-				CycleTarget = targets.Where (u => u.IsInLoS && u.CombatRange <= 40 && TimeToDie (u) >= 30 * SpellHaste && u.AuraTimeRemaining ("Doom", true) < (60 * 0.3)).DefaultIfEmpty (null).FirstOrDefault ();
+			if (Me.HasAura ("Metamorphosis") && ActiveEnemies (40) >= 6 && (Me.HasAura ("Dark Soul: Instability") || !HasSpell (165451))) {
+				CycleTarget = Enemy.Where (u => u.IsInLoS && u.CombatRange <= 40 && TimeToDie (u) >= 30 * SpellHaste && u.AuraTimeRemaining ("Doom", true) < (60 * 0.3)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CycleTarget != null) {
 					if (Doom (CycleTarget))
 						return true;
@@ -305,7 +299,7 @@ namespace ReBot
 			//	actions.db+=/demonbolt,if=buff.demonbolt.stack=0|(buff.demonbolt.stack<4&buff.demonbolt.remains>=(40*spell_haste-execute_time))
 			//	actions.db+=/doom,cycle_targets=1,if=buff.metamorphosis.up&target.time_to_die>=30*spell_haste&remains<=(duration*0.3)&(buff.dark_soul.down|!glyph.dark_soul.enabled)
 			if (Me.HasAura ("Metamorphosis") && Fury > 750 && (Me.HasAura ("Dark Soul: Instability") || !HasSpell (165451))) {
-				CycleTarget = targets.Where (u => u.IsInLoS && u.CombatRange <= 40 && TimeToDie (u) >= 30 * SpellHaste && u.AuraTimeRemaining ("Doom", true) < (60 * 0.3)).DefaultIfEmpty (null).FirstOrDefault ();
+				CycleTarget = Enemy.Where (u => u.IsInLoS && u.CombatRange <= 40 && TimeToDie (u) >= 30 * SpellHaste && u.AuraTimeRemaining ("Doom", true) < (60 * 0.3)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CycleTarget != null) {
 					if (Doom (CycleTarget))
 						return true;
@@ -334,7 +328,7 @@ namespace ReBot
 			if (ImpSwarm ())
 				return true;
 			//	actions.db+=/hellfire,interrupt=1,if=active_enemies>=5
-			if (EnemyInRange (10) >= 5) {
+			if (ActiveEnemies (10) >= 5) {
 				if (Hellfire ())
 					return true;
 			}
@@ -345,7 +339,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.db+=/hellfire,interrupt=1,if=active_enemies>=4
-			if (EnemyInRange (10) >= 4) {
+			if (ActiveEnemies (10) >= 4) {
 				if (Hellfire ())
 					return true;
 			}
