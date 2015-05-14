@@ -59,7 +59,7 @@ namespace ReBot
 			// }
 
 			// Heal
-			if ((!InRaid && Health () < 0.8) || (Health () < 0.3)) {
+			if ((!InRaid && Health (Me) < 0.8) || (Health (Me) < 0.3)) {
 				if (Recuperate ())
 					return true;
 			}
@@ -100,10 +100,7 @@ namespace ReBot
 				StartBattle = DateTime.Now;
 			}
 
-			var targets = Adds;
-			targets.Add (Target);
-
-			if (Health () < 0.9) {
+			if (Health (Me) < 0.9) {
 				if (Heal ())
 					return;
 			}
