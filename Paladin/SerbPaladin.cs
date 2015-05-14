@@ -305,6 +305,11 @@ namespace ReBot
 			return Usable ("Holy Avenger") && Danger () && CS ("Holy Avenger");
 		}
 
+		public bool AvengingWrath ()
+		{
+			return Usable ("Avenging Wrath") && Danger () && CS ("Avenging Wrath");
+		}
+
 		public bool Seraphim (UnitObject u = null)
 		{
 			u = u ?? Target;
@@ -343,6 +348,17 @@ namespace ReBot
 		{
 			u = u ?? Target;
 			return Usable ("Shield of the Righteous") && HolyPower >= 3 && Range (5, u) && C ("Shield of the Righteous", u);
+		}
+
+		public bool TemplarsVerdict (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Templar's Verdict") && HolyPower >= 3 && Range (5, u) && C ("Templar's Verdict", u);
+		}
+
+		public bool DivineStorm ()
+		{
+			return Usable ("Divine Storm") && HolyPower >= 3 && Range (5) && CS ("Divine Storm");
 		}
 
 		public bool SealofInsight ()
