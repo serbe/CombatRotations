@@ -93,7 +93,6 @@ namespace ReBot
 				if (Stealth ())
 					return true;
 			}
-				
 
 			if (InCombat) {
 				InCombat = false;

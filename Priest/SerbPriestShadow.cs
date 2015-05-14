@@ -1081,7 +1081,7 @@ namespace ReBot
 					if (SearingInsanity (bestTarget)) {
 						IfInterrupt = "ChainMS";
 						InterruptTarget = bestTarget;
-						return  true;
+						return true;
 					}
 				}
 			}

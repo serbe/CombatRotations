@@ -6,7 +6,6 @@ using System.Collections.Generic;
 
 namespace ReBot
 {
-
 	public enum PoisonMaindHand
 	{
 		DeadlyPoison = 2823,
@@ -19,7 +18,6 @@ namespace ReBot
 		CripplingPoison = 3408,
 		LeechingPoison = 108211,
 	}
-
 
 	public abstract class SerbRogue : CombatRotation
 	{
@@ -319,7 +317,7 @@ namespace ReBot
 
 		public bool MeInStealth {
 			get {
-				return  Me.HasAura ("Stealth") || Me.HasAura ("Shadow Dance") || Me.HasAura ("Subterfuge");
+				return Me.HasAura ("Stealth") || Me.HasAura ("Shadow Dance") || Me.HasAura ("Subterfuge");
 			}
 		}
 
@@ -361,7 +359,7 @@ namespace ReBot
 			return false;
 		}
 
-		public  bool UnEnrage ()
+		public bool UnEnrage ()
 		{
 			if (HasSpell ("Shiv") && Cooldown ("Shiv") == 0 && HasCost (20)) {
 				if (ActiveEnemies (6) > 1 && Multitarget) {
@@ -376,12 +374,12 @@ namespace ReBot
 			return false;
 		}
 
-		public  bool Freedom ()
+		public bool Freedom ()
 		{
 			return WilloftheForsaken () || EveryManforHimself ();
 		}
 
-		public  bool CastSpell (String s)
+		public bool CastSpell (String s)
 		{
 			switch (s) {
 			case "Garrote":
@@ -495,13 +493,13 @@ namespace ReBot
 			return Usable ("Shiv") && HasCost (20) && Range (5, u) && C ("Shiv", u);
 		}
 
-		public  bool DeadlyThrow (UnitObject u = null)
+		public bool DeadlyThrow (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return Usable ("Deadly Throw") && HasCost (35) && Range (30, u) && C ("Deadly Throw", u);
 		}
 
-		public  bool Gouge (UnitObject u = null)
+		public bool Gouge (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return Usable ("Gouge") && HasCost (45) && Range (5, u) && C ("Gouge", u);
@@ -692,61 +690,61 @@ namespace ReBot
 			return Usable ("Shuriken Toss") && HasCost (40) && Range (30, u, 10) && C ("Shuriken Toss", u);
 		}
 
-		public  bool Rupture (UnitObject u = null)
+		public bool Rupture (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return Usable ("Rupture") && HasCost (25) && Range (5, u) && C ("Rupture", u);
 		}
 
-		public  bool WilloftheForsaken ()
+		public bool WilloftheForsaken ()
 		{
 			return Usable ("Will of the Forsaken") && CS ("Will of the Forsaken");
 		}
 
-		public  bool EveryManforHimself ()
+		public bool EveryManforHimself ()
 		{
 			return Usable ("Every Man for Himself") && CS ("Every Man for Himself");
 		}
 
-		public  bool SmokeBomb ()
+		public bool SmokeBomb ()
 		{
 			return Usable ("Smoke Bomb") && CS ("Smoke Bomb");
 		}
 
-		public  bool Premeditation ()
+		public bool Premeditation ()
 		{
 			return Usable ("Premeditation") && MeInStealth && CS ("Premeditation");
 		}
 
-		public  bool Feint ()
+		public bool Feint ()
 		{
 			return Usable ("Feint") && HasCost (20) && !Me.HasAura ("Feint") && CS ("Feint");
 		}
 
-		public  bool CheapShot (UnitObject u = null)
+		public bool CheapShot (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return Usable ("Cheap Shot") && HasCost (40) && MeInStealth && (Range (5, u) || (HasSpell ("Cloak and Dagger") && Range (40, u))) && C ("Cheap Shot", u);
 		}
 
-		public  bool Blind (UnitObject u = null)
+		public bool Blind (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return Usable ("Blind") && HasCost (15) && Range (5, u) && C ("Blind", u);
 		}
 
-		public  bool ShadowDance ()
+		public bool ShadowDance ()
 		{
 			return Usable ("Shadow Dance") && CS ("Shadow Dance");
 		}
 
-		public  bool Garrote (UnitObject u = null)
+		public bool Garrote (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return Usable ("Garrote") && HasCost (45) && (Range (5, u) || (HasSpell ("Cloak and Dagger") && Range (40, u))) && C ("Garrote", u);
 		}
 
-		public  bool Shadowmeld ()
+		public bool Shadowmeld ()
 		{
 			return Usable ("Shadowmeld") && CS ("Shadowmeld");
 		}
@@ -757,13 +755,13 @@ namespace ReBot
 			return Usable ("Mutilate") && HasCost (55) && Range (5, u) && C ("Mutilate", u);
 		}
 
-		public  bool Vendetta (UnitObject u = null)
+		public bool Vendetta (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return Usable ("Vendetta") && Danger (u) && Range (5, u) && C ("Vendetta", u);
 		}
 
-		public  bool Envenom (UnitObject u = null)
+		public bool Envenom (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return Usable ("Envenom") && HasCost (35) && ComboPoints > 0 && Range (5, u) && C ("Envenom", u);
