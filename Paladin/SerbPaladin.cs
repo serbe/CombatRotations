@@ -186,6 +186,16 @@ namespace ReBot
 
 		// Combo
 
+		public bool Clean (UnitObject u = null)
+		{
+			u = u ?? Me;
+			if (Range (40, u) && u.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType))) {
+				if (Cleanse (u))
+					return true;
+			}
+			return false;
+		}
+
 		public bool Freedom ()
 		{
 			return WilloftheForsaken () || EveryManforHimself ();
@@ -213,7 +223,7 @@ namespace ReBot
 
 		public bool Heal ()
 		{
-			if (Health (Me) <= 0.4 && AuraStackCount ("Selfless Healer") >= 3) {
+			if (Health (Me) <= 0.5 && AuraStackCount ("Selfless Healer") >= 3) {
 				if (FlashofLight (Me))
 					return true;
 			}

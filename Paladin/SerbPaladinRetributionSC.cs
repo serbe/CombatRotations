@@ -32,6 +32,8 @@ namespace ReBot
 			//	actions.precombat+=/snapshot_stats
 			//	actions.precombat+=/potion,name=draenic_strength
 
+//			if (Clean (Me))
+//				return true;
 
 			if (Heal ())
 				return true;
