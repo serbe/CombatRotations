@@ -487,10 +487,9 @@ namespace ReBot
 			return Usable ("Devastate") && Range (5, u) && C ("Devastate", u);
 		}
 
-		public bool ThunderClap (UnitObject u = null)
+		public bool ThunderClap ()
 		{
-			u = u ?? Target;
-			return Usable ("Thunder Clap") && (Range (8, u) || (HasGlyph (63324) && Range (12, u))) && CS ("Thunder Clap");
+			return Usable ("Thunder Clap") && (ActiveEnemies (8) > 0 || (HasGlyph (63324) && ActiveEnemies (12) > 0)) && CS ("Thunder Clap");
 		}
 
 		public bool Bladestorm ()

@@ -196,7 +196,7 @@ namespace ReBot
 			if (Me.Level >= 32) {
 				CycleTarget = Enemy.Where (u => Range (8, u) && !u.HasAura ("Deep Wounds", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CycleTarget != null) {	
-					if (ThunderClap (CycleTarget)) {
+					if (ThunderClap ()) {
 						return true;
 					}
 				}

@@ -220,8 +220,9 @@ namespace ReBot
 			//	actions.prot_aoe+=/avatar
 			Avatar ();
 			//	actions.prot_aoe+=/thunder_clap,if=!dot.deep_wounds.ticking
-			if (Me.Level >= 32 & !Target.HasAura ("Deep Wounds", true) && Range (5)) {
-				if (ThunderClap ())
+			if (Me.Level >= 32 && Usable ("Thunder Clap")) {
+				CycleTarget = Enemy.Where (u => Range (8, u) && !u.HasAura ("Deep Wounds", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && ThunderClap ())
 					return true;
 			}
 			//	actions.prot_aoe+=/heroic_strike,if=buff.ultimatum.up|rage>110|(talent.unyielding_strikes.enabled&buff.unyielding_strikes.stack>=6)
@@ -443,10 +444,8 @@ namespace ReBot
 			//	actions.aoe+=/thunder_clap,cycle_targets=1,if=dot.deep_wounds.remains<3&active_enemies>4
 			if (ActiveEnemies (8) > 4) {
 				CycleTarget = Enemy.Where (u => Me.Level >= 32 & u.AuraTimeRemaining ("Deep Wounds", true) < 3).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (ThunderClap ())
-						return true;
-				}
+				if (CycleTarget != null && ThunderClap ())
+					return true;
 			}
 			//	actions.aoe+=/bladestorm,if=buff.shield_charge.down
 			if (!Me.HasAura ("Shield Charge")) {

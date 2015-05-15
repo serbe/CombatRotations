@@ -241,7 +241,7 @@ namespace ReBot
 			}
 			//	actions+=/sacred_shield,if=target.dot.sacred_shield.remains<2
 			if (Target.AuraTimeRemaining ("Sacred Shield") < 2) {
-				if (SacredShield ())
+				if (SacredShield (Me))
 					return true;
 			}
 			//	actions+=/holy_wrath,if=glyph.final_wrath.enabled&target.health.pct<=20
@@ -277,7 +277,7 @@ namespace ReBot
 				return true;
 			//	actions+=/sacred_shield,if=target.dot.sacred_shield.remains<8
 			if (Target.AuraTimeRemaining ("Sacred Shield") < 8) {
-				if (SacredShield ())
+				if (SacredShield (Me))
 					return true;
 			}
 			//	actions+=/consecration,if=target.debuff.flying.down
@@ -299,7 +299,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions+=/sacred_shield
-			if (SacredShield ())
+			if (SacredShield (Me))
 				return true;
 			//	actions+=/flash_of_light,if=talent.selfless_healer.enabled&buff.selfless_healer.stack>=3
 			if (HasSpell ("Selfless Healer") && AuraStackCount ("Selfless Healer") >= 3) {
@@ -453,7 +453,7 @@ namespace ReBot
 			if (HolyWrath ())
 				return true;
 			//	actions.max_dps+=/sacred_shield
-			if (SacredShield ())
+			if (SacredShield (Me))
 				return true;
 			//	actions.max_dps+=/flash_of_light,if=talent.selfless_healer.enabled&buff.selfless_healer.stack>=3
 			if (HasSpell ("Selfless Healer") && AuraStackCount ("Selfless Healer") >= 3) {
@@ -574,7 +574,7 @@ namespace ReBot
 			}
 			//	actions.max_survival+=/sacred_shield,if=target.dot.sacred_shield.remains<2
 			if (Target.AuraTimeRemaining ("Sacred Shield") < 2) {
-				if (SacredShield ())
+				if (SacredShield (Me))
 					return true;
 			}
 			//	actions.max_survival+=/avengers_shield
@@ -604,7 +604,7 @@ namespace ReBot
 				return true;
 			//	actions.max_survival+=/sacred_shield,if=target.dot.sacred_shield.remains<8
 			if (Target.AuraTimeRemaining ("Sacred Shield") < 8) {
-				if (SacredShield ())
+				if (SacredShield (Me))
 					return true;
 			}
 			//	actions.max_survival+=/holy_wrath,if=glyph.final_wrath.enabled&target.health.pct<=20
@@ -621,7 +621,7 @@ namespace ReBot
 			if (HolyWrath ())
 				return true;
 			//	actions.max_survival+=/sacred_shield
-			if (SacredShield ())
+			if (SacredShield (Me))
 				return true;
 
 			return false;

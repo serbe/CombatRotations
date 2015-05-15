@@ -304,12 +304,12 @@ namespace ReBot
 		public bool HandofProtection (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Hand of Protection") && Range (40, u) && C ("Hand of Protection", u);
+			return Usable ("Hand of Protection") && Range (40, u) && !u.HasAura ("Forbearance") && C ("Hand of Protection", u);
 		}
 
 		public bool DivineShield ()
 		{
-			return Usable ("Divine Shield") && CS ("Divine Shield");
+			return Usable ("Divine Shield") && !Me.HasAura ("Forbearance") && CS ("Divine Shield");
 		}
 
 		public bool BlessingofMight ()
@@ -329,17 +329,17 @@ namespace ReBot
 
 		public bool BloodFury ()
 		{
-			return CastSelf ("Blood Fury", () => Usable ("Blood Fury") && Danger ());
+			return Usable ("Blood Fury") && Danger () && CS ("BloodFury");
 		}
 
 		public bool Berserking ()
 		{
-			return CastSelf ("Berserking", () => Usable ("Berserking") && Danger ());
+			return Usable ("Berserking") && Danger () && CS ("Berserking");
 		}
 
 		public bool ArcaneTorrent ()
 		{
-			return CastSelf ("Arcane Torrent", () => Usable ("Arcane Torrent") && Danger ());
+			return Usable ("Arcane Torrent") && Danger () && CS ("Arcane Torrent");
 		}
 
 		public bool HolyAvenger ()
@@ -352,10 +352,9 @@ namespace ReBot
 			return Usable ("Avenging Wrath") && Danger () && CS ("Avenging Wrath");
 		}
 
-		public bool Seraphim (UnitObject u = null)
+		public bool Seraphim ()
 		{
-			u = u ?? Target;
-			return Usable ("Seraphim") && u.IsInCombatRangeAndLoS && CS ("Seraphim");
+			return Usable ("Seraphim") && Range (8) && HolyPower == 5 && CS ("Seraphim");
 		}
 
 		public bool DivineProtection ()
@@ -416,7 +415,7 @@ namespace ReBot
 
 		public bool Consecration ()
 		{
-			return Usable ("Consecration") && Range (8) && CS ("Consecration");
+			return Usable ("Consecration") && Range (5) && CS ("Consecration");
 		}
 
 		public bool SealofRighteousness ()
@@ -520,7 +519,7 @@ namespace ReBot
 		public bool LayonHands (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Lay on Hands") && Range (40, u) && C ("Lay on Hands", u);
+			return Usable ("Lay on Hands") && Range (40, u) && !u.HasAura ("Forbearance") && C ("Lay on Hands", u);
 		}
 
 		public bool WilloftheForsaken ()
