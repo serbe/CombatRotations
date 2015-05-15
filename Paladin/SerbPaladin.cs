@@ -128,6 +128,12 @@ namespace ReBot
 			return false;
 		}
 
+		public bool HasBuff (UnitObject u = null)
+		{
+			u = u ?? Me;
+			return u.HasAura ("Blessing of Kings") || u.HasAura ("Legacy of the Emperor") || u.HasAura ("Mark of the Wild");
+		}
+
 		public bool IsBoss (UnitObject u = null)
 		{
 			u = u ?? Target;
@@ -159,7 +165,6 @@ namespace ReBot
 					return damage;
 				return damage / Time * (t / 1000);
 			}
-				
 			return damage / 10 * (t / 1000);
 		}
 
@@ -184,6 +189,26 @@ namespace ReBot
 		public bool Freedom ()
 		{
 			return WilloftheForsaken () || EveryManforHimself ();
+		}
+
+		public bool Buff (UnitObject u = null)
+		{
+			u = u ?? Me;
+			if (HasBuff (u)) {
+				if (!u.HasAura ("Blessing of Kings", true) && !u.HasAura ("Blessing of Might")) {
+					if (BlessingofMight ())
+						return true;
+				}
+			} else if (u.HasAura ("Blessing of Might")) {
+				if (!u.HasAura ("Blessing of Might", true) && !u.HasAura ("Blessing of Kings")) {
+					if (BlessingofKings ())
+						return true;
+				}
+			} else {
+				if (BlessingofKings ())
+					return true;
+			}
+			return false;
 		}
 
 		public bool Heal ()
@@ -275,6 +300,16 @@ namespace ReBot
 		public bool DivineShield ()
 		{
 			return Usable ("Divine Shield") && CS ("Divine Shield");
+		}
+
+		public bool BlessingofMight ()
+		{
+			return Usable ("Blessing of Might") && CS ("Blessing of Might");
+		}
+
+		public bool BlessingofKings ()
+		{
+			return Usable ("Blessing of Kings") && CS ("Blessing of Kings");
 		}
 
 		public bool SpeedofLight ()

@@ -24,16 +24,17 @@ namespace ReBot
 			//	actions.precombat+=/food,type=sleeper_sushi
 			//	actions.precombat+=/blessing_of_kings,if=!aura.str_agi_int.up
 			//	actions.precombat+=/blessing_of_might,if=!aura.mastery.up
+			if (Buff (Me))
+				return true;
 			//	actions.precombat+=/seal_of_truth,if=active_enemies<2
 			//	actions.precombat+=/seal_of_righteousness,if=active_enemies>=2
 			//	# Snapshot raid buffed stats before combat begins and pre-potting is done.
 			//	actions.precombat+=/snapshot_stats
 			//	actions.precombat+=/potion,name=draenic_strength
 
-			if (Health (Me) <= 0.8) {
-				if (Heal ())
-					return true;
-			}
+
+			if (Heal ())
+				return true;
 
 			if (CrystalOfInsanity ())
 				return true;
@@ -57,10 +58,8 @@ namespace ReBot
 			if (Me.CanNotParticipateInCombat ())
 				Freedom ();
 			
-			if (Health (Me) < 0.9) {
-				if (Heal ())
-					return;
-			}
+			if (Heal ())
+				return;
 
 			//	actions=rebuke
 			if (Interrupt ())
