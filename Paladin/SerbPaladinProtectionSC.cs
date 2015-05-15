@@ -19,6 +19,8 @@ namespace ReBot
 
 		[JsonProperty ("Rotation"), JsonConverter (typeof(StringEnumConverter))]
 		public ConfigRotation SelectedRotation = ConfigRotation.Normal;
+		[JsonProperty ("Use GCD")]
+		public bool Gcd = true;
 
 		public bool WaitCrusaderStrike;
 		public bool WaitJudgment;

@@ -9,9 +9,6 @@ namespace ReBot
 {
 	public abstract class SerbPaladin : CombatRotation
 	{
-		[JsonProperty ("Use GCD")]
-		public bool Gcd = true;
-
 		// Consts && Vars
 
 		public bool InCombat;
@@ -347,18 +344,24 @@ namespace ReBot
 		public bool ShieldoftheRighteous (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Shield of the Righteous") && HolyPower >= 3 && Range (5, u) && C ("Shield of the Righteous", u);
+			return Usable ("Shield of the Righteous") && (HolyPower >= 3 || Me.HasAura ("Divine Purpose")) && Range (5, u) && C ("Shield of the Righteous", u);
 		}
 
 		public bool TemplarsVerdict (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Templar's Verdict") && HolyPower >= 3 && Range (5, u) && C ("Templar's Verdict", u);
+			return Usable ("Templar's Verdict") && (HolyPower >= 3 || Me.HasAura ("Divine Purpose")) && Range (5, u) && C ("Templar's Verdict", u);
+		}
+
+		public bool FinalVerdict (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Final Verdict") && (HolyPower >= 3 || Me.HasAura ("Divine Purpose")) && Range (5, u) && C ("Final Verdict", u);
 		}
 
 		public bool DivineStorm ()
 		{
-			return Usable ("Divine Storm") && HolyPower >= 3 && Range (5) && CS ("Divine Storm");
+			return Usable ("Divine Storm") && (HolyPower >= 3 || Me.HasAura ("Divine Purpose")) && Range (5) && CS ("Divine Storm");
 		}
 
 		public bool SealofInsight ()
@@ -412,6 +415,12 @@ namespace ReBot
 			return Usable ("Crusader Strike") && Range (5, u) && C ("Crusader Strike", u);
 		}
 
+		public bool Exorcism (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Exorcism") && ((HasGlyph (122028) && Range (5, u)) || Range (30, u)) && C ("Exorcism", u);
+		}
+
 		public bool LightsHammer (UnitObject u = null)
 		{
 			u = u ?? Target;
@@ -421,7 +430,7 @@ namespace ReBot
 		public bool HammerofWrath (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Hammer of Wrath") && Range (30, u) && C ("Hammer of Wrath", u);
+			return Usable ("Hammer of Wrath") && (Health (u) < 0.2 || (HasSpell (157496) && Health (u) < 0.35) || Me.HasAura ("Crusader's Fury")) && Range (30, u) && C ("Hammer of Wrath", u);
 		}
 
 		public bool Judgment (UnitObject u = null)
@@ -433,6 +442,11 @@ namespace ReBot
 		public bool HolyWrath ()
 		{
 			return Usable ("Holy Wrath") && Range (8) && CS ("Holy Wrath");
+		}
+
+		public bool SealofTruth ()
+		{
+			return Usable ("Seal of Truth") && CS ("Seal of Truth");
 		}
 
 		public bool Cleanse (UnitObject u = null)
