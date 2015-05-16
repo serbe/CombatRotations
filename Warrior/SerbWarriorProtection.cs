@@ -10,12 +10,12 @@ namespace ReBot
 
 	public class SerbWarriorProtectionSC : SerbWarrior
 	{
-		[JsonProperty ("Max rage")]
-		public int RageMax = 100;
 		[JsonProperty ("War cry"), JsonConverter (typeof(StringEnumConverter))]							
 		public WarCry Shout = WarCry.BattleShout;
 		[JsonProperty ("Use Movement")]
 		public bool Move = false;
+		[JsonProperty ("Use Charge")]
+		public bool UseCharge = false;
 
 
 		public 	SerbWarriorProtectionSC ()
@@ -71,10 +71,10 @@ namespace ReBot
 			if (Gcd && HasGlobalCooldown ())
 				return;
 
-//			if (Health () < 0.9) {
-//				if (Heal ())
-//					return;
-//			}
+			if (!(InInstance || InRaid) || Health (Me) < 0.4) {
+				if (Heal ())
+					return;
+			}
 
 //			if (UseStance && !(Me.HasAura ("Defensive Stance") || Me.HasAura ("Improved Defensive Stance")) && (CombatRole == CombatRole.Tank || Health () < 0.4)) {
 //				if (DefensiveStance ())
@@ -127,8 +127,16 @@ namespace ReBot
 //				if (ThunderClap ())
 //					return true;
 //			}
-//			if (Me.Level < 100 && Execute ())
-//				return true;
+			if (Me.Level < 100) {
+				if (Rage >= RageMax - 10) {
+					if (Execute ())
+						return true;
+				}
+				if (Rage >= RageMax - 40) {
+					if (HeroicStrike ())
+						return true;
+				}
+			}
 
 			return false;
 		}
@@ -167,7 +175,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.prot+=/heroic_strike,if=buff.ultimatum.up|(talent.unyielding_strikes.enabled&buff.unyielding_strikes.stack>=6)
-			if (Me.HasAura ("Ultimatum") || (HasSpell ("Unyielding Strikes") && Me.GetAura ("Unyielding Strikes").StackCount >= 6)) {
+			if (Me.HasAura ("Ultimatum") || (HasSpell ("Unyielding Strikes") && AuraStackCount ("Unyielding Strikes") >= 6)) {
 				if (HeroicStrike ())
 					return true;
 			}
@@ -226,7 +234,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.prot_aoe+=/heroic_strike,if=buff.ultimatum.up|rage>110|(talent.unyielding_strikes.enabled&buff.unyielding_strikes.stack>=6)
-			if (Me.HasAura ("Ultimatum") || Rage > 110 || (HasSpell ("Unyielding Strikes") && Me.GetAura ("Unyielding Strikes").StackCount >= 6)) {
+			if (Me.HasAura ("Ultimatum") || Rage >= RageMax - 20 || (HasSpell ("Unyielding Strikes") && Me.GetAura ("Unyielding Strikes").StackCount >= 6)) {
 				if (HeroicStrike ())
 					return true;
 			}
@@ -351,7 +359,7 @@ namespace ReBot
 				BerserkerRage ();
 			//	actions+=/heroic_leap,if=(raid_event.movement.distance>25&raid_event.movement.in>45)|!raid_event.movement.exists
 			//	actions+=/heroic_strike,if=(buff.shield_charge.up|(buff.unyielding_strikes.up&rage>=80-buff.unyielding_strikes.stack*10))&target.health.pct>20
-			if ((Me.HasAura ("Shield Charge") || (Me.HasAura ("Unyielding Strikes") && Rage >= 80 - Me.GetAura ("Unyielding Strikes").StackCount * 10)) && Health (Target) > 20) {
+			if ((Me.HasAura ("Shield Charge") || (Me.HasAura ("Unyielding Strikes") && Rage >= 80 - AuraStackCount ("Unyielding Strikes") * 10)) && Health (Target) > 20) {
 				if (HeroicStrike ())
 					return true;
 			}

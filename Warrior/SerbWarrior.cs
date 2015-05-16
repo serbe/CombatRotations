@@ -20,6 +20,9 @@ namespace ReBot
 		public bool Gcd = true;
 		[JsonProperty ("Auto change stance")]
 		public bool UseStance = true;
+		[JsonProperty ("Use Berserker Rage in fear")]
+		public bool UseBerserkerRage = false;
+
 
 		public bool InCombat;
 		public bool WaitBloodthirst;
@@ -31,6 +34,7 @@ namespace ReBot
 		public Int32 CrystalOfInsanityID = 86569;
 		public DateTime PrevBloodthirst;
 		public DateTime PrevRavager;
+		public IEnumerable<UnitObject> MaxCycle;
 
 		// Get
 
@@ -71,6 +75,12 @@ namespace ReBot
 		public int Rage {
 			get {
 				return Me.GetPower (WoWPowerType.Rage);
+			}
+		}
+
+		public int RageMax {
+			get {
+				return API.ExecuteLua <int> ("return UnitPowerMax(\"player\");");
 			}
 		}
 
@@ -143,7 +153,7 @@ namespace ReBot
 			get {
 				int x = 0;
 				foreach (UnitObject u in API.CollectUnits (5)) {
-					if (!u.IsDead && u.MaxMana == 0 && u.Target == Me && u.InCombat) {
+					if (!u.IsDead && !u.IsCasting && u.Target == Me && u.InCombat) {
 						x++;
 					}
 				}
@@ -250,6 +260,11 @@ namespace ReBot
 			return HasSpell (s) && Cooldown (s) == 0;
 		}
 
+		public bool UsableItem (int i)
+		{ 
+			return API.HasItem (i) && API.ItemCooldown (i) <= 0;
+		}
+
 		public bool InRaid {
 			get {
 				return API.MapInfo.Type == MapType.Raid;
@@ -276,12 +291,67 @@ namespace ReBot
 
 		// Combo
 
+		public bool Heal ()
+		{
+			if (Health (Me) <= 0.35 && !HasAura ("Die by the Sword")) {
+				if (RallyingCry ())
+					return true;
+			}
+			if (Health (Me) <= 0.8) {
+				if (EnragedRegeneration ())
+					return true;
+			}
+			if (Health (Me) <= 0.8) {
+				if (ImpendingVictory ())
+					return true;
+			}
+			if (!Me.CanParticipateInCombat && UseBerserkerRage) {
+				if (BerserkerRage ())
+					return true;
+			}
+			if (Health (Me) < 0.9 && Me.HasAura ("Victorious")) {
+				if (VictoryRush ())
+					return true;
+			}
+			if (Health (Me) < 0.9 && HasAura ("Victorious")) {
+				if (ImpendingVictory ())
+					return true;
+			}
+
+//			if (CastSelf ("Defensive Stance", () => Me.HealthFraction <= (DefenseStance / 100) && !IsInShapeshiftForm ("Defensive Stance")))
+//				return; //Defensive stance
+//			if (CastSelf ("Battle Stance", () => Me.HealthFraction >= (BattleStance / 100) && !IsInShapeshiftForm ("Battle Stance")))
+//				return;
+//			if (CastSelf ("Shield Barrier", () => Me.HealthFraction >= .4 && IsInShapeshiftForm ("Defensive Stance") && Me.GetPower (WoWPowerType.Rage) >= 30 && !HasAura ("Shield Barrier")))
+//				return;
+//			if (CastSelf ("Berserker Rage", () => !HasAura ("Enrage") && !EnrageFear))
+//				return;
+
+
+//			if (Health (Me) <= DbtSwordHP) {
+//				if (DiebytheSword ())
+//					return;
+//			}
+//
+//			if (CastSelf ("Shield Wall", () => MyHealth <= ShieldWallHP))
+//				return;
+//			if (Cast ("Shield Block", () => SpellCharges ("Shield Block") == 2 && MyRage >= 60 && MyHealth <= ShieldBlockHP && !Me.HasAura ("Shield Block")))
+//				return;
+//			if (Cast ("Shield Barrier", () => MyRage >= 20 && !Me.HasAura ("Shield Barrier") && MyHealth <= ShieldBarrHP))
+//				return;
+//			if (CastSelf ("Rallying Cry", () => MyHealth <= RallyingCryHP))
+//				return;
+//			if (CastSelf ("Demoralizing Shout",	() => MyHealth <= DemoralShoutHP))
+//				return;
+
+			return false;
+		}
 
 		public bool Buff (WarCry shout)
 		{
-			if (shout == WarCry.CommandingShout && (AttackPowerBuff || !Me.HasAura ("Commanding Shout")) && CS ("Commanding Shout"))
+			if (shout == WarCry.CommandingShout && (AttackPowerBuff || !Me.HasAura ("Commanding Shout")) && Usable ("Commanding Shout") && CS ("Commanding Shout"))
 				return true;
-			if (shout == WarCry.BattleShout && !AttackPowerBuff && CS ("Battle Shout"))
+			if (shout == WarCry.BattleShout && !AttackPowerBuff && Usable ("Battle Shout") && CS ("Battle Shout"))
 				return true;
 
 			return false;
@@ -298,6 +368,10 @@ namespace ReBot
 				CycleTarget = Enemy.Where (u => u.IsCasting && !IsBoss (u) && Range (30, u) && u.RemainingCastTime > 0 && (u.Target == Me && !Me.HasAura ("Spell Reflect")) && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CycleTarget != null && StormBolt (CycleTarget))
 					return true;
+			}
+			if (Target.HasAura ("Divine Shield") || Target.HasAura ("Blessing of Protection") || Target.HasAura ("Ice Block")) {
+				if (ShatteringThrow ())
+					return true; //Break the Bubble
 			}
 
 			return false;
@@ -321,30 +395,29 @@ namespace ReBot
 
 		// Items
 
+		public bool UseItem (int i)
+		{
+			return UsableItem (i) && API.UseItem (i);
+		}
+
 		public bool DraenicArmor ()
 		{
-			if (API.HasItem (109220) && API.ItemCooldown (109220) == 0 && !Me.HasAura ("Draenic Armor Potion"))
-				return API.UseItem (109220);
-			return false;
+			return UsableItem (109220) && !Me.HasAura ("Draenic Armor Potion") && API.UseItem (109220);
 		}
 
 		public bool Healthstone ()
 		{
-			return API.HasItem (5512) && API.ItemCooldown (5512) == 0 && API.UseItem (5512);
+			return UseItem (5512);
 		}
 
 		public bool CrystalOfInsanity ()
 		{
-			if (!InArena && API.HasItem (CrystalOfInsanityID) && !HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityID) == 0)
-				return API.UseItem (CrystalOfInsanityID);
-			return false;
+			return !InArena && UsableItem (CrystalOfInsanityID) && !HasAura ("Visions of Insanity") && API.UseItem (CrystalOfInsanityID);
 		}
 
 		public bool OraliusWhisperingCrystal ()
 		{
-			if (API.HasItem (OraliusWhisperingCrystalID) && !HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalID) == 0)
-				return API.UseItem (OraliusWhisperingCrystalID);
-			return false;
+			return UsableItem (OraliusWhisperingCrystalID) && !HasAura ("Whispers of Insanity") && API.UseItem (OraliusWhisperingCrystalID);
 		}
 
 		// ------- Spells
@@ -387,7 +460,7 @@ namespace ReBot
 
 		public bool BerserkerRage ()
 		{
-			return Usable ("Berserker Rage") && Target.IsInLoS && CS ("Berserker Rage");
+			return Usable ("Berserker Rage") && Range (5) && CS ("Berserker Rage");
 		}
 
 		public bool ShieldBlock ()
@@ -428,7 +501,7 @@ namespace ReBot
 		public bool HeroicStrike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Heroic Strike") && HasRage (30) && Range (5, u) && C ("Heroic Strike", u);
+			return Usable ("Heroic Strike") && (HasRage (30) || Me.HasAura ("Ultimatum")) && Range (5, u) && C ("Heroic Strike", u);
 		}
 
 		public bool Bloodbath ()
@@ -447,10 +520,46 @@ namespace ReBot
 			return Usable ("Shield Slam") && Range (5, u) && C ("Shield Slam", u);
 		}
 
+		public bool ShatteringThrow (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Shattering Throw") && Range (30, u) && !Me.IsMoving && C ("Shattering Throw", u);
+		}
+
 		public bool Revenge (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return Usable ("Revenge") && Range (5, u) && C ("Revenge", u);
+		}
+
+		public bool Rend (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Rend") && Range (5, u) && HasRage (5) && C ("Rend", u);
+		}
+
+		public bool SweepingStrikes ()
+		{
+			return Usable ("Sweeping Strikes") && !Me.HasAura ("Sweeping Strikes") && Rage >= 10 && CS ("Sweeping Strikes");
+		}
+
+		public bool Slam (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Slam") && Range (5, u) && HasRage (10) && C ("Slam", u);
+		}
+
+
+		public bool ColossusSmash (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Colossus Smash") && Range (5, u) && Rage >= 10 && C ("Colossus Smash", u);
+		}
+
+		public bool MortalStrike (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Mortal Strike") && Range (5, u) && HasRage (20) && C ("Mortal Strike", u);
 		}
 
 		public bool Ravager (UnitObject u = null)

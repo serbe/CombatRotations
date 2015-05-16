@@ -2,6 +2,7 @@
 using ReBot.API;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System.Linq;
 
 namespace ReBot
 {
@@ -9,8 +10,6 @@ namespace ReBot
 
 	public class SerbWarriorArms : SerbWarrior
 	{
-		[JsonProperty ("Max rage")]
-		public int RageMax = 100;
 		[JsonProperty ("War cry"), JsonConverter (typeof(StringEnumConverter))]							
 		public WarCry Shout = WarCry.BattleShout;
 		[JsonProperty ("Use Movement")]
@@ -51,6 +50,21 @@ namespace ReBot
 
 		public override void Combat ()
 		{
+
+			if (Interrupt ())
+				return;
+
+			if (Reflect ())
+				return;
+
+			if (Gcd && HasGlobalCooldown ())
+				return;
+
+			if (!(InInstance || InRaid)) {
+				if (Heal ())
+					return;
+			}
+
 			//	actions=charge,if=debuff.charge.down
 			//	actions+=/auto_attack
 			//	# This is mostly to prevent cooldowns from being accidentally used during movement.
@@ -78,11 +92,11 @@ namespace ReBot
 					return;
 			}
 			//	actions+=/blood_fury,if=buff.bloodbath.up|(!talent.bloodbath.enabled&debuff.colossus_smash.up)|buff.recklessness.up
-			if (Me.HasAura ("Bloodbath") || (!HasSpell ("Bloodbath") && Target.HasAura ("Colossus Smash")) || Me.HasAura ("Recklessness")) {
+			if (Me.HasAura ("Bloodbath") || (!HasSpell ("Bloodbath") && Target.HasAura ("Colossus Smash", true)) || Me.HasAura ("Recklessness")) {
 				BloodFury ();
 			}
 			//	actions+=/berserking,if=buff.bloodbath.up|(!talent.bloodbath.enabled&debuff.colossus_smash.up)|buff.recklessness.up
-			if (Me.HasAura ("Bloodbath") || (!HasSpell ("Bloodbath") && Target.HasAura ("Colossus Smash")) || Me.HasAura ("Recklessness")) {
+			if (Me.HasAura ("Bloodbath") || (!HasSpell ("Bloodbath") && Target.HasAura ("Colossus Smash", true)) || Me.HasAura ("Recklessness")) {
 				BerserkerRage ();
 			}
 			//	actions+=/arcane_torrent,if=rage<rage.max-40
@@ -97,18 +111,6 @@ namespace ReBot
 			if (ActiveEnemies (8) > 1)
 				ActionAoe ();
 
-
-//			// actions+=/use_item,name=bonemaws_big_toe,if=(buff.bloodbath.up|(!talent.bloodbath.enabled&debuff.colossus_smash.up))
-//			if (Me.HasAura("Bloodbath") || (!HasSpell("Bloodbath") && Target.HasAura("Colossus Smash"))) {
-//				API.UseItem(110012);
-//				return;
-//			}
-//			// actions+=/use_item,name=turbulent_emblem,if=(buff.bloodbath.up|(!talent.bloodbath.enabled&debuff.colossus_smash.up))
-//			if (Me.HasAura("Bloodbath") || (!HasSpell("Bloodbath") && Target.HasAura("Colossus Smash"))) {
-//				API.UseItem(114491);
-//				return;
-//			}
-
 		}
 
 		public bool Movement ()
@@ -119,6 +121,8 @@ namespace ReBot
 			//	actions.movement+=/charge,cycle_targets=1,if=debuff.charge.down
 			//	# If possible, charge a target that will give us rage. Otherwise, just charge to get back in range.
 			//	actions.movement+=/charge
+			if (Charge ())
+				return true;
 			//	# May as well throw storm bolt if we can.
 			//	actions.movement+=/storm_bolt
 			if (StormBolt ())
@@ -138,21 +142,21 @@ namespace ReBot
 					return;
 			}
 			//	actions.single+=/ravager,if=cooldown.colossus_smash.remains<4&(!raid_event.adds.exists|raid_event.adds.in>55)
-			if (SpellCooldown ("Colossus Smash") < 4) {
-				if (Ravager ())
+			if (Cooldown ("Colossus Smash") < 4) {
+				if (Ravager ()) {
+					PrevRavager = DateTime.Now;
 					return;
+				}
 			}
 			//	actions.single+=/colossus_smash
 			if (ColossusSmash ())
 				return;
 			//	actions.single+=/mortal_strike,if=target.health.pct>20
-			// actions.single+=/mortal_strike,if=target.health.pct>20
 			if (Health () > 0.2) {
 				if (MortalStrike ())
 					return;
 			}
 			//	actions.single+=/bladestorm,if=(((debuff.colossus_smash.up|cooldown.colossus_smash.remains>3)&target.health.pct>20)|(target.health.pct<20&rage<30&cooldown.colossus_smash.remains>4))&(!raid_event.adds.exists|raid_event.adds.in>55|(talent.anger_management.enabled&raid_event.adds.in>40))
-			// actions.single+=/bladestorm,if=(((debuff.colossus_smash.up|cooldown.colossus_smash.remains>3)&target.health.pct>20)|(target.health.pct<20&rage<30&cooldown.colossus_smash.remains>4))&(!raid_event.adds.exists|raid_event.adds.in>55|(talent.anger_management.enabled&raid_event.adds.in>40))
 			if ((((Target.HasAura ("Colossus Smash", true) || Cooldown ("Colossus Smash") > 3) && Health () > 0.2) || (Health () < 0.2 && Rage < 30 && Cooldown ("Colossus Smash") > 4))) {
 				if (Bladestorm ())
 					return;
@@ -166,55 +170,93 @@ namespace ReBot
 			if (Siegebreaker ())
 				return;
 			//	actions.single+=/dragon_roar,if=!debuff.colossus_smash.up&(!raid_event.adds.exists|raid_event.adds.in>55|(talent.anger_management.enabled&raid_event.adds.in>40))
+			if (!Target.HasAura ("Colossus Smash", true)) {
+				if (DragonRoar ())
+					return;
+			}
 			//	actions.single+=/execute,if=buff.sudden_death.react
+			if (Me.HasAura ("Sudden Death")) {
+				if (Execute ())
+					return;
+			}
 			//	actions.single+=/execute,if=!buff.sudden_death.react&(rage>72&cooldown.colossus_smash.remains>gcd)|debuff.colossus_smash.up|target.time_to_die<5
+			if (!Me.HasAura ("Sudden Death") && (Rage > 72 && Cooldown ("Colossus Smash") > 1.5) || Target.HasAura ("Colossus Smash", true) || TimeToDie () < 5) {
+				if (Execute ())
+					return;
+			}
 			//	actions.single+=/impending_victory,if=rage<40&target.health.pct>20&cooldown.colossus_smash.remains>1
+			if (Rage < 40 && Health () > 0.2 && Cooldown ("Colossus Smash") > 1) {
+				if (ImpendingVictory ())
+					return;
+			}
 			//	actions.single+=/slam,if=(rage>20|cooldown.colossus_smash.remains>gcd)&target.health.pct>20&cooldown.colossus_smash.remains>1
+			if ((Rage > 20 || Cooldown ("Colossus Smash") > 1.5) && Health () > 0.2 && Cooldown ("Colossus Smash") > 1) {
+				if (Slam ())
+					return;
+			}
 			//	actions.single+=/thunder_clap,if=!talent.slam.enabled&target.health.pct>20&(rage>=40|debuff.colossus_smash.up)&glyph.resonating_power.enabled&cooldown.colossus_smash.remains>gcd
+			if (!HasSpell ("Slam") && Health () > 0.2 && (Rage >= 40 || Target.HasAura ("Colossus Smash", true)) && HasGlyph (57164) && Cooldown ("Colossus Smash") > 1.5) {
+				if (ThunderClap ())
+					return;
+			}
 			//	actions.single+=/whirlwind,if=!talent.slam.enabled&target.health.pct>20&(rage>=40|debuff.colossus_smash.up)&cooldown.colossus_smash.remains>gcd
+			if (!HasSpell ("Slam") && Health () > 0.2 && (Rage >= 40 || Target.HasAura ("Colossus Smash", true)) && Cooldown ("Colossus Smash") > 1.5) {
+				if (Whirlwind ())
+					return;
+			}
 			//	actions.single+=/shockwave
-
-
-			// actions.single+=/dragon_roar,if=!debuff.colossus_smash.up&(!raid_event.adds.exists|raid_event.adds.in>55|(talent.anger_management.enabled&raid_event.adds.in>40))
-			if (Cast ("Dragon Roar",	() => HasSpell ("Dragon Roar") && !Target.HasAura ("Colossus Smash")))
+			if (Shockwave ())
 				return;
-			// actions.single+=/rend,if=!debuff.colossus_smash.up&target.time_to_die>4&remains<5.4
-			if (Cast ("Rend", () => !Target.HasAura ("Colossus Smash") && TimeToDie (Target) > 4 && Target.AuraTimeRemaining ("Rend") < 5.4))
-				return;
-			// actions.single+=/execute,if=buff.sudden_death.react
-			if (Cast ("Execute",	() => Me.HasAura ("Sudden Death")))
-				return;
-			// actions.single+=/execute,if=!buff.sudden_death.react&(rage>72&cooldown.colossus_smash.remains>gcd)|debuff.colossus_smash.up|target.time_to_die<5
-			if (Cast ("Execute",	() => !Me.HasAura ("Sudden Death") && (Rage > 72 && SpellCooldown ("Colossus Smash") > 1.5) || Target.HasAura ("Colossus Smash") || TimeToDie (Target) < 5))
-				return;
-			// actions.single+=/impending_victory,if=rage<40&target.health.pct>20&cooldown.colossus_smash.remains>1
-			if (Cast ("Impending Victory", () => Rage < 40 && TargetHealth > 0.2 && SpellCooldown ("Colossus Smash") > 1))
-				return;
-			// actions.single+=/slam,if=(rage>20|cooldown.colossus_smash.remains>gcd)&target.health.pct>20&cooldown.colossus_smash.remains>1
-			if (Cast ("Slam", () => (Rage > 20 || SpellCooldown ("Colossus Smash") > 1.5) && TargetHealth > 0.2 && SpellCooldown ("Colossus Smash") > 1))
-				return;
-			// actions.single+=/thunder_clap,if=!talent.slam.enabled&target.health.pct>20&(rage>=40|debuff.colossus_smash.up)&glyph.resonating_power.enabled&cooldown.colossus_smash.remains>gcd
-			if (Cast ("Thunder Clap", () => !HasSpell ("Slam") && TargetHealth > 0.2 && (Rage >= 40 || Target.HasAura ("Colossus Smash")) && HasGlyph (57164) && SpellCooldown ("Colossus Smash") > 1.5))
-				return;
-			// actions.single+=/whirlwind,if=!talent.slam.enabled&target.health.pct>20&(rage>=40|debuff.colossus_smash.up)&cooldown.colossus_smash.remains>gcd
-			if (Cast ("Whirlwind", () => !HasSpell ("Slam") && TargetHealth > 0.2 && (Rage >= 40 || Target.HasAura ("Colossus Smash")) && SpellCooldown ("Colossus Smash") > 1.5))
-				return;
-			// actions.single+=/shockwave
-			if (Cast ("Shockwave", () => HasSpell ("Shockwave")))
-				return;
-
 		}
 
 		void ActionAoe ()
 		{
 			//	actions.aoe=sweeping_strikes
+			if (SweepingStrikes ())
+				return;
 			//	actions.aoe+=/rend,if=ticks_remain<2&target.time_to_die>4&(target.health.pct>20|!debuff.colossus_smash.up)
+			if (Target.AuraTimeRemaining ("Rend", true) < 2 && TimeToDie () > 4 && (Health () > 0.2 || !Target.HasAura ("Colossus Smash", true))) {
+				if (Rend ())
+					return;
+			}
 			//	actions.aoe+=/rend,cycle_targets=1,max_cycle_targets=2,if=ticks_remain<2&target.time_to_die>8&!buff.colossus_smash_up.up&talent.taste_for_blood.enabled
+			if (HasSpell ("Taste for Blood") && !Me.HasAura ("Colossus Smash")) {
+				MaxCycle = Enemy.Where (u => Range (5, u) && u.AuraTimeRemaining ("Rend", true) < 2 && TimeToDie (u) > 8);
+				if (MaxCycle.ToList ().Count <= 2) {
+					CycleTarget = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null && Rend (CycleTarget))
+						return;
+				}
+			}
 			//	actions.aoe+=/rend,cycle_targets=1,if=ticks_remain<2&target.time_to_die-remains>18&!buff.colossus_smash_up.up&active_enemies<=8
+			if (ActiveEnemies (5) <= 8 && !Me.HasAura ("Colossus Smash")) {
+				CycleTarget = Enemy.Where (u => Range (5, u) && u.AuraTimeRemaining ("Rend", true) < 2 && TimeToDie (u) - u.AuraTimeRemaining ("Rend", true) > 18).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && Rend (CycleTarget))
+					return;
+			}
 			//	actions.aoe+=/ravager,if=buff.bloodbath.up|cooldown.colossus_smash.remains<4
+			if (Me.HasAura ("Bloodbath") || Cooldown ("Colossus Smash") < 4) {
+				if (Ravager ()) {
+					PrevRavager = DateTime.Now;
+					return;
+				}
+			}
 			//	actions.aoe+=/bladestorm,if=((debuff.colossus_smash.up|cooldown.colossus_smash.remains>3)&target.health.pct>20)|(target.health.pct<20&rage<30&cooldown.colossus_smash.remains>4)
+			if (((Target.HasAura ("Colossus Smash", true) || Cooldown ("Colossus Smash") > 3) && Health () > 0.2) || (Health () < 0.2 && Rage < 30 && Cooldown ("Colossus Smash") > 4)) {
+				if (Bladestorm ())
+					return;
+			}
 			//	actions.aoe+=/colossus_smash,if=dot.rend.ticking
+			if (Target.HasAura ("Rend", true)) {
+				if (ColossusSmash ())
+					return;
+			}
 			//	actions.aoe+=/execute,cycle_targets=1,if=!buff.sudden_death.react&active_enemies<=8&((rage>72&cooldown.colossus_smash.remains>gcd)|rage>80|target.time_to_die<5|debuff.colossus_smash.up)
+			if (!Me.HasAura ("Sudden Death") && ActiveEnemies (8) <= 8) {
+				CycleTarget = Enemy.Where (u => Range (5, u) && ((Rage > 72 && Cooldown ("Colossus Smash") > 1.5) || Rage > 80 || TimeToDie (u) < 5 || u.HasAura ("Colossus Smash", true))).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && Execute (CycleTarget))
+					return;
+			}
 			//	actions.aoe+=/heroic_charge,cycle_targets=1,if=target.health.pct<20&rage<70&swing.mh.remains>2&debuff.charge.down
 			//	# Heroic Charge is an event that makes the warrior heroic leap out of melee range for an instant
 			//	#If heroic leap is not available, the warrior will simply run out of melee to charge range, and then charge back in.
@@ -222,95 +264,54 @@ namespace ReBot
 			//	#The amount lost from delayed autoattacks. Charge only grants rage from charging a different target than the last time.
 			//	#Which means this is only worth doing on AoE, and only when you cycle your charge target.
 			//	actions.aoe+=/mortal_strike,if=target.health.pct>20&active_enemies<=5
+			if (Health () > 0.2 && ActiveEnemies (5) <= 5) {
+				if (MortalStrike ())
+					return;
+			}
 			//	actions.aoe+=/dragon_roar,if=!debuff.colossus_smash.up
+			if (!Target.HasAura ("Colossus Smash", true)) {
+				if (DragonRoar ())
+					return;
+			}
 			//	actions.aoe+=/thunder_clap,if=(target.health.pct>20|active_enemies>=9)&glyph.resonating_power.enabled
+			if ((Health () > 0.2 || ActiveEnemies (8) >= 9) && HasGlyph (57164)) {
+				if (ThunderClap ())
+					return;
+			}
 			//	actions.aoe+=/rend,cycle_targets=1,if=ticks_remain<2&target.time_to_die>8&!buff.colossus_smash_up.up&active_enemies>=9&rage<50&!talent.taste_for_blood.enabled
+			if (!Me.HasAura ("Colossus Smash") && ActiveEnemies (5) >= 9 && Rage < 50 && !HasSpell ("Taste for Blood")) {
+				CycleTarget = Enemy.Where (u => Range (5, u) && u.AuraTimeRemaining ("Rend", true) < 2 && TimeToDie (u) > 8).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && Rend (CycleTarget))
+					return;
+			}
 			//	actions.aoe+=/whirlwind,if=target.health.pct>20|active_enemies>=9
+			if (Health () > 0.2 || ActiveEnemies (8) >= 9) {
+				if (Whirlwind ())
+					return;
+			}
 			//	actions.aoe+=/siegebreaker
+			if (Siegebreaker ())
+				return;
 			//	actions.aoe+=/storm_bolt,if=cooldown.colossus_smash.remains>4|debuff.colossus_smash.up
+			if (Cooldown ("Colossus Smash") > 4 || Target.HasAura ("Colossus Smash", true)) {
+				if (StormBolt ())
+					return;
+			}
 			//	actions.aoe+=/shockwave
+			if (Shockwave ())
+				return;
 			//	actions.aoe+=/execute,if=buff.sudden_death.react
-
-
-			// actions.aoe=sweeping_strikes
-			if (CastSelf ("Sweeping Strikes", () => !Me.HasAura ("Sweeping Strikes")))
-				return;
-			// actions.aoe+=/rend,if=ticks_remain<2&target.time_to_die>4&(target.health.pct>20|!debuff.colossus_smash.up)
-			if (Cast ("Rend", () => Target.AuraTimeRemaining ("Rend") < 2 && TimeToDie (Target) > 4 && (TargetHealth > 0.2 || !Target.HasAura ("Colossus Smash"))))
-				return;
-			// actions.aoe+=/rend,cycle_targets=1,max_cycle_targets=2,if=ticks_remain<2&target.time_to_die>8&!buff.colossus_smash_up.up&talent.taste_for_blood.enabled
-			if (HasSpell ("Taste for Blood") && !Me.HasAura ("Colossus Smash")) {
-				castingAddInRange = Adds.Where (x => x.DistanceSquared <= 5 * 5).ToList ().FirstOrDefault (x => x.AuraTimeRemaining ("Rend") < 2 && TimeToDie (x) > 8);
-				if (castingAddInRange != null)
-				if (Cast ("Rend", castingAddInRange))
+			if (Me.HasAura ("Sudden Death")) {
+				if (Execute ())
 					return;
 			}
-			// actions.aoe+=/rend,cycle_targets=1,if=ticks_remain<2&target.time_to_die-remains>18&!buff.colossus_smash_up.up&active_enemies<=8
-			if (nearbyAdds <= 8 && !Me.HasAura ("Colossus Smash")) {
-				castingAddInRange = Adds.Where (x => x.DistanceSquared <= 5 * 5).ToList ().FirstOrDefault (x => x.AuraTimeRemaining ("Rend") < 2 && TimeToDie (x) - x.AuraTimeRemaining ("Rend") > 18);
-				if (castingAddInRange != null)
-				if (Cast ("Rend", castingAddInRange))
-					return;
-			}
-			// actions.aoe+=/ravager,if=buff.bloodbath.up|cooldown.colossus_smash.remains<4
-			if (Cast ("Ravager",	() => HasSpell ("Ravager") && (HasAura ("Bloodbath") || SpellCooldown ("Colossus Smash") < 4)))
-				return;
-			// actions.aoe+=/bladestorm,if=((debuff.colossus_smash.up|cooldown.colossus_smash.remains>3)&target.health.pct>20)|(target.health.pct<20&rage<30&cooldown.colossus_smash.remains>4)
-			if (Cast ("Bladestorm", () => HasSpell ("Bladestorm") && ((Target.HasAura ("Colossus Smash") || SpellCooldown ("Colossus Smash") > 3) && TargetHealth > 0.2) || (TargetHealth < 0.2 && Rage < 30 && SpellCooldown ("Colossus Smash") > 4)))
-				return;
-			// actions.aoe+=/colossus_smash,if=dot.rend.ticking
-			if (Cast ("Colossus Smash", () => Target.HasAura ("Rend")))
-				return;
-			// actions.aoe+=/execute,cycle_targets=1,if=!buff.sudden_death.react&active_enemies<=8&((rage>72&cooldown.colossus_smash.remains>gcd)|rage>80|target.time_to_die<5|debuff.colossus_smash.up)
-			if (!Me.HasAura ("Sudden Death") && nearbyAdds <= 8) {
-				castingAddInRange = Adds.Where (x => x.DistanceSquared <= 5 * 5).ToList ().FirstOrDefault (x => (Rage > 72 && SpellCooldown ("Colossus Smash") > 1.5) || Rage > 80 || TimeToDie (x) < 5 || x.HasAura ("Colossus Smash"));
-				if (castingAddInRange != null)
-				if (Cast ("Execute", castingAddInRange))
-					return;
-			}
-			// actions.aoe+=/mortal_strike,if=target.health.pct>20&active_enemies<=5
-			if (Cast ("Mortal Strike", () => TargetHealth > 0.2 && nearbyAdds <= 5))
-				return;
-			// actions.aoe+=/dragon_roar,if=!debuff.colossus_smash.up
-			if (Cast ("Dragon Roar",	() => HasSpell ("Dragon Roar") && !Target.HasAura ("Colossus Smash")))
-				return;
-			// actions.aoe+=/thunder_clap,if=(target.health.pct>20|active_enemies>=9)&glyph.resonating_power.enabled
-			if (Cast ("Thunder Clap", () => (TargetHealth > 0.2 || nearbyAdds >= 9) && HasGlyph (57164)))
-				return;
-			// actions.aoe+=/rend,cycle_targets=1,if=ticks_remain<2&target.time_to_die>8&!buff.colossus_smash_up.up&active_enemies>=9&rage<50&!talent.taste_for_blood.enabled
-			if (!Me.HasAura ("Colossus Smash") && nearbyAdds >= 9 && Rage < 50 && !HasSpell ("Taste for Blood")) {
-				castingAddInRange = Adds.Where (x => x.DistanceSquared <= 5 * 5).ToList ().FirstOrDefault (x => x.AuraTimeRemaining ("Rend") < 2 && TimeToDie (x) > 8);
-				if (castingAddInRange != null)
-				if (Cast ("Rend", castingAddInRange))
-					return;
-			}
-			// actions.aoe+=/whirlwind,if=target.health.pct>20|active_enemies>=9
-			if (Cast ("Whirlwind", () => TargetHealth > 0.2 || nearbyAdds >= 9))
-				return;
-			// actions.aoe+=/siegebreaker
-			if (Cast ("Siegebreaker", () => HasSpell ("Siegebreaker")))
-				return;
-			// actions.aoe+=/storm_bolt,if=cooldown.colossus_smash.remains>4|debuff.colossus_smash.up
-			if (Cast ("Storm Bolt", () => HasSpell ("Storm Bolt") && SpellCooldown ("Colossus Smash") > 4 || Target.HasAura ("Colossus Smash")))
-				return;
-			// actions.aoe+=/shockwave
-			if (Cast ("Shockwave", () => HasSpell ("Shockwave")))
-				return;
-			// actions.aoe+=/execute,if=buff.sudden_death.react
-			if (Cast ("Execute",	() => Me.HasAura ("Sudden Death")))
-				return;
 		}
 	}
 }
 
 
 //	//Def CD
-//	// if (Cast("Die by the Sword",		() => MyHealth <= DbtSwordHP)) return;
-//	// if (CastSelf("Shield Wall",			() => MyHealth <= ShieldWallHP)) return;
-//	// if (Cast("Shield Block",			() => SpellCharges("Shield Block") == 2 && MyRage >= 60 && MyHealth <= ShieldBlockHP && !Me.HasAura("Shield Block"))) return;
-//	// if (Cast("Shield Barrier",			() => MyRage >= 20 && !Me.HasAura("Shield Barrier") && MyHealth <= ShieldBarrHP)) return;
-//	// if (CastSelf("Rallying Cry",		() => MyHealth <= RallyingCryHP)) return;
-//	// if (CastSelf("Demoralizing Shout",	() => MyHealth <= DemoralShoutHP)) return;
+
 //
 //	// Interrups casting or reflect
 //	if (Cast("Pummel", () => Target.IsCastingAndInterruptible() && !Me.HasAura("Spell Reflect") && !Me.HasAura("Mass Spell Reflection"))) return;
@@ -337,7 +338,3 @@ namespace ReBot
 //	if (CastSelf("Rallying Cry", () => Health <= 0.25)) return;
 //	if (CastSelf("Enraged Regeneration", () => Health <= 0.5)) return;
 //
-//	//CD
-//	// if (CastSelf("Recklessness",	() => Target.IsElite() && RecklessnessCD)) return;
-
-

@@ -10,8 +10,6 @@ namespace ReBot
 
 	public class SerbWarriorFurySC : SerbWarrior
 	{
-		[JsonProperty ("Max rage")]
-		public int RageMax = 100;
 		[JsonProperty ("War cry"), JsonConverter (typeof(StringEnumConverter))]							
 		public WarCry Shout = WarCry.BattleShout;
 		[JsonProperty ("Use Movement")]
