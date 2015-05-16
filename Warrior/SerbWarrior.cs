@@ -30,6 +30,7 @@ namespace ReBot
 		public Int32 OraliusWhisperingCrystalID = 118922;
 		public Int32 CrystalOfInsanityID = 86569;
 		public DateTime PrevBloodthirst;
+		public DateTime PrevRavager;
 
 		// Get
 
@@ -40,12 +41,18 @@ namespace ReBot
 			}
 		}
 
+		public bool PrevGcdRavager {
+			get {
+				TimeSpan CombatTime = DateTime.Now.Subtract (PrevRavager);
+				return CombatTime.TotalSeconds < 3;
+			}
+		}
+
 		public bool AttackPowerBuff {
 			get {
 				return Me.HasAura ("Battle Shout") || Me.HasAura ("Horn of Winter");
 			}
 		}
-
 
 		public List<UnitObject> Enemy {
 			get {
