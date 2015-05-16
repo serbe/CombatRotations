@@ -24,7 +24,7 @@ namespace ReBot
 				"Battle Shout"
 			};
 			PullSpells = new[] {
-				"Charge"
+				"Devastate"
 			};
 		}
 
@@ -67,6 +67,9 @@ namespace ReBot
 
 			if (Reflect ())
 				return;
+
+			if (Me.CanNotParticipateInCombat ())
+				Freedom ();
 
 			if (Gcd && HasGlobalCooldown ())
 				return;

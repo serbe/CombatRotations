@@ -63,6 +63,8 @@ namespace ReBot
 				return;
 			}
 
+			if (Me.CanNotParticipateInCombat ())
+				Freedom ();
 
 			if (Health (Me) <= 0.4) {
 				if (DiebytheSword ())

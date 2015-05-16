@@ -21,7 +21,7 @@ namespace ReBot
 		[JsonProperty ("Auto change stance")]
 		public bool UseStance = true;
 		[JsonProperty ("Use Berserker Rage in fear")]
-		public bool UseBerserkerRage = false;
+		public bool UseBerserkerRage;
 
 
 		public bool InCombat;
@@ -167,7 +167,7 @@ namespace ReBot
 			u = u ?? Target;
 			if (Cast (s, u))
 				return true;
-			API.Print ("False Cast " + s + " with " + u.CombatRange + " range");
+			API.Print ("False Cast " + s + " with " + u.CombatRange + " range and " + Rage + " rage");
 			return false;
 		}
 
@@ -290,6 +290,11 @@ namespace ReBot
 		}
 
 		// Combo
+
+		public bool Freedom ()
+		{
+			return WilloftheForsaken () || EveryManforHimself ();
+		}
 
 		public bool Heal ()
 		{
@@ -421,6 +426,16 @@ namespace ReBot
 		}
 
 		// ------- Spells
+
+		public bool WilloftheForsaken ()
+		{
+			return Usable ("Will of the Forsaken") && CS ("Will of the Forsaken");
+		}
+
+		public bool EveryManforHimself ()
+		{
+			return Usable ("Every Man for Himself") && CS ("Every Man for Himself");
+		}
 
 		public bool Charge (UnitObject u = null)
 		{
