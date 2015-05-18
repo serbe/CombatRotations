@@ -6,7 +6,7 @@ using ReBot.API;
 
 namespace ReBot
 {
-	[Rotation ("Serb Subtlety Rogue SC", "Serb", WoWClass.Rogue, Specialization.RogueSubtlety, 5, 25)]
+	[Rotation ("SC Subtlety Rogue", "Serb", WoWClass.Rogue, Specialization.RogueSubtlety, 5, 25)]
 
 	public class SerbRogueSubtletySc : SerbRogue
 	{

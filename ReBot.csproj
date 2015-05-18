@@ -43,9 +43,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rogue\SerbRogueCombatSC.cs" />
-    <Compile Include="Rogue\SerbRogueSubtletySC.cs" />
-    <Compile Include="Rogue\SerbRogueAssassinationSC.cs" />
     <Compile Include="Druid\SerbDruidFeralSC.cs" />
     <Compile Include="Druid\SerbDruidBalanceSC.cs" />
     <Compile Include="Hunter\SerbHunterBeastmasterSC.cs" />
@@ -69,14 +66,17 @@
     <Compile Include="DeathKnight\SerbDeathknightFrost.cs" />
     <Compile Include="Priest\SerbPriestShadowIV.cs" />
     <Compile Include="Paladin\SerbPaladin.cs" />
-    <Compile Include="Monk\SerbMonkBrewmasterSC.cs" />
     <Compile Include="Shaman\SerbShamanElementalistSC.cs" />
-    <Compile Include="Paladin\SerbPaladinProtectionSC.cs" />
     <Compile Include="Warrior\SerbWarriorFury.cs" />
     <Compile Include="Monk\SerbMonkMistweaver.cs" />
     <Compile Include="Warlock\SerbWarlockAffliction.cs" />
-    <Compile Include="Paladin\SerbPaladinRetributionSC.cs" />
     <Compile Include="Warrior\SerbWarriorArms.cs" />
+    <Compile Include="Rogue\SerbRogueAssassination.cs" />
+    <Compile Include="Rogue\SerbRogueCombat.cs" />
+    <Compile Include="Rogue\SerbRogueSubtlety.cs" />
+    <Compile Include="Monk\SerbMonkBrewmaster.cs" />
+    <Compile Include="Paladin\SerbPaladinProtection.cs" />
+    <Compile Include="Paladin\SerbPaladinRetribution.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace ReBot
 {
-	[Rotation ("Serb Monk Mistweaver", "Serb", WoWClass.Monk, Specialization.MonkMistweaver, 40, 25)]
+	[Rotation ("S Monk Mistweaver", "Serb", WoWClass.Monk, Specialization.MonkMistweaver, 40, 25)]
 
 	public class SerbMonkMistweaver : SerbMonk
 	{

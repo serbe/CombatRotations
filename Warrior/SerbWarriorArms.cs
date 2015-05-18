@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace ReBot
 {
-	[Rotation ("Serb Warrior Arms SC", "Serb", WoWClass.Warrior, Specialization.WarriorArms, 5, 25)]
+	[Rotation ("SC Warrior Arms", "Serb", WoWClass.Warrior, Specialization.WarriorArms, 5, 25)]
 
 	public class SerbWarriorArms : SerbWarrior
 	{

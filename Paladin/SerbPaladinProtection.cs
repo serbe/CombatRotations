@@ -6,7 +6,7 @@ using Newtonsoft.Json.Converters;
 
 namespace ReBot
 {
-	[Rotation ("Serb Paladin Protection SC", "Serb", WoWClass.Paladin, Specialization.PaladinProtection, 5, 25)]
+	[Rotation ("SC Paladin Protection", "Serb", WoWClass.Paladin, Specialization.PaladinProtection, 5, 25)]
 
 	public class SerbPaladinProtectionSC : SerbPaladin
 	{
