@@ -74,6 +74,15 @@ namespace ReBot
 			if (Gcd && HasGlobalCooldown ())
 				return;
 
+			if (Health (Me) < 0.9 && Me.HasAura ("Victorious")) {
+				if (VictoryRush ())
+					return;
+			}
+			if (Health (Me) < 0.9 && HasAura ("Victorious")) {
+				if (ImpendingVictory ())
+					return;
+			}
+
 			if (!(InInstance || InRaid) || Health (Me) < 0.4) {
 				if (Heal ())
 					return;
@@ -156,7 +165,7 @@ namespace ReBot
 			if (Health (Me) < 0.9 && DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
 				DemoralizingShout ();
 			//	actions.prot+=/enraged_regeneration,if=incoming_damage_2500ms>health.max*0.1&!(debuff.demoralizing_shout.up|buff.ravager_protection.up|buff.shield_wall.up|buff.last_stand.up|buff.enraged_regeneration.up|buff.shield_block.up|buff.potion.up)
-			if (Health (Me) < 0.9 && DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
+			if (Health (Me) < 0.7 && DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))
 				EnragedRegeneration ();
 			//	actions.prot+=/shield_wall,if=incoming_damage_2500ms>health.max*0.1&!(debuff.demoralizing_shout.up|buff.ravager_protection.up|buff.shield_wall.up|buff.last_stand.up|buff.enraged_regeneration.up|buff.shield_block.up|buff.potion.up)
 			if (Health (Me) < 0.9 && DamageTaken (2500) > Me.MaxHealth * 0.1 && !(Target.HasAura ("Demoralizing Shout", true) || Me.HasAura ("Ravager") || Me.HasAura ("Shield Wall") || Me.HasAura ("Last Stand") || Me.HasAura ("Enraged Regeneration") || Me.HasAura ("Shield Block") || Me.HasAura ("Draenic Armor Potion")))

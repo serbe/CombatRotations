@@ -167,7 +167,7 @@ namespace ReBot
 			u = u ?? Target;
 			if (Cast (s, u))
 				return true;
-			API.Print ("False Cast " + s + " with " + u.CombatRange + " range and " + Rage + " rage");
+			API.Print ("False Cast " + s + " with " + u.CombatRange + " range and " + Rage + " rage, with " + u.Distance + " distance");
 			return false;
 		}
 
@@ -193,7 +193,7 @@ namespace ReBot
 			u = u ?? Target;
 			if (CastOnTerrain (s, u.Position))
 				return true;
-			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range");
+			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range and " + Rage + " rage, with " + u.Distance + " distance");
 			return false;
 		}
 
@@ -202,7 +202,7 @@ namespace ReBot
 			u = u ?? Target;
 			if (CastOnTerrainPreventDouble (s, u.Position))
 				return true;
-			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range");
+			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range and " + Rage + " rage, with " + u.Distance + " distance");
 			return false;
 		}
 
