@@ -21,12 +21,25 @@ namespace ReBot
 		public ConfigRotation SelectedRotation = ConfigRotation.Normal;
 		[JsonProperty ("Use GCD")]
 		public bool Gcd = true;
+		[JsonProperty ("Check Seal")]
+		public bool CheckSeal = true;
 
 		public bool WaitCrusaderStrike;
 		public bool WaitJudgment;
 
+		DateTime CheckTimer;
+
+		public double TimeCheck {
+			get {
+				TimeSpan cTime = DateTime.Now.Subtract (CheckTimer);
+				return cTime.TotalSeconds;
+			}
+		}
+
 		public SerbPaladinProtectionSC ()
 		{
+			GroupBuffs = new[] { "Blessing of Kings" };
+			PullSpells = new[] { "Judgment" };
 		}
 
 		public override bool OutOfCombat ()
@@ -69,6 +82,13 @@ namespace ReBot
 			if (OraliusWhisperingCrystal ())
 				return true;
 
+			if (CheckSeal && TimeCheck > 2) {
+				API.Print ("Seal of Insight " + IsInShapeshiftForm ("Seal of Insight") + " " + Me.HasAura ("Seal of Insight"));
+				API.Print ("Seal of Righteousness " + IsInShapeshiftForm ("Seal of Righteousness") + " " + Me.HasAura ("Seal of Righteousness"));
+	
+				CheckTimer = DateTime.Now;
+			}
+
 			return false;
 		}
 
@@ -103,6 +123,11 @@ namespace ReBot
 
 			if (Heal ())
 				return;
+
+			if (IsBoss () && Target.IsCasting && Target.CastingTime > 0.5 && Target.CastingTime < 1.5 && !Me.HasAura ("Shield of the Righteous") && HolyPower >= 3) {
+				if (ShieldoftheRighteous ())
+					return;
+			}
 
 			if (SelectedRotation == ConfigRotation.Normal) {
 				if (NormalRotation ())
@@ -178,12 +203,12 @@ namespace ReBot
 			if (HasGlobalCooldown () && Gcd)
 				return true;
 			//	actions+=/seal_of_insight,if=talent.empowered_seals.enabled&!seal.insight&buff.uthers_insight.remains<cooldown.judgment.remains
-			if (HasSpell ("Empowered Seals") && !Me.HasAura ("Seal of Insight") && Me.AuraTimeRemaining ("Uther's Insight") < Cooldown ("Judgment")) {
+			if (HasSpell ("Empowered Seals") && !IsInShapeshiftForm ("Seal of Insight") && Me.AuraTimeRemaining ("Uther's Insight") < Cooldown ("Judgment")) {
 				if (SealofInsight ())
 					return true;
 			}
 			//	actions+=/seal_of_righteousness,if=talent.empowered_seals.enabled&!seal.righteousness&buff.uthers_insight.remains>cooldown.judgment.remains&buff.liadrins_righteousness.down
-			if (HasSpell ("Empowered Seals") && !Me.HasAura ("Seal of Righteousness") && Me.AuraTimeRemaining ("Uther's Insight") > Cooldown ("Judgment") && !Me.HasAura ("Liadrins Righteousness")) {
+			if (HasSpell ("Empowered Seals") && !IsInShapeshiftForm ("Seal of Righteousness") && Me.AuraTimeRemaining ("Uther's Insight") > Cooldown ("Judgment") && !Me.HasAura ("Liadrins Righteousness")) {
 				if (SealofRighteousness ())
 					return true;
 			}
@@ -289,12 +314,12 @@ namespace ReBot
 			if (HolyWrath ())
 				return true;
 			//	actions+=/seal_of_insight,if=talent.empowered_seals.enabled&!seal.insight&buff.uthers_insight.remains<=buff.liadrins_righteousness.remains
-			if (HasSpell ("Empowered Seals") && !Me.HasAura ("Seal of Insight") && Me.AuraTimeRemaining ("Uther's Insight") <= Me.AuraTimeRemaining ("Liadrins Righteousness")) {
+			if (HasSpell ("Empowered Seals") && !IsInShapeshiftForm ("Seal of Insight") && Me.AuraTimeRemaining ("Uther's Insight") <= Me.AuraTimeRemaining ("Liadrins Righteousness")) {
 				if (SealofInsight ())
 					return true;
 			}
 			//	actions+=/seal_of_righteousness,if=talent.empowered_seals.enabled&!seal.righteousness&buff.liadrins_righteousness.remains<=buff.uthers_insight.remains
-			if (HasSpell ("Empowered Seals") && !Me.HasAura ("Seal of Righteousness") && Me.AuraTimeRemaining ("Uther's Insight") <= Me.AuraTimeRemaining ("Uther's Insight")) {
+			if (HasSpell ("Empowered Seals") && !IsInShapeshiftForm ("Seal of Righteousness") && Me.AuraTimeRemaining ("Uther's Insight") <= Me.AuraTimeRemaining ("Uther's Insight")) {
 				if (SealofRighteousness ())
 					return true;
 			}
@@ -423,7 +448,7 @@ namespace ReBot
 			if (AvengersShield ())
 				return true;
 			//	actions.max_dps+=/seal_of_righteousness,if=talent.empowered_seals.enabled&!seal.righteousness
-			if (HasSpell ("Empowered Seals") && !Me.HasAura ("Seal of Righteousness")) {
+			if (HasSpell ("Empowered Seals") && !IsInShapeshiftForm ("Seal of Righteousness")) {
 				if (SealofRighteousness ())
 					return true;
 			}

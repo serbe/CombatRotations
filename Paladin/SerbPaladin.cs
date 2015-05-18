@@ -231,6 +231,18 @@ namespace ReBot
 				if (FlashofLight (Me))
 					return true;
 			}
+			if (Health (Me) <= 0.8 && HolyPower >= 3) {
+				if (WordofGlory (Me))
+					return true;
+			}
+			if (Health (Me) <= 0.55 && HolyPower >= 2) {
+				if (WordofGlory (Me))
+					return true;
+			}
+			if (Health (Me) <= 0.3 && HolyPower >= 1) {
+				if (WordofGlory (Me))
+					return true;
+			}
 //			if (CastSelf ("Flash of Light", () => Health <= 0.6 && Me.HasAura ("Divine Shield") && TargetHealth >= 0.15))
 //				return;
 			if (Me.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType))) {
@@ -383,6 +395,12 @@ namespace ReBot
 		{
 			u = u ?? Target;
 			return Usable ("Eternal Flame") && HolyPower >= 1 && Range (40, u) && C ("Eternal Flame", u);
+		}
+
+		public bool WordofGlory (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Word of Glory") && HolyPower >= 1 && Range (40, u) && C ("Word of Glory", u);
 		}
 
 		public bool ShieldoftheRighteous (UnitObject u = null)

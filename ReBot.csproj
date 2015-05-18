@@ -71,7 +71,6 @@
     <Compile Include="Paladin\SerbPaladin.cs" />
     <Compile Include="Monk\SerbMonkBrewmasterSC.cs" />
     <Compile Include="Shaman\SerbShamanElementalistSC.cs" />
-    <Compile Include="Warrior\SerbWarriorProtectionIV.cs" />
     <Compile Include="Paladin\SerbPaladinProtectionSC.cs" />
     <Compile Include="Warrior\SerbWarriorFury.cs" />
     <Compile Include="Monk\SerbMonkMistweaver.cs" />
