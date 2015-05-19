@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace ReBot
 {
-	[Rotation ("Serb Priest Shadow IV", "ReBot", WoWClass.Priest, Specialization.PriestShadow, 40, 25)]
+	[Rotation ("Serb Priest Shadow IV 1111211", "ReBot", WoWClass.Priest, Specialization.PriestShadow, 40, 25)]
 
 	public class SerbPriestShadowIv : SerbPriest
 	{
@@ -12,12 +12,8 @@ namespace ReBot
 		public bool Gcd = true;
 		[JsonProperty ("Auto target")]
 		public bool UseAutoTarget = true;
-		[JsonProperty ("Fight in instance")]
-		public bool FightInInstance = true;
-		[JsonProperty ("Heal %/100")]
-		public double HealPr = 0.8;
-		[JsonProperty ("Heal tank %/100")]
-		public double TankPr = 0.9;
+		[JsonProperty ("Small target")]
+		public int ST = 5;
 
 		public SerbPriestShadowIv ()
 		{
@@ -32,28 +28,59 @@ namespace ReBot
 
 		public override bool OutOfCombat ()
 		{
+			if (PowerWordFortitude ())
+				return true;
+
+			if (Shadowform ())
+				return true;
+
+			if (Me.FallingTime > 2) {
+				if (Levitate ())
+					return true;
+			}
+
+			if (Health (Me) < 0.9) {
+				if (FlashHeal (Me))
+					return true;
+			}
+
 			return false;
 		}
 
 		public override void Combat ()
 		{
+			if (Me.FallingTime > 2) {
+				if (Levitate ())
+					return;
+			}
 
 			if (!Me.HasAura ("Shadowform")) {
 				if (Shadowform ())
 					return;
 			}
 
-			if (EnemyInRange (40) == 1) {
+			if (Gcd && HasGlobalCooldown ())
+				return;
+
+			if (Interrupt ())
+				return;
+
+			if (Health (Me) < 0.7) {
+				if (ShadowHeal ())
+					return;
+			}
+
+			if (ActiveEnemies (40) == 1 && TimeToDie () > ST) {
 				if (SingleTarget ())
 					return;
 			}
 
-			if (EnemyInRange (40) > 1 && EnemyInRange (40) < 4) {
+			if (ActiveEnemies (40) > 1 && ActiveEnemies (40) < 4) {
 				if (SmallAOETarget ())
 					return;
 			}
 
-			if (EnemyInRange (40) > 4) {
+			if (ActiveEnemies (40) > 4) {
 				if (HugeAOETarget ())
 					return;
 			}
@@ -122,19 +149,15 @@ namespace ReBot
 			}
 
 			if (Usable ("Shadow Word: Pain")) {
-				CycleTarget = targets.Where (u => !u.HasAura ("Shadow Word: Pain", true) || (u.HasAura ("Shadow Word: Pain", true) && u.AuraTimeRemaining ("Shadow Word: Pain") <= 5.6)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (ShadowWordPain (CycleTarget))
-						return true;
-				}
+				Unit = targets.Where (u => !u.HasAura ("Shadow Word: Pain", true) || (u.HasAura ("Shadow Word: Pain", true) && u.AuraTimeRemaining ("Shadow Word: Pain") <= 5.6)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && ShadowWordPain (Unit))
+					return true;
 			}
 
 			if (Usable ("Vampiric Touch")) {
-				CycleTarget = targets.Where (u => !u.HasAura ("Vampiric Touch", true) || (u.HasAura ("Vampiric Touch", true) && u.AuraTimeRemaining ("Vampiric Touch") <= 4.5)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (VampiricTouch (CycleTarget))
-						return true;
-				}
+				Unit = targets.Where (u => !u.HasAura ("Vampiric Touch", true) || (u.HasAura ("Vampiric Touch", true) && u.AuraTimeRemaining ("Vampiric Touch") <= 4.5)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && VampiricTouch (Unit))
+					return true;
 			}
 
 			if (MindFlay ())
@@ -172,17 +195,17 @@ namespace ReBot
 				return true;
 			
 			if (Usable ("Shadow Word: Pain")) {
-				CycleTarget = targets.Where (u => !u.HasAura ("Shadow Word: Pain", true) || (u.HasAura ("Shadow Word: Pain", true) && u.AuraTimeRemaining ("Shadow Word: Pain") <= 5.6)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (ShadowWordPain (CycleTarget))
+				Unit = targets.Where (u => !u.HasAura ("Shadow Word: Pain", true) || (u.HasAura ("Shadow Word: Pain", true) && u.AuraTimeRemaining ("Shadow Word: Pain") <= 5.6)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null) {
+					if (ShadowWordPain (Unit))
 						return true;
 				}
 			}
 
 			if (Usable ("Vampiric Touch")) {
-				CycleTarget = targets.Where (u => !u.HasAura ("Vampiric Touch", true) || (u.HasAura ("Vampiric Touch", true) && u.AuraTimeRemaining ("Vampiric Touch") <= 4.5)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (VampiricTouch (CycleTarget))
+				Unit = targets.Where (u => !u.HasAura ("Vampiric Touch", true) || (u.HasAura ("Vampiric Touch", true) && u.AuraTimeRemaining ("Vampiric Touch") <= 4.5)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null) {
+					if (VampiricTouch (Unit))
 						return true;
 				}
 			}

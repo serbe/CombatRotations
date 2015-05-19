@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Geometry;
 using Newtonsoft.Json;
 using ReBot.API;
-using System;
-using Geometry;
 
 namespace ReBot
 {
