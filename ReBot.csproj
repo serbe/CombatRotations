@@ -77,6 +77,7 @@
     <Compile Include="Monk\SerbMonkBrewmaster.cs" />
     <Compile Include="Paladin\SerbPaladinProtection.cs" />
     <Compile Include="Paladin\SerbPaladinRetribution.cs" />
+    <Compile Include="Paladin\SerbPaladinHoly.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
