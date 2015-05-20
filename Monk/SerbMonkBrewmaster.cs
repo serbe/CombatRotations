@@ -1,7 +1,7 @@
 ﻿using System;
-using ReBot.API;
-using Newtonsoft.Json;
 using System.Linq;
+using Newtonsoft.Json;
+using ReBot.API;
 
 namespace ReBot
 {
@@ -15,7 +15,6 @@ namespace ReBot
 		public bool Sck = true;
 		[JsonProperty ("Use Dizzying Haze")]
 		public bool Dh = true;
-
 
 
 		public SerbMonkBrewmasterSC ()
@@ -33,10 +32,19 @@ namespace ReBot
 				if (Detox ())
 					return true;
 			}
-
+				
 			if (Me.IsMoving) {
-				if (TigersLust ())
+				if (!InRun) {
+					StartRun = DateTime.Now;
+					InRun = true;
 					return true;
+				}
+				if (InRun && TimeRun >= TTL) {
+					if (TigersLust ())
+						return true;
+				}
+			} else {
+				InRun = false;
 			}
 
 			if (Health (Me) <= 0.8 && !Me.IsMoving) {

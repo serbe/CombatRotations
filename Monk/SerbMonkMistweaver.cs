@@ -1,6 +1,7 @@
 ﻿using ReBot.API;
 using System.Linq;
 using Newtonsoft.Json;
+using System;
 
 namespace ReBot
 {
@@ -55,8 +56,17 @@ namespace ReBot
 				return;
 
 			if (Me.IsMoving) {
-				if (TigersLust ())
+				if (!InRun) {
+					StartRun = DateTime.Now;
+					InRun = true;
 					return;
+				}
+				if (InRun && TimeRun >= TTL) {
+					if (TigersLust ())
+						return;
+				}
+			} else {
+				InRun = false;
 			}
 
 			if (IsInShapeshiftForm ("Stance of the Wise Serpent")) {

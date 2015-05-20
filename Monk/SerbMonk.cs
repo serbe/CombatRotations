@@ -15,12 +15,16 @@ namespace ReBot
 		public int MaxEnergy = 100;
 		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
 		public int Ttd = 10;
+		[JsonProperty ("Time run to use Tiger Lust")]
+		public double TTL = 1;
 
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
 		public Int32 OraliusWhisperingCrystalID = 118922;
 		public Int32 CrystalOfInsanityID = 86569;
 		public DateTime StartBattle;
+		public DateTime StartRun;
+		public bool InRun;
 		public bool InCombat;
 		public UnitObject Unit;
 		public PlayerObject Player;
@@ -101,6 +105,13 @@ namespace ReBot
 			get {
 				TimeSpan CombatTime = DateTime.Now.Subtract (StartBattle);
 				return CombatTime.TotalSeconds;
+			}
+		}
+
+		public double TimeRun {
+			get {
+				TimeSpan RunTime = DateTime.Now.Subtract (StartRun);
+				return RunTime.TotalSeconds;
 			}
 		}
 
