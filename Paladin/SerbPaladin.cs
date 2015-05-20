@@ -13,7 +13,8 @@ namespace ReBot
 
 		public bool InCombat;
 		public DateTime StartBattle;
-		public UnitObject CycleTarget;
+		public PlayerObject Player;
+		public UnitObject Unit;
 		public UnitObject LastJudgmentTarget;
 		public int BossHealthPercentage = 500;
 		public int BossLevelIncrease = 5;
@@ -196,6 +197,12 @@ namespace ReBot
 			return false;
 		}
 
+		public bool CleanAll ()
+		{
+			Player = Group.GetGroupMemberObjects ().Where (u => (Range (40, u) && u.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType)))).DefaultIfEmpty (null).FirstOrDefault ();
+			return Player != null && Cleanse (Player);
+		}
+
 		public bool Freedom ()
 		{
 			return WilloftheForsaken () || EveryManforHimself ();
@@ -269,8 +276,8 @@ namespace ReBot
 			// Party
 
 			if (InInstance) {
-				CycleTarget = Group.GetGroupMemberObjects ().Where (p => !p.IsDead && p.IsHealer && Health (p) < 0.2 && !p.HasAura ("Immunity") && Range (40, p)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && HandofProtection (CycleTarget))
+				Player = Group.GetGroupMemberObjects ().Where (p => !p.IsDead && p.IsHealer && Health (p) < 0.2 && !p.HasAura ("Immunity") && Range (40, p)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Player != null && HandofProtection (Player))
 					return true;
 			}
 
@@ -281,28 +288,28 @@ namespace ReBot
 		{
 			if (InArena || InBg) {
 				if (Usable ("Rebuke")) {
-					CycleTarget = API.Players.Where (x => x.IsPlayer && x.IsEnemy && x.IsHealer && Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null && Rebuke (CycleTarget))
+					Player = API.Players.Where (x => x.IsPlayer && x.IsEnemy && x.IsHealer && Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Player != null && Rebuke (Player))
 						return true; 
-					CycleTarget = API.Players.Where (x => x.IsPlayer && x.IsEnemy && Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null && Rebuke (CycleTarget))
+					Player = API.Players.Where (x => x.IsPlayer && x.IsEnemy && Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Player != null && Rebuke (Player))
 						return true; 
 				}
 				if (Cooldown ("Fist of Justice") == 0) {
-					CycleTarget = API.Players.Where (x => x.IsPlayer && x.IsEnemy && x.IsHealer && Range (20, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null && FistofJustice (CycleTarget))
+					Player = API.Players.Where (x => x.IsPlayer && x.IsEnemy && x.IsHealer && Range (20, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Player != null && FistofJustice (Player))
 						return true;
-					CycleTarget = API.Players.Where (x => x.IsPlayer && x.IsEnemy && Range (20, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null && FistofJustice (CycleTarget))
+					Player = API.Players.Where (x => x.IsPlayer && x.IsEnemy && Range (20, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Player != null && FistofJustice (Player))
 						return true;
 				}
 			} else {
-				CycleTarget = Enemy.Where (x => Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && Rebuke (CycleTarget))
+				Unit = Enemy.Where (x => Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && Rebuke (Unit))
 					return true; 
 				if (Cooldown ("Fist of Justice") == 0) {
-					CycleTarget = Enemy.Where (x => !IsBoss (x) && Range (20, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null && FistofJustice (CycleTarget))
+					Unit = Enemy.Where (x => !IsBoss (x) && Range (20, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null && FistofJustice (Unit))
 						return true;
 				}
 			}

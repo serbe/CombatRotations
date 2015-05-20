@@ -50,6 +50,8 @@ namespace ReBot
 			//	actions.precombat+=/food,type=pickled_eel,if=role.attack|using_apl.max_dps
 			//	actions.precombat+=/blessing_of_kings,if=(!aura.str_agi_int.up)&(aura.mastery.up)
 			//	actions.precombat+=/blessing_of_might,if=!aura.mastery.up
+			if (Buff (Me))
+				return true;
 			//	actions.precombat+=/seal_of_insight
 			//	actions.precombat+=/seal_of_righteousness,if=role.attack|using_apl.max_dps
 			//	actions.precombat+=/sacred_shield
@@ -232,10 +234,10 @@ namespace ReBot
 			}
 			//	actions+=/judgment,cycle_targets=1,if=glyph.double_jeopardy.enabled&last_judgment_target!=target
 			if (Usable ("Judgment") && HasGlyph (54922)) {
-				CycleTarget = Enemy.Where (u => u != LastJudgmentTarget).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Judgment (CycleTarget))
-						LastJudgmentTarget = CycleTarget;
+				Unit = Enemy.Where (u => u != LastJudgmentTarget).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null) {
+					if (Judgment (Unit))
+						LastJudgmentTarget = Unit;
 					return true;
 				}
 			}
@@ -402,10 +404,10 @@ namespace ReBot
 			}
 			//	actions.max_dps+=/judgment,cycle_targets=1,if=glyph.double_jeopardy.enabled&last_judgment_target!=target
 			if (Usable ("Judgment") && HasGlyph (54922)) {
-				CycleTarget = Enemy.Where (u => u != LastJudgmentTarget).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Judgment (CycleTarget))
-						LastJudgmentTarget = CycleTarget;
+				Unit = Enemy.Where (u => u != LastJudgmentTarget).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null) {
+					if (Judgment (Unit))
+						LastJudgmentTarget = Unit;
 					return true;
 				}
 			}
@@ -566,9 +568,9 @@ namespace ReBot
 			}
 			//	actions.max_survival+=/judgment,cycle_targets=1,if=glyph.double_jeopardy.enabled&last_judgment_target!=target
 			if (Usable ("Judgment") && HasGlyph (54922)) {
-				CycleTarget = Enemy.Where (u => u != LastJudgmentTarget).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && Judgment (CycleTarget)) {
-					LastJudgmentTarget = CycleTarget;
+				Unit = Enemy.Where (u => u != LastJudgmentTarget).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && Judgment (Unit)) {
+					LastJudgmentTarget = Unit;
 					return true;
 				}
 			}

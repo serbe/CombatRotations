@@ -18,6 +18,12 @@ namespace ReBot
 
 		public override bool OutOfCombat ()
 		{
+			if (Buff (Me))
+				return true;
+
+			if (CleanAll ())
+				return true;
+
 			return false;
 		}
 
