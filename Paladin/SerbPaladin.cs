@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Geometry;
-using Newtonsoft.Json;
 using ReBot.API;
 
 namespace ReBot
@@ -125,7 +124,7 @@ namespace ReBot
 			u = u ?? Target;
 			if (Cast (s, u))
 				return true;
-			API.Print ("False Cast " + s + " with " + u.CombatRange + " range");
+			API.Print ("False Cast " + s + " with " + u.CombatRange + " range " + u.Distance + " distance");
 			return false;
 		}
 
