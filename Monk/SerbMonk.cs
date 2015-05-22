@@ -335,7 +335,7 @@ namespace ReBot
 		public bool MassResurect ()
 		{
 			if (CurrentBotName == "Combat" && Members.Count > 0) {
-				Player = Members.FirstOrDefault (x => x.IsDead);
+				Player = Members.FirstOrDefault (u => Range (40, u) && u.IsDead);
 				if (Player != null && Resuscitate (Player))
 					return true;
 			}

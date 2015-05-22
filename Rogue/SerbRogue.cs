@@ -176,7 +176,7 @@ namespace ReBot
 			u = u ?? Target;
 			if (Cast (s, u))
 				return true;
-			API.Print ("False Cast " + s + " with " + u.CombatRange + " range");
+			API.Print ("False Cast " + s + " with " + u.CombatRange + " range, " + u.Distance + " distance, " + Energy + " energy");
 			return false;
 		}
 
