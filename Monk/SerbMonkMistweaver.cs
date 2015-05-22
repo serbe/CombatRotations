@@ -259,6 +259,54 @@ namespace ReBot
 //				CriticalDamageSituation (grpAndMe);
 		}
 
+		void DD ()
+		{
+
+
+
+			if (Chi == ChiMax || !Target.HasAura ("Rising Sun Kick", true) || Target.AuraTimeRemaining ("Rising Sun Kick", true) < 3) {
+				if (RisingSunKick ())
+					return;
+			}
+
+
+//			// actions.st+=/blackout_kick,if=buff.combo_breaker_bok.react|buff.serenity.up
+//			if (Cast ("Blackout Kick", () => Me.HasAura ("Combo Breaker: Blackout Kick") || Me.HasAura ("Serenity")))
+//				return;
+//			// actions.st+=/tiger_palm,if=buff.combo_breaker_tp.react&buff.combo_breaker_tp.remains<=2
+//			if (Cast ("Tiger Palm", () => Me.HasAura ("Combo Breaker: Tiger Palm") && Me.AuraTimeRemaining ("Combo Breaker: Tiger Palm") <= 2))
+//				return;
+//			// actions.st+=/chi_wave,if=energy.time_to_max>2&buff.serenity.down
+//			if (Cast ("Chi Wave", () => EnergyTimeToMax > 2 && !Me.HasAura ("Serenity")))
+//				return;
+//			// actions.st+=/chi_burst,if=energy.time_to_max>2&buff.serenity.down
+//			if (Cast ("Chi Burst", () => HasSpell ("Chi Burst") && EnergyTimeToMax > 2 && !Me.HasAura ("Serenity")))
+//				return;
+//			// actions.st+=/zen_sphere,cycle_targets=1,if=energy.time_to_max>2&!dot.zen_sphere.ticking&buff.serenity.down
+//			if (Cast ("Zen Sphere", () => HasSpell ("Zen Sphere") && EnergyTimeToMax > 2 && !Me.HasAura ("Zen Sphere") && !Me.HasAura ("Serenity")))
+//				return;
+//			// actions.st+=/chi_torpedo,if=energy.time_to_max>2&buff.serenity.down
+//			if (Cast ("Chi Torpedo", () => HasSpell ("Chi Torpedo") && EnergyTimeToMax > 2 && !Me.HasAura ("Serenity")))
+//				return;
+//			// actions.st+=/blackout_kick,if=chi.max-chi<2
+//			if (Cast ("Blackout Kick", () => ChiMax - Chi < 2))
+//				return;
+
+
+			if (ExpelHarm ())
+				return;
+			if (!Me.HasAura ("Tiger Power") || Me.AuraTimeRemaining ("Tiger Power") <= 4) {
+				if (TigerPalm ())
+					return;
+			}
+			if (!Me.HasAura ("Crane's Zeal") || Me.AuraTimeRemaining ("Crane's Zeal") <= 2) {
+				if (BlackoutKick ())
+					return;
+			}
+			if (Jab ())
+				return;
+
+		}
 	}
 }
 

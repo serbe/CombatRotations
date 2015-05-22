@@ -83,9 +83,6 @@ namespace ReBot.Hunter
 				StartBattle = DateTime.Now;
 			}
 
-			var targets = Adds;
-			targets.Add (Target);
-
 			if (HasAura ("Aspect of the Pack")) {
 				CancelAura ("Aspect of the Pack");
 			}
@@ -105,7 +102,7 @@ namespace ReBot.Hunter
 			}
 
 			if (!InArena && !InBg && Me.HasAlivePet && UseMd) {
-				if (Misdirection ())
+				if (UseMisdirection ())
 					return;
 			}
 
@@ -130,9 +127,9 @@ namespace ReBot.Hunter
 				// 	if (CastOnTerrain("Ice Trap", IceTarget, () => Cooldown("Ice Trap") == 0)) return;
 				// }
 				if ((InArena || InBg) && Usable ("Freezing Trap") && EnemyWithTarget (Target, 15) == 0) {
-					CycleTarget = targets.Where (x => x.IsInCombatRangeAndLoS && x.IsPlayer && x != Target && x.CanParticipateInCombat).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null) {
-						if (FreezingTrap (CycleTarget))
+					Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && x.IsPlayer && x != Target && x.CanParticipateInCombat).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null) {
+						if (FreezingTrap (Unit))
 							return;
 					}
 				}
@@ -278,7 +275,7 @@ namespace ReBot.Hunter
 					return;
 			}
 			//	actions+=/cobra_shot,if=active_enemies>5
-			if (EnemyInRange (40) > 5) {
+			if (ActiveEnemies (40) > 5) {
 				if (CobraShot ())
 					return;
 			}
