@@ -176,7 +176,7 @@ namespace ReBot
 			u = u ?? Target;
 			if (Cast (s, u))
 				return true;
-			API.Print ("False Cast " + s + " with " + u.CombatRange + " range, " + u.Distance + " distance, " + Energy + " energy");
+			API.Print ("False Cast " + s + " with " + u.CombatRange + " range, " + ComboPoints + " ComboPoints, " + Energy + " energy");
 			return false;
 		}
 
@@ -193,7 +193,7 @@ namespace ReBot
 		{
 			if (CastSelf (s))
 				return true;
-			API.Print ("False CastSelf " + s);
+			API.Print ("False CastSelf " + s + " with " + ComboPoints + " ComboPoints and " + Energy + " energy");
 			return false;
 		}
 
@@ -202,7 +202,7 @@ namespace ReBot
 			u = u ?? Target;
 			if (CastOnTerrain (s, u.Position))
 				return true;
-			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range");
+			API.Print ("False CastOnTerrain " + s + " with " + ComboPoints + " ComboPoints and " + u.CombatRange + " range");
 			return false;
 		}
 

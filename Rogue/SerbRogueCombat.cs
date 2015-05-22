@@ -130,10 +130,10 @@ namespace ReBot
 			if (HasGlobalCooldown () && Gcd)
 				return;
 
-////			if (InArena) {
-			if (Cc ())
-				return;
-////			}
+			if (!Me.HasAura ("Blade Flurry") && !InRaid) {
+				if (Cc ())
+					return;
+			}
 
 			if (Me.HasAura ("Blade Flurry") && !InRaid && !InInstance && IncapacitatedInRange (8) && ActiveEnemies (8) < 3)
 				CancelAura ("Blade Flurry");
