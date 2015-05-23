@@ -23,13 +23,22 @@ namespace ReBot
 			GroupBuffs = new[] {
 				"Mark of the Wild"
 			};
-			PullSpells = new[] {
-				"Rake",
-				"Shred",
-				"Faerie Swarm",
-				"Faerie Fire",
-				"Moonfire"
-			};
+			if (UseMoonfire) {
+				PullSpells = new[] {
+					"Rake",
+					"Shred",
+					"Faerie Swarm",
+					"Faerie Fire",
+					"Moonfire"
+				};
+			} else {
+				PullSpells = new[] {
+					"Rake",
+					"Shred",
+					"Faerie Swarm",
+					"Faerie Fire"
+				};
+			}
 		}
 
 
@@ -92,7 +101,7 @@ namespace ReBot
 					return;
 			}
 
-			if (PartyHealing && !IsSolo) {
+			if (PartyHealing) {
 				if (HealPartyMember ())
 					return;
 			}
