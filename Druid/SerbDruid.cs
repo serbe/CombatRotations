@@ -40,7 +40,7 @@ namespace ReBot
 			u = u ?? Target;
 			if (Cast (s, u))
 				return true;
-			API.Print ("False Cast " + s + " with " + u.CombatRange + " range, and " + u.Distance + " distance");
+			API.Print ("False Cast " + s + " with " + u.CombatRange + " range, and " + Energy + " energy");
 			return false;
 		}
 
@@ -57,7 +57,7 @@ namespace ReBot
 			u = u ?? Target;
 			if (CastOnTerrain (s, u.Position))
 				return true;
-			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range");
+			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range, and " + Energy + " energy");
 			return false;
 		}
 
@@ -66,7 +66,7 @@ namespace ReBot
 			u = u ?? Target;
 			if (CastOnTerrainPreventDouble (s, u.Position))
 				return true;
-			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range");
+			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range, and " + Energy + " energy");
 			return false;
 		}
 
@@ -494,6 +494,10 @@ namespace ReBot
 
 		public bool Heal ()
 		{
+			if (Health (Me) < 0.4) {
+				if (EternalWilloftheMartyr ())
+					return true;
+			}
 			if (Health (Me) < 0.45) {
 				if (Healthstone ())
 					return true;
@@ -713,7 +717,7 @@ namespace ReBot
 
 		public bool Shadowmeld ()
 		{
-			return Usable ("Shadowmeld") && CS ("Shadowmeld");
+			return Usable ("Shadowmeld") && !Me.IsMoving && CS ("Shadowmeld");
 		}
 
 		public bool CelestialAlignment ()
@@ -822,15 +826,13 @@ namespace ReBot
 			return Usable ("Renewal") && CS ("Renewal");
 		}
 
-		public bool HeartoftheWild (UnitObject u = null)
+		public bool HeartoftheWild ()
 		{
-			u = u ?? Target;
 			return Usable ("Heart of the Wild") && DangerBoss () && CS ("Heart of the Wild");
 		}
 
-		public bool IncarnationSonofUrsoc (UnitObject u = null)
+		public bool IncarnationSonofUrsoc ()
 		{
-			u = u ?? Target;
 			return Usable ("Incarnation: Son of Ursoc") && DangerBoss () && CS ("Incarnation: Son of Ursoc");
 		}
 
@@ -843,23 +845,22 @@ namespace ReBot
 
 		public bool Healthstone ()
 		{
-			if (API.HasItem (5512) && API.ItemCooldown (5512) == 0)
-				return API.UseItem (5512);
-			return false;
+			return API.HasItem (5512) && API.ItemCooldown (5512) == 0 && API.UseItem (5512);
 		}
 
 		public bool CrystalOfInsanity ()
 		{
-			if (!InArena && API.HasItem (CrystalOfInsanityId) && !HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityId) == 0)
-				return API.UseItem (CrystalOfInsanityId);
-			return false;
+			return !InArena && API.HasItem (CrystalOfInsanityId) && !HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityId) == 0 && API.UseItem (CrystalOfInsanityId);
 		}
 
 		public bool OraliusWhisperingCrystal ()
 		{
-			if (API.HasItem (OraliusWhisperingCrystalId) && !HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalId) == 0)
-				return API.UseItem (OraliusWhisperingCrystalId);
-			return false;
+			return API.HasItem (OraliusWhisperingCrystalId) && !HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalId) == 0 && API.UseItem (OraliusWhisperingCrystalId);
+		}
+
+		public bool EternalWilloftheMartyr ()
+		{
+			return API.HasItem (122668) && API.ItemCooldown (122668) == 0 && API.UseItem (122668);
 		}
 	
 	}
