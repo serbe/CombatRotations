@@ -33,8 +33,8 @@ namespace ReBot
 			// actions.precombat=flask,type=greater_draenic_agility_flask
 			// actions.precombat+=/food,type=buttered_sturgeon
 			// actions.precombat+=/apply_poison,lethal=deadly
-			if (MainHandPoison (Mh))
-				return true;
+//			if (MainHandPoison (Mh))
+//				return true;
 			if (OffHandPoison (Oh))
 				return true;
 			// # Snapshot raid buffed stats before combat begins and pre-potting is done.
