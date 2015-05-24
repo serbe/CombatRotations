@@ -96,6 +96,9 @@ namespace ReBot
 				StartBattle = DateTime.Now;
 			}
 
+			if (HasGlobalCooldown () && Gcd)
+				return;
+
 			if (Health (Me) < 0.9) {
 				if (Heal ())
 					return;
@@ -119,14 +122,11 @@ namespace ReBot
 				return;
 
 			//	actions=cat_form
-			if (!Me.HasAura ("Flight Form") && !Me.HasAura ("Bear Form")) {
+			if (!IsInShapeshiftForm ("Flight Form") && !IsInShapeshiftForm ("Bear Form")) {
 				if (CatForm ())
 					return;
 			}
 
-			if (HasGlobalCooldown () && Gcd)
-				return;
-			
 			if (InCatForm) {
 				if (Energy < Sleep)
 					return;
@@ -254,6 +254,10 @@ namespace ReBot
 				}
 			}
 
+			if (InBearForm) {
+				BearAtcions ();
+			}
+
 			Sleep = 0;
 		}
 
@@ -336,6 +340,67 @@ namespace ReBot
 			}
 
 			return false;
+		}
+
+		void BearAtcions ()
+		{
+			if (Health (Me) < 0.65 && !Me.HasAura ("Bristling Fur"))
+				Barkskin ();
+			if (Health (Me) < 0.3 && !Me.HasAura ("Barkskin") && !Me.HasAura ("Savage Defense"))
+				BristlingFur ();
+			if (Me.HasAura ("Tooth and Claw") && DamageTaken (1000) > 0)
+				Maul ();
+			if (Me.AuraTimeRemaining ("Pulverize") > 10)
+				Berserk ();
+			if (Health (Me) < 0.5 && Rage >= 80)
+				FrenziedRegeneration ();
+			if (Health (Me) < 0.9) {
+				if (CenarionWard (Me))
+					return;
+			}
+			if (Health (Me) < 0.3)
+				Renewal ();
+			if (Health (Me) < 0.5)
+				HeartoftheWild ();
+			if (Me.HasAura ("Heart of the Wild") && Me.AuraTimeRemaining ("Rejuvenation") <= 3.6) {
+				if (Rejuvenation (Me))
+					return;
+			}
+			NaturesVigil ();
+			if (Me.HasAura ("Dream of Cenarius") && Health (Me) < 0.3) {
+				if (HealingTouch (Me))
+					return;
+			}
+			if (Me.AuraTimeRemaining ("Pulverize") <= 3.6)
+				Pulverize ();
+			if (HasSpell ("Pulverize") && Me.AuraTimeRemaining ("Pulverize") <= (3 - AuraStackCount ("Lacerate")) * 1.5 && !Me.HasAura ("Berserk")) {
+				if (Lacerate ())
+					return;
+			}
+			if (IncarnationSonofUrsoc ())
+				return;
+			if (!Target.HasAura ("Lacerate")) {
+				if (Lacerate ())
+					return;
+			}
+			if (!Target.HasAura ("Thrash")) {
+				if (Thrash ())
+					return;
+			}
+
+			if (ActiveEnemies (10) > 1) {
+				CycleTarget = Enemy.Where (u => Range (8, u) && !u.HasAura ("Thrash")).DefaultIfEmpty (null).FirstOrDefault ();
+				if (CycleTarget != null && Thrash (CycleTarget))
+					return;
+			}
+			if (Mangle ())
+				return;
+			if (Target.AuraTimeRemaining ("Thrash") <= 4.8) {
+				if (Thrash ())
+					return;
+			}
+			if (Lacerate ())
+				return;
 		}
 	}
 }
