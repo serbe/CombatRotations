@@ -51,7 +51,7 @@ namespace ReBot
 				return true;
 			}
 
-			if (Me.IsMoving && UseBurstOfSpeed) {
+			if (Me.IsMoving && UseBurstOfSpeed && (Target == null || (Target.Distance > 20))) {
 				if (BurstofSpeed ())
 					return true;
 			}
@@ -218,7 +218,7 @@ namespace ReBot
 					return;
 			}
 
-			if (Me.IsMoving && Target.CombatRange > 6) {
+			if (Me.IsMoving && (Target == null || (Target.Distance >= 8))) {
 				if (BurstofSpeed ())
 					return;
 			}
