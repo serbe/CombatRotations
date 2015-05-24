@@ -451,7 +451,7 @@ namespace ReBot
 							return true;
 					}
 
-					if (Usable ("Blind") && ActiveEnemies (8) == 2 && Multitarget) {
+					if (Usable ("Blind") && ActiveEnemies (15) == 2 && Multitarget) {
 						Unit = API.Players.Where (p => p.IsPlayer && p.IsEnemy && !p.IsDead && p.IsInLoS && p.CombatRange <= 15 && p.CanParticipateInCombat && p != Target).DefaultIfEmpty (null).FirstOrDefault ();
 						if (Unit != null && Blind (Unit))
 							return true;
@@ -463,7 +463,7 @@ namespace ReBot
 							return true;
 					}
 
-					if (!InRaid && Usable ("Blind") && ActiveEnemies (8) == 2 && Multitarget) {
+					if (!InRaid && Usable ("Blind") && ActiveEnemies (15) == 2 && Multitarget) {
 						Unit = Enemy.Where (u => Range (15, u) && u.CanParticipateInCombat && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
 						if (Unit != null && Blind (Unit))
 							return true;
@@ -730,7 +730,7 @@ namespace ReBot
 		public bool Blind (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Blind") && HasCost (15) && Range (5, u) && C ("Blind", u);
+			return Usable ("Blind") && HasCost (15) && Range (15, u) && C ("Blind", u);
 		}
 
 		public bool ShadowDance ()

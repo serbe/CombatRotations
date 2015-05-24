@@ -155,7 +155,13 @@ namespace ReBot
 
 		public bool InCatForm {
 			get {
-				return HasAura ("Cat Form") || HasAura ("Claws of Shirvallah");
+				return IsInShapeshiftForm ("Cat Form");
+			}
+		}
+
+		public bool InBearForm {
+			get {
+				return IsInShapeshiftForm ("Bear Form");
 			}
 		}
 
@@ -535,7 +541,7 @@ namespace ReBot
 
 		public bool BearForm ()
 		{
-			return !Me.HasAura ("Bear Form") && CS ("Bear Form");
+			return !InBearForm && CS ("Bear Form");
 		}
 
 		public bool MightyBash (UnitObject u = null)
