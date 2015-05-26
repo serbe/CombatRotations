@@ -24,18 +24,8 @@ namespace ReBot
 
 		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
 		int Ttd = 10;
-		[JsonProperty ("Use range attack")]
-		public bool UseRangedAttack;
-		[JsonProperty ("Run to enemy")]
-		public bool Run;
 		[JsonProperty ("Use multitarget")]
 		public bool Multitarget = true;
-		[JsonProperty ("AOE")]
-		public bool Aoe = true;
-		[JsonProperty ("Use Burst Of Speed in no combat")]
-		public bool UseBurstOfSpeed = true;
-		[JsonProperty ("Use GCD")]
-		public bool Gcd = true;
 
 		const int BossHealthPercentage = 500;
 		const int BossLevelIncrease = 5;

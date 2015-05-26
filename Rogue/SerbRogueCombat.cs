@@ -15,17 +15,33 @@ namespace ReBot
 		public PoisonMaindHand Mh = PoisonMaindHand.InstantPoison;
 		[JsonProperty ("OffHand Poison"), JsonConverter (typeof(StringEnumConverter))]
 		public PoisonOffHand Oh = PoisonOffHand.CripplingPoison;
+		[JsonProperty ("Use range attack")]
+		public bool UseRangedAttack;
+		[JsonProperty ("Run to enemy")]
+		public bool Run;
+		[JsonProperty ("AOE")]
+		public bool Aoe = true;
+		[JsonProperty ("Use Burst Of Speed in no combat")]
+		public bool UseBurstOfSpeed = true;
+		[JsonProperty ("Use GCD")]
+		public bool Gcd = true;
 
 
 		public SerbRogueCombatSc ()
 		{
 			RangedAttack = "Throw";
-			PullSpells = new[] {
-//				"Stealth",
-				"Sap",
-				"Pick Pocket",
-				"Ambush"
-			};
+			if (CurrentBotName == "Quest") {
+				PullSpells = new[] {
+					"Stealth",
+					"Pick Pocket",
+					"Ambush",
+					"Sinister Strike"
+				};
+			} else {
+				PullSpells = new[] {
+					"Sinister Strike"
+				};
+			}
 		}
 
 		public override bool OutOfCombat ()
@@ -91,10 +107,12 @@ namespace ReBot
 
 //			API.Print (CurrentBotName);
 
-			if (Target != null && CurrentBotName == "Quest" && Target.CombatRange > 10 && Target.IsEnemy && Target.IsAttackable) {
-				if (Stealth ())
-					return true;
-			}
+//			if (Target != null && CurrentBotName == "Quest" && Target.CombatRange > 10 && Target.IsEnemy && Target.IsAttackable) {
+//				if (Stealth ())
+//					return true;
+//			}
+			if (CurrentBotName == "Quest" && Me.DistanceTo (API.GetNaviTarget ()) > 30 && Me.IsMoving && !MeInStealth)
+				Stealth ();
 
 			if (InCombat) {
 				InCombat = false;
@@ -118,6 +136,9 @@ namespace ReBot
 			if (Me.CanNotParticipateInCombat ())
 				Freedom ();
 
+			if (HasGlobalCooldown () && Gcd)
+				return;
+			
 			if (!Me.HasAura ("Stealth")) {
 				Interrupt ();
 				UnEnrage ();
@@ -129,10 +150,7 @@ namespace ReBot
 			if (InRaid || InInstance)
 				TricksoftheTrade ();
 
-			if (HasGlobalCooldown () && Gcd)
-				return;
-
-			if (!Me.HasAura ("Blade Flurry") && !InRaid) {
+			if (!Me.HasAura ("Blade Flurry") && !InRaid && Multitarget) {
 				if (Cc ())
 					return;
 			}
@@ -160,7 +178,7 @@ namespace ReBot
 					return;
 			}
 			// actions+=/blade_flurry,if=(active_enemies>=2&!buff.blade_flurry.up)|(active_enemies<2&buff.blade_flurry.up)
-			if (!Me.HasAura ("Blade Flurry") && ActiveEnemies (8) >= 2) {
+			if (!Me.HasAura ("Blade Flurry") && ActiveEnemies (8) >= 2 && Aoe) {
 				if (!IncapacitatedInRange (8) && (!InArena || (InArena && ActiveEnemies (8) > 2))) {
 					if (BladeFlurry ())
 						return;

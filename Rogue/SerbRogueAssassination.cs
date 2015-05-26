@@ -15,6 +15,16 @@ namespace ReBot
 		public PoisonMaindHand Mh = PoisonMaindHand.InstantPoison;
 		[JsonProperty ("OffHand Poison"), JsonConverter (typeof(StringEnumConverter))]
 		public PoisonOffHand Oh = PoisonOffHand.CripplingPoison;
+		[JsonProperty ("Use range attack")]
+		public bool UseRangedAttack;
+		[JsonProperty ("Run to enemy")]
+		public bool Run;
+		[JsonProperty ("AOE")]
+		public bool Aoe = true;
+		[JsonProperty ("Use Burst Of Speed in no combat")]
+		public bool UseBurstOfSpeed = true;
+		[JsonProperty ("Use GCD")]
+		public bool Gcd = true;
 
 
 		public SerbRogueAssassinationSc ()
