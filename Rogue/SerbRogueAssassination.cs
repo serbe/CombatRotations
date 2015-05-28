@@ -162,7 +162,7 @@ namespace ReBot
 					return;
 			}
 //			actions+=/slice_and_dice,if=buff.slice_and_dice.remains<5
-			if (Me.AuraTimeRemaining ("Slice and Dice") < 5) {
+			if (!HasSpell ("Improved Slice and Dice") && Me.AuraTimeRemaining ("Slice and Dice") < 5) {
 				if (SliceandDice ())
 					return;
 			}
