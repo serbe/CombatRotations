@@ -211,6 +211,11 @@ namespace ReBot
 
 		// Get
 
+		public double CastTime (Int32 i)
+		{
+			return API.ExecuteLua<double> ("local _, _, _, castTime, _, _ = GetSpellInfo(" + i + "); return castTime;");
+		}
+
 		public double DamageTaken (float t)
 		{
 			var damage = API.ExecuteLua<double> ("local ResolveName = GetSpellInfo(158300);local n,_,_,_,_,dur,expi,_,_,_,id,_,_,_,val1,val2,val3 = UnitAura(\"player\", ResolveName, nil, \"HELPFUL\");return val2");

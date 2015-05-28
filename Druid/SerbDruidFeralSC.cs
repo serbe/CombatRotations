@@ -328,13 +328,13 @@ namespace ReBot
 
 		public bool Generators ()
 		{
-			//	actions.generator=swipe,if=active_enemies>=3
-			if (ActiveEnemies (8) >= 3) {
+			//	actions.generator=swipe,if=active_enemies>=4|(active_enemies>=3&buff.incarnation.down)
+			if (ActiveEnemies (8) >= 4 || (ActiveEnemies (8) >= 3 && !Me.HasAura ("Incarnation: King of the Jungle"))) {
 				if (Swipe ())
 					return true;
 			}
-			//	actions.generator+=/shred,if=active_enemies<3
-			if (ActiveEnemies (8) < 3) {
+			//	actions.generator+=/shred,if=active_enemies<3|(active_enemies=3&buff.incarnation.up)
+			if (ActiveEnemies (8) < 3 || (ActiveEnemies (8) == 3 && Me.HasAura ("Incarnation: King of the Jungle"))) {
 				if (Shred ())
 					return true;
 			}

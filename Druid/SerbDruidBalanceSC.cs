@@ -118,8 +118,8 @@ namespace ReBot
 
 		public bool Single ()
 		{
-			// actions.single_target=starsurge,if=buff.lunar_empowerment.down&eclipse_energy>20
-			if (!Me.HasAura ("Lunar Empowerment") && Eclipse > 20) {
+			//	actions.single_target=starsurge,if=buff.lunar_empowerment.down&(eclipse_energy>20|buff.celestial_alignment.up)				
+			if (!Me.HasAura ("Lunar Empowerment") && (Eclipse > 20 || Me.HasAura ("Celestial Alignment"))) {
 				if (Starsurge ())
 					return true;
 			}
@@ -133,8 +133,8 @@ namespace ReBot
 				if (Starsurge ())
 					return true;
 			}
-			// actions.single_target+=/celestial_alignment,if=eclipse_energy>40
-			if (Eclipse > 40) {
+			// actions.single_target+=/celestial_alignment,if=eclipse_energy>0
+			if (Eclipse > 0) {
 				if (CelestialAlignment ())
 					return true;
 			}
@@ -143,8 +143,8 @@ namespace ReBot
 				if (IncarnationChosenofElune ())
 					return true;
 			}
-			// actions.single_target+=/sunfire,if=remains<7|(buff.solar_peak.up&!talent.balance_of_power.enabled)
-			if (Target.AuraTimeRemaining ("Sunfire", true) < 7 || (Me.HasAura ("Solar Peak") && !HasSpell ("Balance of Power"))) {
+			//	actions.single_target+=/sunfire,if=remains<7|(buff.solar_peak.up&buff.solar_peak.remains<action.wrath.cast_time&!talent.balance_of_power.enabled)
+			if (Target.AuraTimeRemaining ("Sunfire", true) < 7 || (Me.HasAura ("Solar Peak") && Me.AuraTimeRemaining ("Solar Peak") < CastTime (5176) && !HasSpell ("Balance of Power"))) {
 				if (Sunfire ())
 					return true;
 			}
@@ -153,8 +153,8 @@ namespace ReBot
 				if (StellarFlare ())
 					return true;
 			}
-			// actions.single_target+=/moonfire,if=!talent.balance_of_power.enabled&(buff.lunar_peak.up&remains<eclipse_change+20|remains<4|(buff.celestial_alignment.up&buff.celestial_alignment.remains<=2&remains<eclipse_change+20))
-			if (Eclipse <= 0 && !HasSpell ("Balance of Power") && (Me.HasAura ("Lunar Peak") && Target.AuraTimeRemaining ("Moonfire", true) < (EclipseChange + 20) || Target.AuraTimeRemaining ("Moonfire", true) < 4 || (Me.HasAura ("Celestial Alignment") && Me.AuraTimeRemaining ("Celestial Alignment") <= 2 && Target.AuraTimeRemaining ("Moonfire", true) < (EclipseChange + 20)))) {
+			//	actions.single_target+=/moonfire,if=!talent.balance_of_power.enabled&(buff.lunar_peak.up&buff.lunar_peak.remains<action.starfire.cast_time&remains<eclipse_change+20|remains<4|(buff.celestial_alignment.up&buff.celestial_alignment.remains<=2&remains<eclipse_change+20))
+			if (Eclipse <= 0 && !HasSpell ("Balance of Power") && (Me.HasAura ("Lunar Peak") && Me.AuraTimeRemaining ("Lunar Peak") < CastTime (2912) && Target.AuraTimeRemaining ("Moonfire", true) < (EclipseChange + 20) || Target.AuraTimeRemaining ("Moonfire", true) < 4 || (Me.HasAura ("Celestial Alignment") && Me.AuraTimeRemaining ("Celestial Alignment") <= 2 && Target.AuraTimeRemaining ("Moonfire", true) < (EclipseChange + 20)))) {
 				if (Moonfire ())
 					return true;
 			}

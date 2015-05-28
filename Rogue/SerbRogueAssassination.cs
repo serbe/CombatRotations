@@ -135,7 +135,7 @@ namespace ReBot
 			if (Energy < 60)
 				ArcaneTorrent ();
 //			actions+=/vanish,if=time>10&!buff.stealth.up
-			if (Time > 10 && !Me.HasAura ("Stealth")) {
+			if (!InArena && Time > 10 && !Me.HasAura ("Stealth")) {
 				if (Vanish ())
 					return;
 			}
@@ -145,7 +145,7 @@ namespace ReBot
 					return;
 			}
 //			actions+=/rupture,cycle_targets=1,if=active_enemies>1&!ticking&combo_points=5
-			if (ActiveEnemies (6) > 1 && ComboPoints == 5) {
+			if (Multitarget && ActiveEnemies (6) > 1 && ComboPoints == 5) {
 				Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && !x.HasAura ("Rupture")).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Rupture ())
 					return;
@@ -172,12 +172,12 @@ namespace ReBot
 					return;
 			}
 //			actions+=/crimson_tempest,if=combo_points>4&active_enemies>=4&remains<8
-			if (ComboPoints >= 4 && ActiveEnemies (10) >= 4 && Target.AuraTimeRemaining ("Crimson Tempest", true) < 8) {
+			if (Aoe && ComboPoints >= 4 && ActiveEnemies (10) >= 4 && Target.AuraTimeRemaining ("Crimson Tempest", true) < 8) {
 				if (CrimsonTempest ())
 					return;
 			}
 //			actions+=/fan_of_knives,if=(combo_points<5|(talent.anticipation.enabled&anticipation_charges<4))&active_enemies>=4
-			if (((!HasSpell ("Anticipation") && ComboPoints < 5) || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") < 4)) && ActiveEnemies (10) >= 4) {
+			if (Aoe && ((!HasSpell ("Anticipation") && ComboPoints < 5) || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") < 4)) && ActiveEnemies (10) >= 4) {
 				if (FanofKnives ())
 					return;
 			}
@@ -202,7 +202,7 @@ namespace ReBot
 					return;
 			}
 //			actions+=/envenom,cycle_targets=1,if=(combo_points>4&(cooldown.death_from_above.remains>2|!talent.death_from_above.enabled))&active_enemies<4&!dot.deadly_poison_dot.ticking
-			if (ComboPoints > 4 && (Cooldown ("Death from Above") > 2 || !HasSpell ("Death from Above")) && ActiveEnemies (6) < 4) {
+			if (Multitarget && ComboPoints > 4 && (Cooldown ("Death from Above") > 2 || !HasSpell ("Death from Above")) && ActiveEnemies (6) < 4) {
 				Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && !x.HasAura ("Deadly Poison", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Envenom (Unit))
 					return;
@@ -213,18 +213,16 @@ namespace ReBot
 					return;
 			}
 //			actions+=/fan_of_knives,cycle_targets=1,if=active_enemies>2&!dot.deadly_poison_dot.ticking&debuff.vendetta.down
-			if (Energy >= 35 && ActiveEnemies (10) > 2) {
+			if (Multitarget && HasCost (35) && ActiveEnemies (10) > 2) {
 				Unit = Enemy.Where (x => x.IsInLoS && x.CombatRange <= 10 && !x.HasAura ("Deadly Poison", true) && !x.HasAura ("Vendetta", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && FanofKnives ())
 					return;
 			}
 //			actions+=/dispatch,cycle_targets=1,if=(combo_points<5|(talent.anticipation.enabled&anticipation_charges<4))&active_enemies=2&!dot.deadly_poison_dot.ticking&debuff.vendetta.down
-			if (((!HasSpell ("Anticipation") && ComboPoints < 5) || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") < 4)) && ActiveEnemies (6) == 2) {
+			if (Multitarget && ((!HasSpell ("Anticipation") && ComboPoints < 5) || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") < 4)) && ActiveEnemies (6) == 2) {
 				Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && !x.HasAura ("Deadly Poison", true) && !x.HasAura ("Vendetta", true)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Unit != null) {
-					if (Dispatch (Unit))
-						return;
-				}
+				if (Unit != null && Dispatch (Unit))
+					return;
 			}
 //			actions+=/dispatch,if=(combo_points<5|(talent.anticipation.enabled&anticipation_charges<4))&active_enemies<4
 			if (((!HasSpell ("Anticipation") && ComboPoints < 5) || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") < 4)) && ActiveEnemies (6) < 4) {
@@ -232,7 +230,7 @@ namespace ReBot
 					return;
 			}
 //			actions+=/mutilate,cycle_targets=1,if=target.health.pct>35&(combo_points<4|(talent.anticipation.enabled&anticipation_charges<3))&active_enemies=2&!dot.deadly_poison_dot.ticking&debuff.vendetta.down
-			if (((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") < 3)) && ActiveEnemies (6) == 2) {
+			if (Multitarget && ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") < 3)) && ActiveEnemies (6) == 2) {
 				Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && x.HealthFraction > 0.35 && !x.HasAura ("Deadly Poison", true) && !x.HasAura ("Vendetta", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Mutilate (Unit))
 					return;
@@ -243,7 +241,7 @@ namespace ReBot
 					return;
 			}
 //			actions+=/mutilate,cycle_targets=1,if=active_enemies=2&!dot.deadly_poison_dot.ticking&debuff.vendetta.down
-			if (ActiveEnemies (6) == 2) {
+			if (Multitarget && ActiveEnemies (6) == 2) {
 				Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && !x.HasAura ("Deadly Poison", true) && !x.HasAura ("Vendetta", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Mutilate (Unit))
 					return;
