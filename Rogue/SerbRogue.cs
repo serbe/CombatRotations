@@ -436,12 +436,12 @@ namespace ReBot
 			if (!Me.HasAura ("Blade Flurry")) {
 				if (InArena || InBg) {
 					if (Usable ("Blind")) {
-						Unit = API.Players.Where (u => u.CanParticipateInCombat && u.IsPlayer && u.IsEnemy && !u.IsDead && Range (15, u, 8) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+						Unit = Enemy.Where (u => u.CanParticipateInCombat && u.IsPlayer && u.IsEnemy && !u.IsDead && Range (15, u, 8) && u != Target && (HasGlyph (91299) || HasSpell ("Dirty Tricks") || !u.Auras.Any (x => x.IsDebuff && x.DebuffType.Contains ("Poison")))).DefaultIfEmpty (null).FirstOrDefault ();
 						if (Unit != null && Blind (Unit))
 							return true;
 					}
 					if (Usable ("Gouge") && ActiveEnemies (8) == 2) {
-						Unit = API.Players.Where (u => u.CanParticipateInCombat && u.IsPlayer && u.IsEnemy && !u.IsDead && Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+						Unit = Enemy.Where (u => u.CanParticipateInCombat && u.IsPlayer && u.IsEnemy && !u.IsDead && Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
 						if (Unit != null && Gouge (Unit))
 							return true;
 					}
@@ -491,7 +491,7 @@ namespace ReBot
 		public bool Gouge (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Gouge") && HasCost (45) && Range (5, u) && C ("Gouge", u);
+			return Usable ("Gouge") && (HasSpell ("Dirty Tricks") || HasCost (45)) && Range (5, u) && C ("Gouge", u);
 		}
 
 		public bool MainHandPoison (PoisonMaindHand mH)
@@ -719,7 +719,7 @@ namespace ReBot
 		public bool Blind (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Blind") && HasCost (15) && Range (15, u) && C ("Blind", u);
+			return Usable ("Blind") && (HasSpell ("Dirty Tricks") || HasCost (15)) && Range (15, u) && C ("Blind", u);
 		}
 
 		public bool ShadowDance ()
