@@ -172,12 +172,12 @@ namespace ReBot
 					return;
 			}
 //			actions+=/crimson_tempest,if=combo_points>4&active_enemies>=4&remains<8
-			if (Aoe && ComboPoints >= 4 && ActiveEnemies (10) >= 4 && Target.AuraTimeRemaining ("Crimson Tempest", true) < 8) {
+			if (!InArena && Aoe && ComboPoints >= 4 && ActiveEnemies (10) >= 4 && Target.AuraTimeRemaining ("Crimson Tempest", true) < 8) {
 				if (CrimsonTempest ())
 					return;
 			}
 //			actions+=/fan_of_knives,if=(combo_points<5|(talent.anticipation.enabled&anticipation_charges<4))&active_enemies>=4
-			if (Aoe && ((!HasSpell ("Anticipation") && ComboPoints < 5) || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") < 4)) && ActiveEnemies (10) >= 4) {
+			if (!InArena && Aoe && ((!HasSpell ("Anticipation") && ComboPoints < 5) || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") < 4)) && ActiveEnemies (10) >= 4) {
 				if (FanofKnives ())
 					return;
 			}
@@ -213,7 +213,7 @@ namespace ReBot
 					return;
 			}
 //			actions+=/fan_of_knives,cycle_targets=1,if=active_enemies>2&!dot.deadly_poison_dot.ticking&debuff.vendetta.down
-			if (Multitarget && HasCost (35) && ActiveEnemies (10) > 2) {
+			if (!InArena && Multitarget && HasCost (35) && ActiveEnemies (10) > 2) {
 				Unit = Enemy.Where (x => x.IsInLoS && x.CombatRange <= 10 && !x.HasAura ("Deadly Poison", true) && !x.HasAura ("Vendetta", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && FanofKnives ())
 					return;

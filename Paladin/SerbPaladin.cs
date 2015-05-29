@@ -109,6 +109,15 @@ namespace ReBot
 			return u.HealthFraction;
 		}
 
+		public string SealSpell {
+			get {
+				if (HasSpell ("Seal of Insight"))
+					return "Seal of Insight";
+				else
+					return "Seal of Command";
+			}
+		}
+
 		// Check
 
 		public bool CS (string s)

@@ -435,15 +435,14 @@ namespace ReBot
 
 			if (!Me.HasAura ("Blade Flurry")) {
 				if (InArena || InBg) {
-					if (Usable ("Gouge") && ActiveEnemies (8) == 2 && Multitarget) {
-						Unit = API.Players.Where (p => p.IsPlayer && p.IsEnemy && !p.IsDead && Range (5, p) && p.CanParticipateInCombat && p != Target).DefaultIfEmpty (null).FirstOrDefault ();
-						if (Unit != null && Gouge (Unit))
+					if (Usable ("Blind")) {
+						Unit = API.Players.Where (u => u.CanParticipateInCombat && u.IsPlayer && u.IsEnemy && !u.IsDead && Range (15, u, 8) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+						if (Unit != null && Blind (Unit))
 							return true;
 					}
-
-					if (Usable ("Blind") && ActiveEnemies (15) == 2 && Multitarget) {
-						Unit = API.Players.Where (p => p.IsPlayer && p.IsEnemy && !p.IsDead && p.IsInLoS && p.CombatRange <= 15 && p.CanParticipateInCombat && p != Target).DefaultIfEmpty (null).FirstOrDefault ();
-						if (Unit != null && Blind (Unit))
+					if (Usable ("Gouge") && ActiveEnemies (8) == 2) {
+						Unit = API.Players.Where (u => u.CanParticipateInCombat && u.IsPlayer && u.IsEnemy && !u.IsDead && Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+						if (Unit != null && Gouge (Unit))
 							return true;
 					}
 				} else {

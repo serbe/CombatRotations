@@ -88,6 +88,25 @@ namespace ReBot
 			if (Danger () && LightsHammer ())
 				return;
 			//	actions+=/use_item,name=vial_of_convulsive_shadows,if=buff.avenging_wrath.up
+			//	actions+=/avenging_wrath,sync=seraphim,if=talent.seraphim.enabled
+			if (Me.HasAura ("Seraphim") && HasSpell ("Seraphim")) {
+				if (AvengingWrath ())
+					return;
+			}
+			//	actions+=/avenging_wrath,if=!talent.seraphim.enabled&set_bonus.tier18_4pc=0
+			if (!HasSpell ("Seraphim") && !HasSpell (185648)) {
+				if (AvengingWrath ())
+					return;
+			}
+			//	actions+=/avenging_wrath,if=!talent.seraphim.enabled&time<20&set_bonus.tier18_4pc=1
+			if (!HasSpell ("Seraphim") && Time < 20 && HasSpell (185648)) {
+				if (AvengingWrath ())
+					return;
+			}
+//	actions+=/avenging_wrath,if=prev.execution_sentence&set_bonus.tier18_4pc=1&talent.execution_sentence.enabled&!talent.seraphim.enabled
+
+//	actions+=/avenging_wrath,if=prev.lights_hammer&set_bonus.tier18_4pc=1&talent.lights_hammer.enabled&!talent.seraphim.enabled
+
 			//	actions+=/holy_avenger,sync=seraphim,if=talent.seraphim.enabled
 			if (Me.HasAura ("Seraphim")) {
 				if (HolyAvenger ())
@@ -96,16 +115,6 @@ namespace ReBot
 			//	actions+=/holy_avenger,if=holy_power<=2&!talent.seraphim.enabled
 			if (HolyPower <= 2 && !HasSpell ("Seraphim")) {
 				if (HolyAvenger ())
-					return;
-			}
-			//	actions+=/avenging_wrath,sync=seraphim,if=talent.seraphim.enabled
-			if (Me.HasAura ("Seraphim") && HasSpell ("Seraphim")) {
-				if (AvengingWrath ())
-					return;
-			}
-			//	actions+=/avenging_wrath,if=!talent.seraphim.enabled
-			if (!HasSpell ("Seraphim")) {
-				if (AvengingWrath ())
 					return;
 			}
 			//	actions+=/blood_fury
@@ -185,6 +194,8 @@ namespace ReBot
 			//	actions.single+=/hammer_of_wrath
 			if (HammerofWrath ())
 				return;
+//	actions.single+=/crusader_strike,if=t18_class_trinket=1&buff.focus_of_vengeance.remains<gcd.max*2
+
 			//	actions.single+=/judgment,if=talent.empowered_seals.enabled&seal.truth&buff.maraads_truth.remains<cooldown.judgment.duration
 			if (HasSpell ("Empowered Seals") && IsInShapeshiftForm ("Seal of Truth") && Me.AuraTimeRemaining ("Maraad's Truth") < 6) {
 				if (Judgment ()) {
@@ -413,6 +424,8 @@ namespace ReBot
 			//	actions.cleave+=/hammer_of_wrath
 			if (HammerofWrath ())
 				return;
+//actions.cleave+=/hammer_of_the_righteous,if=t18_class_trinket=1&buff.focus_of_vengeance.remains<gcd.max*2
+					
 			//	actions.cleave+=/judgment,if=talent.empowered_seals.enabled&seal.righteousness&buff.liadrins_righteousness.remains<cooldown.judgment.duration
 			if (HasSpell ("Empowered Seals") && IsInShapeshiftForm ("Seal of Righteousness") && Me.AuraTimeRemaining ("Liadrin's Righteousness") < 6) {
 				if (Judgment ()) {
