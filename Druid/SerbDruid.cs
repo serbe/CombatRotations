@@ -11,8 +11,8 @@ namespace ReBot
 	{
 		[JsonProperty ("Maximum Energy")] 
 		public int EnergyMax = 100;
-		[JsonProperty ("Healing %")]
-		public int HealingPercent = 80;
+		[JsonProperty ("Healing %/100")]
+		public double HealingPercent = 0.8;
 		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
 		public int Ttd = 10;
 		[JsonProperty ("Run to enemy")]
@@ -490,11 +490,11 @@ namespace ReBot
 		public bool HealPartyMember ()
 		{
 			if (InArena && InInstance) {
-				CycleTarget = Group.GetGroupMemberObjects ().Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingPercent / 100 && !x.HasAura ("Rejuvenation", true) && !x.HasAura ("Cenarion Ward", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				CycleTarget = Group.GetGroupMemberObjects ().Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingPercent && !x.HasAura ("Rejuvenation", true) && !x.HasAura ("Cenarion Ward", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (CycleTarget != null && Rejuvenation (CycleTarget))
 					return true;
 				if (Me.HasAura ("Predatory Swiftness")) {
-					CycleTarget = Group.GetGroupMemberObjects ().Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingPercent / 100 && Health (x) < Health (Me) && !x.HasAura ("Cenarion Ward", true)).DefaultIfEmpty (null).FirstOrDefault ();
+					CycleTarget = Group.GetGroupMemberObjects ().Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingPercent && Health (x) < Health (Me) && !x.HasAura ("Cenarion Ward", true)).DefaultIfEmpty (null).FirstOrDefault ();
 					if (CycleTarget != null && HealingTouch (CycleTarget))
 						return true;
 				}				
@@ -521,15 +521,15 @@ namespace ReBot
 				if (Barkskin ())
 					return true;
 			}
-			if (Me.HasAura ("Predatory Swiftness") && Health (Me) < HealingPercent / 100 && !Me.HasAura ("Cenarion Ward", true)) {
+			if (Me.HasAura ("Predatory Swiftness") && Health (Me) < HealingPercent && !Me.HasAura ("Cenarion Ward", true)) {
 				if (HealingTouch (Me))
 					return true;
 			}
-			if (Health (Me) <= HealingPercent / 100) {
+			if (Health (Me) <= HealingPercent) {
 				if (CenarionWard (Me))
 					return true;
 			}
-			if (Health (Me) <= HealingPercent / 100 && !Me.HasAura ("Rejuvenation", true) && !Me.HasAura ("Cenarion Ward", true)) {
+			if (Health (Me) <= HealingPercent && !Me.HasAura ("Rejuvenation", true) && !Me.HasAura ("Cenarion Ward", true)) {
 				if (Rejuvenation (Me))
 					return true;
 			}
