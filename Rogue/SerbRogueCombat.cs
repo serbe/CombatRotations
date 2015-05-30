@@ -92,11 +92,9 @@ namespace ReBot
 			if (Me.Auras.Any (x => x.IsDebuff && x.DebuffType.Contains ("magic")))
 				CloakofShadows ();
 
-//			if (!InArena)
 			if (CrystalOfInsanity ())
 				return true;
 
-			// if (!InArena)
 			if (OraliusWhisperingCrystal ())
 				return true;
 
@@ -128,6 +126,10 @@ namespace ReBot
 				StartBattle = DateTime.Now;
 			}
 
+			if (HasGlobalCooldown () && Gcd)
+				return;
+			
+
 			if (Health (Me) < 0.9) {
 				if (Heal ())
 					return;
@@ -136,9 +138,9 @@ namespace ReBot
 			if (Me.CanNotParticipateInCombat ())
 				Freedom ();
 
-			if (HasGlobalCooldown () && Gcd)
+			if (Me.CanNotParticipateInCombat ())
 				return;
-			
+
 			if (!Me.HasAura ("Stealth")) {
 				Interrupt ();
 				UnEnrage ();
@@ -167,19 +169,15 @@ namespace ReBot
 			}
 			// actions+=/use_item,slot=trinket2
 			// actions+=/blood_fury
-			if (BloodFury ())
-				return;
+			BloodFury ();
 			// actions+=/berserking
-			if (Berserking ())
-				return;
+			Berserking ();
 			// actions+=/arcane_torrent,if=energy<60
-			if (Energy < 60) {
-				if (ArcaneTorrent ())
-					return;
-			}
+			if (Energy < 60)
+				ArcaneTorrent ();
 			// actions+=/blade_flurry,if=(active_enemies>=2&!buff.blade_flurry.up)|(active_enemies<2&buff.blade_flurry.up)
 			if (!Me.HasAura ("Blade Flurry") && ActiveEnemies (8) >= 2 && Aoe) {
-				if (!IncapacitatedInRange (8) && (!InArena || (InArena && ActiveEnemies (8) > 2))) {
+				if (!IncapacitatedInRange (8) && (!InArena || (InArena && ActiveEnemiesPlayer (8) > 2))) {
 					if (BladeFlurry ())
 						return;
 				}
@@ -315,7 +313,7 @@ namespace ReBot
 			if (DeathfromAbove ())
 				return true;
 
-			if (!InArena && ActiveEnemies (10) >= 5) {
+			if ((!InArena || (InArena && ActiveEnemiesPlayer (10) >= 3)) && ActiveEnemies (10) >= 5) {
 				if (CrimsonTempest ())
 					return true;
 			}
