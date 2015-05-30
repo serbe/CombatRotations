@@ -58,6 +58,17 @@ namespace ReBot
 			return x;
 		}
 
+		public int ActiveEnemiesPlayer (int range)
+		{
+			int x = 0;
+			foreach (UnitObject u in API.CollectUnits(range)) {
+				if ((u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable && u.InCombat && u.IsPlayer) {
+					x++;
+				}
+			}
+			return x;
+		}
+
 		public double TimeToDie (UnitObject u = null)
 		{
 			u = u ?? Target;
