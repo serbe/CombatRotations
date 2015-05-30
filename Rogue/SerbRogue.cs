@@ -161,11 +161,14 @@ namespace ReBot
 
 		// Check
 
-		public bool C (string s, UnitObject u = null)
+		public bool C (string s, UnitObject u = null, bool t = false)
 		{
 			u = u ?? Target;
-			if (Cast (s, u))
+			if (Cast (s, u)) {
+				if (t)
+					API.Print ("BINGO! Cast " + s);
 				return true;
+			}
 			API.Print ("False Cast " + s + " with " + u.CombatRange + " range, " + ComboPoints + " ComboPoints, " + Energy + " energy");
 			return false;
 		}
@@ -179,29 +182,38 @@ namespace ReBot
 			return false;
 		}
 
-		public bool CS (string s)
+		public bool CS (string s, bool t = false)
 		{
-			if (CastSelf (s))
+			if (CastSelf (s)) {
+				if (t)
+					API.Print ("BINGO! CastSelf " + s);
 				return true;
+			}
 			API.Print ("False CastSelf " + s + " with " + ComboPoints + " ComboPoints and " + Energy + " energy");
 			return false;
 		}
 
-		public bool COT (string s, UnitObject u = null)
+		public bool COT (string s, UnitObject u = null, bool t = false)
 		{
 			u = u ?? Target;
-			if (CastOnTerrain (s, u.Position))
+			if (CastOnTerrain (s, u.Position)) {
+				if (t)
+					API.Print ("BINGO! CastOnTerrain " + s);
 				return true;
+			}
 			API.Print ("False CastOnTerrain " + s + " with " + ComboPoints + " ComboPoints and " + u.CombatRange + " range");
 			return false;
 		}
 
-		public bool COTPD (string s, UnitObject u = null)
+		public bool COTPD (string s, UnitObject u = null, int d = 800, bool t = false)
 		{
 			u = u ?? Target;
-			if (CastOnTerrainPreventDouble (s, u.Position))
+			if (CastOnTerrainPreventDouble (s, u.Position, null, d)) {
+				if (t)
+					API.Print ("BINGO! CastOnTerrainPreventDouble " + s);
 				return true;
-			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range");
+			}
+			API.Print ("False CastOnTerrainPreventDouble " + s + " with " + u.CombatRange + " range");
 			return false;
 		}
 
@@ -479,7 +491,7 @@ namespace ReBot
 		public bool Shiv (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Shiv") && HasCost (20) && Range (5, u) && C ("Shiv", u);
+			return Usable ("Shiv") && HasCost (20) && Range (5, u) && C ("Shiv", u, true);
 		}
 
 		public bool DeadlyThrow (UnitObject u = null)
@@ -491,7 +503,7 @@ namespace ReBot
 		public bool Gouge (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Gouge") && (HasSpell ("Dirty Tricks") || HasCost (45)) && Range (5, u) && C ("Gouge", u);
+			return Usable ("Gouge") && (HasSpell ("Dirty Tricks") || HasCost (45)) && Range (5, u) && C ("Gouge", u, true);
 		}
 
 		public bool MainHandPoison (PoisonMaindHand mH)
@@ -719,7 +731,7 @@ namespace ReBot
 		public bool Blind (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Blind") && (HasSpell ("Dirty Tricks") || HasCost (15)) && Range (15, u) && C ("Blind", u);
+			return Usable ("Blind") && (HasSpell ("Dirty Tricks") || HasCost (15)) && Range (15, u) && C ("Blind", u, true);
 		}
 
 		public bool ShadowDance ()
