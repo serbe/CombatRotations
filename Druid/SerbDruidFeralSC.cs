@@ -109,6 +109,11 @@ namespace ReBot
 					return;
 			}
 
+			if (!Me.HasAura ("Prowl") && !Me.HasAura ("Shadowmeld")) {
+				if (UnEnrage ())
+					return;
+			}
+
 			//Try and prevent Rogues and Priests from going invisible
 			if (IsPlayer () && !Me.HasAura ("Prowl"))
 				NoInvisible ();

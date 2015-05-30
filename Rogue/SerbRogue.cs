@@ -177,18 +177,21 @@ namespace ReBot
 			u = u ?? Target;
 			if (Cast (s, u)) {
 				if (t)
-					API.Print ("BINGO! Cast " + s);
+					API.Print ("--- Cast " + s + " on " + u.Name);
 				return true;
 			}
 			API.Print ("False Cast " + s + " with " + u.CombatRange + " range, " + ComboPoints + " ComboPoints, " + Energy + " energy");
 			return false;
 		}
 
-		public bool CPD (string s, UnitObject u = null, int d = 800)
+		public bool CPD (string s, UnitObject u = null, int d = 800, bool t = false)
 		{
 			u = u ?? Target;
-			if (CastPreventDouble (s, null, u, d))
+			if (CastPreventDouble (s, null, u, d)) {
+				if (t)
+					API.Print ("--- CastPreventDouble " + s + " on " + u.Name);
 				return true;
+			}
 			API.Print ("False CastPreventDouble " + s + " with " + u.CombatRange + " range " + d + " delay");
 			return false;
 		}
@@ -197,7 +200,7 @@ namespace ReBot
 		{
 			if (CastSelf (s)) {
 				if (t)
-					API.Print ("BINGO! CastSelf " + s);
+					API.Print ("--- CastPreventDouble " + s + " on self");
 				return true;
 			}
 			API.Print ("False CastSelf " + s + " with " + ComboPoints + " ComboPoints and " + Energy + " energy");
@@ -209,7 +212,7 @@ namespace ReBot
 			u = u ?? Target;
 			if (CastOnTerrain (s, u.Position)) {
 				if (t)
-					API.Print ("BINGO! CastOnTerrain " + s);
+					API.Print ("--- CastOnTerrain " + s + " on " + u.Name);
 				return true;
 			}
 			API.Print ("False CastOnTerrain " + s + " with " + ComboPoints + " ComboPoints and " + u.CombatRange + " range");
@@ -221,7 +224,7 @@ namespace ReBot
 			u = u ?? Target;
 			if (CastOnTerrainPreventDouble (s, u.Position, null, d)) {
 				if (t)
-					API.Print ("BINGO! CastOnTerrainPreventDouble " + s);
+					API.Print ("--- CastOnTerrainPreventDouble " + s + " on " + u.Name);
 				return true;
 			}
 			API.Print ("False CastOnTerrainPreventDouble " + s + " with " + u.CombatRange + " range");
@@ -294,10 +297,18 @@ namespace ReBot
 			return u.IsElite ();
 		}
 
-		public bool IsInEnrage (UnitObject o = null)
+		//		public bool IsInEnrage (UnitObject o = null)
+		//		{
+		//			o = o ?? Target;
+		//			if (o.HasAura ("Enrage") || o.HasAura ("Berserker Rage") || o.HasAura ("Demonic Enrage") || o.HasAura ("Aspect of Thekal") || o.HasAura ("Charge Rage") || o.HasAura ("Electric Spur") || o.HasAura ("Cornered and Enraged!") || o.HasAura ("Draconic Rage") || o.HasAura ("Brood Rage") || o.HasAura ("Determination") || o.HasAura ("Charged Fists") || o.HasAura ("Beatdown") || o.HasAura ("Consuming Bite") || o.HasAura ("Delirious") || o.HasAura ("Angry") || o.HasAura ("Blood Rage") || o.HasAura ("Berserking Howl") || o.HasAura ("Bloody Rage") || o.HasAura ("Brewrific") || o.HasAura ("Desperate Rage") || o.HasAura ("Blood Crazed") || o.HasAura ("Combat Momentum") || o.HasAura ("Dire Rage") || o.HasAura ("Dominate Slave") || o.HasAura ("Blackrock Rabies") || o.HasAura ("Burning Rage") || o.HasAura ("Bloodletting Howl"))
+		//				return true;
+		//			return false;
+		//		}
+
+		public bool IsInEnrage (UnitObject u = null)
 		{
-			o = o ?? Target;
-			if (o.HasAura ("Enrage") || o.HasAura ("Berserker Rage") || o.HasAura ("Demonic Enrage") || o.HasAura ("Aspect of Thekal") || o.HasAura ("Charge Rage") || o.HasAura ("Electric Spur") || o.HasAura ("Cornered and Enraged!") || o.HasAura ("Draconic Rage") || o.HasAura ("Brood Rage") || o.HasAura ("Determination") || o.HasAura ("Charged Fists") || o.HasAura ("Beatdown") || o.HasAura ("Consuming Bite") || o.HasAura ("Delirious") || o.HasAura ("Angry") || o.HasAura ("Blood Rage") || o.HasAura ("Berserking Howl") || o.HasAura ("Bloody Rage") || o.HasAura ("Brewrific") || o.HasAura ("Desperate Rage") || o.HasAura ("Blood Crazed") || o.HasAura ("Combat Momentum") || o.HasAura ("Dire Rage") || o.HasAura ("Dominate Slave") || o.HasAura ("Blackrock Rabies") || o.HasAura ("Burning Rage") || o.HasAura ("Bloodletting Howl"))
+			u = u ?? Target;
+			if (u.HasAura ("Enrage") || u.HasAura ("Berserk") || u.HasAura ("Frenzy"))
 				return true;
 			return false;
 		}
@@ -374,12 +385,12 @@ namespace ReBot
 
 		public bool UnEnrage ()
 		{
-			if (HasSpell ("Shiv") && Cooldown ("Shiv") == 0 && HasCost (20)) {
+			if (Usable ("Shiv") && HasCost (20)) {
 				if (ActiveEnemies (6) > 1 && Multitarget) {
-					Unit = Enemy.Where (u => Range (5, u) && IsInEnrage (u) && !IsBoss (u)).DefaultIfEmpty (null).FirstOrDefault ();
+					Unit = Enemy.Where (u => Range (5, u) && IsInEnrage (u)).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && Shiv (Unit))
 						return true;
-				} else if (!IsBoss () && IsInEnrage ()) {
+				} else if (IsInEnrage ()) {
 					if (Shiv ())
 						return true;
 				}

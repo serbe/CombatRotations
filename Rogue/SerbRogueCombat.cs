@@ -128,7 +128,6 @@ namespace ReBot
 
 			if (HasGlobalCooldown () && Gcd)
 				return;
-			
 
 			if (Health (Me) < 0.9) {
 				if (Heal ())
@@ -144,6 +143,10 @@ namespace ReBot
 			if (!Me.HasAura ("Stealth")) {
 				Interrupt ();
 				UnEnrage ();
+				if (Target.HasAura ("Evasion") || Target.HasAura ("Deterrence") || Target.HasAura ("Die by the Sword")) {
+					if (Shiv ())
+						return;
+				}
 			}
 
 			if (ComboPoints < 4)
@@ -313,7 +316,13 @@ namespace ReBot
 			if (DeathfromAbove ())
 				return true;
 
-			if ((!InArena || (InArena && ActiveEnemiesPlayer (10) >= 3)) && ActiveEnemies (10) >= 5) {
+			if (InArena && !IncapacitatedInRange (10)) {
+				Unit = Enemy.Where (u => Range (10, u) && !u.HasAura ("CrimsonTempest")).DefaultIfEmpty (null).FirstOrDefault;
+				if (Unit != null && CrimsonTempest ())
+					return true;
+			}
+
+			if (!InArena && ActiveEnemies (10) >= 5) {
 				if (CrimsonTempest ())
 					return true;
 			}

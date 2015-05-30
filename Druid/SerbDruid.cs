@@ -35,38 +35,50 @@ namespace ReBot
 
 		// Check
 
-		public bool C (string s, UnitObject u = null)
+		public bool C (string s, UnitObject u = null, bool t = false)
 		{
 			u = u ?? Target;
-			if (Cast (s, u))
+			if (Cast (s, u)) {
+				if (t)
+					API.Print ("--- Cast " + s + " on " + u.Name);
 				return true;
+			}
 			API.Print ("False Cast " + s + " with " + u.CombatRange + " range, and " + Energy + " energy");
 			return false;
 		}
 
-		public bool CS (string s)
+		public bool CS (string s, bool t = false)
 		{
-			if (CastSelf (s))
+			if (CastSelf (s)) {
+				if (t)
+					API.Print ("--- Cast " + s + " on self");
 				return true;
+			}
 			API.Print ("False CastSelf " + s);
 			return false;
 		}
 
-		public bool COT (string s, UnitObject u = null)
+		public bool COT (string s, UnitObject u = null, bool t = false)
 		{
 			u = u ?? Target;
-			if (CastOnTerrain (s, u.Position))
+			if (CastOnTerrain (s, u.Position)) {
+				if (t)
+					API.Print ("--- CastOnTerrain " + s + " on " + u.Name);
 				return true;
+			}
 			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range, and " + Energy + " energy");
 			return false;
 		}
 
-		public bool COTPD (string s, UnitObject u = null)
+		public bool COTPD (string s, UnitObject u = null, int n = 800, bool t = false)
 		{
 			u = u ?? Target;
-			if (CastOnTerrainPreventDouble (s, u.Position))
+			if (CastOnTerrainPreventDouble (s, u.Position, null, n)) {
+				if (t)
+					API.Print ("--- CastOnTerrainPreventDouble " + s + " on " + u.Name);
 				return true;
-			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range, and " + Energy + " energy");
+			}
+			API.Print ("False CastOnTerrainPreventDouble " + s + " with " + u.CombatRange + " range, and " + Energy + " energy, and " + n + " sleep");
 			return false;
 		}
 
@@ -118,9 +130,17 @@ namespace ReBot
 			return u.IsElite ();
 		}
 
-		public bool IsInEnrage (UnitObject o)
+		//		public bool IsInEnrage (UnitObject o)
+		//		{
+		//			if (o.HasAura ("Enrage") || o.HasAura ("Berserker Rage") || o.HasAura ("Demonic Enrage") || o.HasAura ("Aspect of Thekal") || o.HasAura ("Charge Rage") || o.HasAura ("Electric Spur") || o.HasAura ("Cornered and Enraged!") || o.HasAura ("Draconic Rage") || o.HasAura ("Brood Rage") || o.HasAura ("Determination") || o.HasAura ("Charged Fists") || o.HasAura ("Beatdown") || o.HasAura ("Consuming Bite") || o.HasAura ("Delirious") || o.HasAura ("Angry") || o.HasAura ("Blood Rage") || o.HasAura ("Berserking Howl") || o.HasAura ("Bloody Rage") || o.HasAura ("Brewrific") || o.HasAura ("Desperate Rage") || o.HasAura ("Blood Crazed") || o.HasAura ("Combat Momentum") || o.HasAura ("Dire Rage") || o.HasAura ("Dominate Slave") || o.HasAura ("Blackrock Rabies") || o.HasAura ("Burning Rage") || o.HasAura ("Bloodletting Howl"))
+		//				return true;
+		//			return false;
+		//		}
+
+		public bool IsInEnrage (UnitObject u = null)
 		{
-			if (o.HasAura ("Enrage") || o.HasAura ("Berserker Rage") || o.HasAura ("Demonic Enrage") || o.HasAura ("Aspect of Thekal") || o.HasAura ("Charge Rage") || o.HasAura ("Electric Spur") || o.HasAura ("Cornered and Enraged!") || o.HasAura ("Draconic Rage") || o.HasAura ("Brood Rage") || o.HasAura ("Determination") || o.HasAura ("Charged Fists") || o.HasAura ("Beatdown") || o.HasAura ("Consuming Bite") || o.HasAura ("Delirious") || o.HasAura ("Angry") || o.HasAura ("Blood Rage") || o.HasAura ("Berserking Howl") || o.HasAura ("Bloody Rage") || o.HasAura ("Brewrific") || o.HasAura ("Desperate Rage") || o.HasAura ("Blood Crazed") || o.HasAura ("Combat Momentum") || o.HasAura ("Dire Rage") || o.HasAura ("Dominate Slave") || o.HasAura ("Blackrock Rabies") || o.HasAura ("Burning Rage") || o.HasAura ("Bloodletting Howl"))
+			u = u ?? Target;
+			if (u.HasAura ("Enrage") || u.HasAura ("Berserk") || u.HasAura ("Frenzy"))
 				return true;
 			return false;
 		}
@@ -491,11 +511,11 @@ namespace ReBot
 		{
 			if (InArena && InInstance) {
 				CycleTarget = Group.GetGroupMemberObjects ().Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingPercent && !x.HasAura ("Rejuvenation", true) && !x.HasAura ("Cenarion Ward", true)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && Rejuvenation (CycleTarget))
+				if (CycleTarget != null && Rejuvenation (CycleTarget, true))
 					return true;
 				if (Me.HasAura ("Predatory Swiftness")) {
 					CycleTarget = Group.GetGroupMemberObjects ().Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingPercent && Health (x) < Health (Me) && !x.HasAura ("Cenarion Ward", true)).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null && HealingTouch (CycleTarget))
+					if (CycleTarget != null && HealingTouch (CycleTarget, true))
 						return true;
 				}				
 			}
@@ -537,7 +557,28 @@ namespace ReBot
 			return false;
 		}
 
+		public bool UnEnrage ()
+		{
+			if (InArena && Usable ("Soothe")) {
+				if (ActiveEnemies (40) > 1) {
+					CycleTarget = Enemy.Where (u => Range (40, u) && IsInEnrage (u)).DefaultIfEmpty (null).FirstOrDefault ();
+					if (CycleTarget != null && Soothe (CycleTarget))
+						return true;
+				} else if (IsInEnrage ()) {
+					if (Soothe ())
+						return true;
+				}
+			}
+			return false;
+		}
+
 		// Spells
+
+		public bool Soothe (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Soothe") && Range (40, u) && C ("Soothe", u);
+		}
 
 		public bool CatForm ()
 		{
@@ -567,16 +608,16 @@ namespace ReBot
 			return Usable ("Mark of the Wild") && u.AuraTimeRemaining ("Mark of the Wild") < 300 && u.AuraTimeRemaining ("Blessing of Kings") < 300 && Range (40, u) && C ("Mark of the Wild", u);
 		}
 
-		public bool Rejuvenation (UnitObject u = null)
+		public bool Rejuvenation (UnitObject u = null, bool t = false)
 		{
 			u = u ?? Target;
-			return Usable ("Rejuvenation") && !u.HasAura ("Rejuvenation", true) && Range (40, u) && C ("Rejuvenation", u);
+			return Usable ("Rejuvenation") && !u.HasAura ("Rejuvenation", true) && Range (40, u) && C ("Rejuvenation", u, t);
 		}
 
-		public bool HealingTouch (UnitObject u = null)
+		public bool HealingTouch (UnitObject u = null, bool t = false)
 		{
 			u = u ?? Target;
-			return Usable ("Healing Touch") && Range (40, u) && C ("Healing Touch", u);
+			return Usable ("Healing Touch") && Range (40, u) && C ("Healing Touch", u, t);
 		}
 
 		public bool RemoveCorruption (UnitObject u = null)
