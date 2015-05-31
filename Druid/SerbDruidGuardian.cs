@@ -140,8 +140,8 @@ namespace ReBot
 			}
 
 			if (ActiveEnemies (10) > 1) {
-				CycleTarget = Enemy.Where (u => Range (8, u) && !u.HasAura ("Thrash")).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && Thrash (CycleTarget))
+				Unit = Enemy.Where (u => Range (8, u) && !u.HasAura ("Thrash")).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && Thrash (Unit))
 					return;
 			}
 			//	actions+=/mangle

@@ -3,6 +3,7 @@ using ReBot.API;
 using System.Collections.Generic;
 using Geometry;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace ReBot
 {
@@ -136,6 +137,46 @@ namespace ReBot
 				return Me.GetPower (WoWPowerType.WarlockDestructionBurningEmbers);
 			}
 		}
+
+		public int Eclipse {
+			get {
+				return API.ExecuteLua<int> ("return UnitPower('player', SPELL_POWER_ECLIPSE)");
+			}
+		}
+
+		public string EclipseDirection {
+			get {
+				return API.ExecuteLua<string> ("return GetEclipseDirection()");
+			}
+		}
+
+		public double EnergyTimeToMax {
+			get {
+				return MaxPower - Energy / RegenPower;
+			}
+		}
+
+		public double EclipseChange {
+			get {
+				double timeToChange = 20;
+				if (EclipseDirection == "sun") {
+					if (Eclipse > 0 && Eclipse <= 100)
+						timeToChange = 10 + (100 - Eclipse) / 10;
+					if (Eclipse > -100 && Eclipse < 0)
+						timeToChange = (0 - Eclipse) / 10;
+				} 
+				if (EclipseDirection == "moon") {
+					if (Eclipse > 0 && Eclipse < 100)
+						timeToChange = Eclipse / 10;
+					if (Eclipse >= -100 && Eclipse < 0)
+						timeToChange = 10 + (100 + Eclipse) / 10;
+				}
+				if (Eclipse == 0)
+					timeToChange = 20;
+				return timeToChange;
+			}
+		}
+
 
 		public double RegenPower {
 			get {
@@ -369,6 +410,16 @@ namespace ReBot
 			return API.HasItem (i) && API.ItemCooldown (i) <= 0;
 		}
 
+		// Party
+
+		public PlayerObject Healer {
+			get {
+				return Group.GetGroupMemberObjects ().Where (p => !p.IsDead && p.IsHealer).DefaultIfEmpty (null).FirstOrDefault ();
+			}
+		}
+
+
+
 		// Combos
 
 		public bool Freedom ()
@@ -428,6 +479,12 @@ namespace ReBot
 		{
 			return UsableItem (109220) && !Me.HasAura ("Draenic Armor Potion") && API.UseItem (109220);
 		}
+
+		public bool EternalWilloftheMartyr ()
+		{
+			return UsableItem (122668) && API.UseItem (122668);
+		}
+
 
 	}
 }

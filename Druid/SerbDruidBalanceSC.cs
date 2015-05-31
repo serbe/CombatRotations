@@ -183,7 +183,7 @@ namespace ReBot
 		public bool AOEAction ()
 		{
 			// actions.aoe=celestial_alignment,if=lunar_max<8|target.time_to_die<20
-			if ((Direction == "moon" && Eclipse < -20) || TimeToDie (Target) < 20) {
+			if ((EclipseDirection == "moon" && Eclipse < -20) || TimeToDie (Target) < 20) {
 				if (Starfire ())
 					return true;
 			}
@@ -194,8 +194,8 @@ namespace ReBot
 			}
 			// actions.aoe+=/sunfire,cycle_targets=1,if=remains<8
 			if (Usable ("Sunfire") && Eclipse > 0) {
-				CycleTarget = Enemy.Where (x => Range (40, x) && x.AuraTimeRemaining ("Sunfire", true) < 8).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && Sunfire (CycleTarget))
+				Unit = Enemy.Where (x => Range (40, x) && x.AuraTimeRemaining ("Sunfire", true) < 8).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && Sunfire (Unit))
 					return true;
 			}
 			// actions.aoe+=/starfall,if=!buff.starfall.up&active_enemies>2
@@ -210,14 +210,14 @@ namespace ReBot
 			}
 			// actions.aoe+=/moonfire,cycle_targets=1,if=remains<12
 			if (Usable ("Moonfire") && Eclipse <= 0) {
-				CycleTarget = Enemy.Where (x => Range (40, x) && x.AuraTimeRemaining ("Moonfire", true) < 12).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && Moonfire ())
+				Unit = Enemy.Where (x => Range (40, x) && x.AuraTimeRemaining ("Moonfire", true) < 12).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && Moonfire ())
 					return true;
 			}
 			// actions.aoe+=/stellar_flare,cycle_targets=1,if=remains<7
 			if (Usable ("Stellar Flare")) {
-				CycleTarget = Enemy.Where (x => Range (40, x) && x.AuraTimeRemaining ("Stellar Flare", true) < 7).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && StellarFlare ())
+				Unit = Enemy.Where (x => Range (40, x) && x.AuraTimeRemaining ("Stellar Flare", true) < 7).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && StellarFlare ())
 					return true;
 			}
 			// actions.aoe+=/starsurge,if=buff.lunar_empowerment.down&eclipse_energy>20&active_enemies=2

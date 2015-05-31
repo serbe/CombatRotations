@@ -2,7 +2,6 @@
 using System.Linq;
 using Newtonsoft.Json;
 using ReBot.API;
-using System.Collections.Generic;
 
 namespace ReBot
 {
@@ -150,9 +149,9 @@ namespace ReBot
 			}
 			if (Health (Me) < 0.6 && Me.Auras.Any (a => a.IsDebuff && a.DebuffType.Contains ("magic")))
 				CloakofShadows ();
-			if (Health (Me) < 0.65)
+			if (Health (Me) < 0.65 && !Me.HasAura ("Evasion"))
 				CombatReadiness ();
-			if (Health (Me) < 0.4)
+			if (Health (Me) < 0.4 && !Me.HasAura ("Combat Readiness"))
 				Evasion ();
 			if (Health (Me) < 0.45) {
 				if (Healthstone ())
