@@ -161,7 +161,7 @@ namespace ReBot
 				return;
 
 			// actions+=/pool_resource,for_next=1
-			if (HasSpell ("Garrote") && !IsPlayer () && TimeToRegen (Cost (45)) < 1 && Time < 1 && (Me.HasAura ("Stealth") || Me.AuraTimeRemaining ("Subterfuge") >= 1 || Me.AuraTimeRemaining ("Vanish") >= 1 || Me.AuraTimeRemaining ("Shadow Dance") >= 1)) {
+			if (HasSpell ("Garrote") && !IsPlayer () && TimeToRegenPower (Cost (45)) < 1 && Time < 1 && (Me.HasAura ("Stealth") || Me.AuraTimeRemaining ("Subterfuge") >= 1 || Me.AuraTimeRemaining ("Vanish") >= 1 || Me.AuraTimeRemaining ("Shadow Dance") >= 1)) {
 				Sleep = Cost (45);
 				Spell = "Garrote";
 				return;
@@ -173,12 +173,12 @@ namespace ReBot
 //			}
 			// actions+=/wait,sec=buff.subterfuge.remains-0.1,if=buff.subterfuge.remains>0.5&buff.subterfuge.remains<1.6&time>6
 			if (HasSpell ("Subterfuge") && Me.AuraTimeRemaining ("Subterfuge") > 0.5 && Me.AuraTimeRemaining ("Subterfuge") < 1.6 && Time > 6) {
-				Sleep = Energy + (Me.AuraTimeRemaining ("Subterfuge") - 0.1) * EnergyRegen;
+				Sleep = Energy + (Me.AuraTimeRemaining ("Subterfuge") - 0.1) * RegenPower;
 				Spell = "Ambush";
 				return;
 			}
 			// actions+=/pool_resource,for_next=1,extra_amount=50
-			if (Usable ("Shadow Dance", TimeToRegen (50)) && !Me.HasAura ("Stealth") && Me.AuraTimeRemaining ("Vanish") < TimeToRegen (50) && (Target.AuraTimeRemaining ("Find Weakness", true) < TimeToRegen (50) || (Me.AuraTimeRemaining ("Bloodlust") >= TimeToRegen (50) || (Target.AuraTimeRemaining ("Hemorrhage", true) >= TimeToRegen (50) || Target.AuraTimeRemaining ("Garrote", true) >= TimeToRegen (50) || Target.AuraTimeRemaining ("Rupture", true) >= TimeToRegen (50))))) {
+			if (Usable ("Shadow Dance", TimeToRegenPower (50)) && !Me.HasAura ("Stealth") && Me.AuraTimeRemaining ("Vanish") < TimeToRegenPower (50) && (Target.AuraTimeRemaining ("Find Weakness", true) < TimeToRegenPower (50) || (Me.AuraTimeRemaining ("Bloodlust") >= TimeToRegenPower (50) || (Target.AuraTimeRemaining ("Hemorrhage", true) >= TimeToRegenPower (50) || Target.AuraTimeRemaining ("Garrote", true) >= TimeToRegenPower (50) || Target.AuraTimeRemaining ("Rupture", true) >= TimeToRegenPower (50))))) {
 				Sleep = 50;
 				Spell = "Shadow Dance";
 				return;
@@ -189,28 +189,28 @@ namespace ReBot
 //					return;
 //			}
 			// actions+=/pool_resource,for_next=1,extra_amount=50
-			if (Usable ("Shadowmeld", TimeToRegen (50)) && (IsPlayer () || InBg || InArena || InInstance || InRaid) && HasSpell ("Shadow Focus") && ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && ComboPoints < 3)) && !Me.HasAura ("Stealth") && Me.AuraTimeRemaining ("Shadow Dance") < TimeToRegen (45) && Me.AuraTimeRemaining ("Master of Subtlety") < TimeToRegen (45) && Target.AuraTimeRemaining ("Find Weakness", true) < TimeToRegen (45)) {
+			if (Usable ("Shadowmeld", TimeToRegenPower (50)) && (IsPlayer () || InBg || InArena || InInstance || InRaid) && HasSpell ("Shadow Focus") && ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && ComboPoints < 3)) && !Me.HasAura ("Stealth") && Me.AuraTimeRemaining ("Shadow Dance") < TimeToRegenPower (45) && Me.AuraTimeRemaining ("Master of Subtlety") < TimeToRegenPower (45) && Target.AuraTimeRemaining ("Find Weakness", true) < TimeToRegenPower (45)) {
 				Sleep = 50;
 				Spell = "Shadowmeld";
 				return;
 			}
 			// actions+=/shadowmeld,if=talent.shadow_focus.enabled&energy>=45&energy<=75&combo_points<4-talent.anticipation.enabled&buff.stealth.down&buff.shadow_dance.down&buff.master_of_subtlety.down&debuff.find_weakness.down
 			// actions+=/pool_resource,for_next=1,extra_amount=50
-			if (Usable ("Vanish", TimeToRegen (50)) && (IsPlayer () || InBg || InArena || InInstance || InRaid) && HasSpell ("Shadow Focus") && ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && ComboPoints < 3)) && Me.AuraTimeRemaining ("Shadow Dance") < TimeToRegen (50) && Me.AuraTimeRemaining ("Master of Subtlety") < TimeToRegen (50) && Target.AuraTimeRemaining ("Find Weakness", true) < TimeToRegen (50)) {
+			if (Usable ("Vanish", TimeToRegenPower (50)) && (IsPlayer () || InBg || InArena || InInstance || InRaid) && HasSpell ("Shadow Focus") && ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && ComboPoints < 3)) && Me.AuraTimeRemaining ("Shadow Dance") < TimeToRegenPower (50) && Me.AuraTimeRemaining ("Master of Subtlety") < TimeToRegenPower (50) && Target.AuraTimeRemaining ("Find Weakness", true) < TimeToRegenPower (50)) {
 				Sleep = 50;
 				Spell = "Vanish";
 				return;
 			}
 			// actions+=/vanish,if=talent.shadow_focus.enabled&energy>=45&energy<=75&combo_points<4-talent.anticipation.enabled&buff.shadow_dance.down&buff.master_of_subtlety.down&debuff.find_weakness.down
 			// actions+=/pool_resource,for_next=1,extra_amount=90
-			if (Usable ("Shadowmeld", TimeToRegen (90)) && HasSpell ("Subterfuge") && ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && ComboPoints < 3)) && Me.AuraTimeRemaining ("Shadow Dance") < TimeToRegen (90) && Me.AuraTimeRemaining ("Master of Subtlety") < TimeToRegen (90) && Target.AuraTimeRemaining ("Find Weakness", true) < TimeToRegen (90)) {
+			if (Usable ("Shadowmeld", TimeToRegenPower (90)) && HasSpell ("Subterfuge") && ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && ComboPoints < 3)) && Me.AuraTimeRemaining ("Shadow Dance") < TimeToRegenPower (90) && Me.AuraTimeRemaining ("Master of Subtlety") < TimeToRegenPower (90) && Target.AuraTimeRemaining ("Find Weakness", true) < TimeToRegenPower (90)) {
 				Sleep = 90;
 				Spell = "Shadowmeld";
 				return;
 			}
 			// actions+=/shadowmeld,if=talent.subterfuge.enabled&energy>=90&combo_points<4-talent.anticipation.enabled&buff.stealth.down&buff.shadow_dance.down&buff.master_of_subtlety.down&debuff.find_weakness.down
 			// actions+=/pool_resource,for_next=1,extra_amount=90
-			if (Usable ("Vanish", TimeToRegen (90)) && (IsPlayer () || InBg || InArena || InInstance || InRaid) && HasSpell ("Subterfuge") && ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && ComboPoints < 3)) && Me.AuraTimeRemaining ("Shadow Dance") < TimeToRegen (90) && Me.AuraTimeRemaining ("Master of Subtlety") < TimeToRegen (90) && Target.AuraTimeRemaining ("Find Weakness", true) < TimeToRegen (90)) {
+			if (Usable ("Vanish", TimeToRegenPower (90)) && (IsPlayer () || InBg || InArena || InInstance || InRaid) && HasSpell ("Subterfuge") && ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && ComboPoints < 3)) && Me.AuraTimeRemaining ("Shadow Dance") < TimeToRegenPower (90) && Me.AuraTimeRemaining ("Master of Subtlety") < TimeToRegenPower (90) && Target.AuraTimeRemaining ("Find Weakness", true) < TimeToRegenPower (90)) {
 				Sleep = 90;
 				Spell = "Vanish";
 				return;
@@ -231,7 +231,7 @@ namespace ReBot
 					return;
 			}
 			// actions+=/run_action_list,name=generator,if=combo_points<4|(combo_points=4&cooldown.honor_among_thieves.remains>1&energy>95-25*talent.anticipation.enabled-energy.regen)|(talent.anticipation.enabled&anticipation_charges<3&debuff.find_weakness.down)
-			if ((!HasSpell ("Honor Among Thieves") && ComboPoints < 5) || ComboPoints < 4 || (ComboPoints == 4 && Cooldown ("Honor Among Thieves") > 1 && (!HasSpell ("Anticipation") && Energy > 95 - EnergyRegen) || (HasSpell ("Anticipation") && Energy > 70 - EnergyRegen)) || (HasSpell ("Anticipation") && Anticipation < 3 && !Target.HasAura ("Find Weakness", true))) {
+			if ((!HasSpell ("Honor Among Thieves") && ComboPoints < 5) || ComboPoints < 4 || (ComboPoints == 4 && Cooldown ("Honor Among Thieves") > 1 && (!HasSpell ("Anticipation") && Energy > 95 - RegenPower) || (HasSpell ("Anticipation") && Energy > 70 - RegenPower)) || (HasSpell ("Anticipation") && Anticipation < 3 && !Target.HasAura ("Find Weakness", true))) {
 				if (ActionGenerators ())
 					return;
 			}
@@ -256,12 +256,12 @@ namespace ReBot
 		public bool ActionGenerators ()
 		{
 			// actions.generator=run_action_list,name=pool,if=buff.master_of_subtlety.down&buff.shadow_dance.down&debuff.find_weakness.down&(energy+set_bonus.tier17_2pc*50+cooldown.shadow_dance.remains*energy.regen<=energy.max|energy+15+cooldown.vanish.remains*energy.regen<=energy.max)
-			if (!Me.HasAura ("Master of Subtlety") && !Me.HasAura ("Shadow Dance") && !Target.HasAura ("Find Weakness", true) && (((HasSpell (165482) && Energy + 50 + Cooldown ("Shadow Dance") * EnergyRegen <= EnergyMax) || (!HasSpell (165482) && Energy + Cooldown ("Shadow Dance") * EnergyRegen <= EnergyMax)) || Energy + 15 + Cooldown ("Vanish") * EnergyRegen <= EnergyMax)) {
+			if (!Me.HasAura ("Master of Subtlety") && !Me.HasAura ("Shadow Dance") && !Target.HasAura ("Find Weakness", true) && (((HasSpell (165482) && Energy + 50 + Cooldown ("Shadow Dance") * RegenPower <= MaxPower) || (!HasSpell (165482) && Energy + Cooldown ("Shadow Dance") * RegenPower <= MaxPower)) || Energy + 15 + Cooldown ("Vanish") * RegenPower <= MaxPower)) {
 				if (ActionPool ())
 					return true;
 			}
 			// actions.generator+=/pool_resource,for_next=1
-			if (TimeToRegen (AmbushCost) > 0 && (Me.HasAura ("Stealth") || Me.AuraTimeRemaining ("Vanish") > TimeToRegen (AmbushCost) || Me.AuraTimeRemaining ("Shadow Dance") > TimeToRegen (AmbushCost) || Me.AuraTimeRemaining ("Subterfuge") > TimeToRegen (AmbushCost))) {
+			if (TimeToRegenPower (AmbushCost) > 0 && (Me.HasAura ("Stealth") || Me.AuraTimeRemaining ("Vanish") > TimeToRegenPower (AmbushCost) || Me.AuraTimeRemaining ("Shadow Dance") > TimeToRegenPower (AmbushCost) || Me.AuraTimeRemaining ("Subterfuge") > TimeToRegenPower (AmbushCost))) {
 				Sleep = AmbushCost;
 				Spell = "Ambush";
 				return true;
@@ -284,7 +284,7 @@ namespace ReBot
 					return true;
 			}
 			// actions.generator+=/shuriken_toss,if=energy<65&energy.regen<16
-			if (Energy < 65 && EnergyRegen < 16) {
+			if (Energy < 65 && RegenPower < 16) {
 				if (ShurikenToss ())
 					return true;
 			}
@@ -335,7 +335,7 @@ namespace ReBot
 					return true;
 			}
 			// actions.finisher+=/eviscerate,if=(energy.time_to_max<=cooldown.death_from_above.remains+action.death_from_above.execute_time)|!talent.death_from_above.enabled
-			if ((TimeToRegen (EnergyMax) <= Cooldown ("Death from Above") + 1) || !HasSpell ("Death from Above")) {
+			if ((TimeToRegenPower (MaxPower) <= Cooldown ("Death from Above") + 1) || !HasSpell ("Death from Above")) {
 				if (Eviscerate ())
 					return true;
 			}

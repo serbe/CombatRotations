@@ -7,113 +7,12 @@ using ReBot.API;
 
 namespace ReBot
 {
-	public abstract class SerbDeathKnight : CombatRotation
+	public abstract class SerbDeathKnight : SerbUtils
 	{
 		[JsonProperty ("Use GCD")]
 		public bool Gcd = true;
-		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
-		public int Ttd = 10;
-
-		public int BossHealthPercentage = 500;
-		public int BossLevelIncrease = 5;
-		public int CrystalOfInsanityId = 86569;
-		public int OraliusWhisperingCrystalId = 118922;
-		public UnitObject CycleTarget;
-		public bool InCombat;
-		public DateTime StartBattle;
-		public DateTime StartSleepTime;
 
 		// Check
-
-		public bool C (string s, UnitObject u = null)
-		{
-			u = u ?? Target;
-			if (Cast (s, u))
-				return true;
-			API.Print ("False Cast " + s + " with " + u.CombatRange + " range");
-			return false;
-		}
-
-		public bool CS (string s)
-		{
-			if (CastSelf (s))
-				return true;
-			API.Print ("False CastSelf " + s);
-			return false;
-		}
-
-		public bool COT (string s, UnitObject u = null)
-		{
-			u = u ?? Target;
-			if (CastOnTerrain (s, u.Position))
-				return true;
-			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range");
-			return false;
-		}
-
-		public bool Range (int r, UnitObject u = null, int l = 0)
-		{
-			u = u ?? Target;
-			if (l != 0)
-				return u.IsInLoS && u.CombatRange <= r && u.CombatRange >= l;
-			return u.IsInLoS && u.CombatRange <= r;
-		}
-
-		public bool Range (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.IsInCombatRangeAndLoS;
-		}
-
-
-		public bool Danger (UnitObject u = null, int r = 0, int e = 2)
-		{
-			u = u ?? Target;
-			if (r != 0)
-				return Range (r, u) && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-			return u.IsInCombatRangeAndLoS && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-		}
-
-		public bool DangerBoss (UnitObject u = null, int r = 0, int e = 6)
-		{
-			u = u ?? Target;
-			if (r != 0)
-				return Range (r, u) && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-			return u.IsInCombatRangeAndLoS && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-		}
-
-		public bool Usable (string s)
-		{
-			return HasSpell (s) && Cooldown (s) == 0;
-		}
-
-		public bool InRaid {
-			get { return API.MapInfo.Type == MapType.Raid; }
-		}
-
-		public bool InInstance {
-			get { return API.MapInfo.Type == MapType.Instance; }
-		}
-
-		public bool InArena {
-			get { return API.MapInfo.Type == MapType.Arena; }
-		}
-
-		public bool InBg {
-			get { return API.MapInfo.Type == MapType.PvP; }
-		}
-
-		public bool IsPlayer (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.IsPlayer;
-		}
-
-		public bool IsElite (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.IsElite (); 
-		}
 
 		public bool HasBlood {
 			get { 
@@ -137,12 +36,6 @@ namespace ReBot
 			get { 
 				return (Me.Runes (RuneType.Death) > 0);
 			}
-		}
-
-		public bool IsBoss (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return (u.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || u.Level >= Me.Level + BossLevelIncrease;
 		}
 
 		public bool HasFrostDisease (UnitObject u = null)
@@ -171,45 +64,6 @@ namespace ReBot
 
 
 		// Get
-
-		public double DamageTaken (float t)
-		{
-			var damage = API.ExecuteLua<double> ("local ResolveName = GetSpellInfo(158300);local n,_,_,_,_,dur,expi,_,_,_,id,_,_,_,val1,val2,val3 = UnitAura(\"player\", ResolveName, nil, \"HELPFUL\");return val2");
-			if (Time < 10) {
-				if (Time < t / 1000)
-					return damage;
-				return damage / Time * (t / 1000);
-			}
-
-			return damage / 10 * (t / 1000);
-		}
-
-		public double Time {
-			get {
-				TimeSpan combatTime = DateTime.Now.Subtract (StartBattle);
-				return combatTime.TotalSeconds;
-			}
-		}
-
-		public List<UnitObject> Enemy {
-			get {
-				var targets = Adds;
-				targets.Add (Target);
-				return targets;
-			}
-		}
-
-		public double Health (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.HealthFraction;
-		}
-
-		public int RunicPower {
-			get { 
-				return Me.GetPower (WoWPowerType.RunicPower);
-			}
-		}
 
 		public int Blood {
 			get { 
@@ -310,29 +164,6 @@ namespace ReBot
 			}
 		}
 
-		public int ActiveEnemies (int r)
-		{
-			int x = 0;
-			foreach (UnitObject u in API.CollectUnits(r)) {
-				if ((u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable && u.InCombat) {
-					x++;
-				}
-			}
-			return x;
-		}
-
-		public int ActiveEnemiesWithTarget (int r, UnitObject t = null)
-		{
-			t = t ?? Target;
-			int x = 0;
-			foreach (UnitObject u in API.CollectUnits(45)) {
-				if (Vector3.Distance (t.Position, u.Position) <= r && (u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable) {
-					x++;
-				}
-			}
-			return x;
-		}
-
 		public int Disease (UnitObject u = null)
 		{
 			u = u ?? Target;
@@ -362,36 +193,13 @@ namespace ReBot
 			return FrostDiseaseRemaining (u) < BloodDiseaseRemaining (u) ? FrostDiseaseRemaining (u) : BloodDiseaseRemaining (u);
 		}
 
-		public double Cooldown (string s)
-		{
-			return SpellCooldown (s) < 0 ? 0 : SpellCooldown (s);
-		}
-
-		public double TimeToDie (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.Health / Ttd;
-		}
-
 		// Combo
-
-		public bool Freedom ()
-		{
-			if (!Me.CanParticipateInCombat) {
-				if (WilloftheForsaken ())
-					return true;
-				if (EveryManforHimself ())
-					return true;
-			}
-
-			return false;
-		}
 
 		public bool Aggro ()
 		{ 
 			if (InInstance && Time > 3) {
-				CycleTarget = Enemy.Where (u => (Range (30, u) || (HasGlyph (62259) && Range (35, u))) && u.Target != Me).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && DeathGrip (CycleTarget))
+				Unit = Enemy.Where (u => (Range (30, u) || (HasGlyph (62259) && Range (35, u))) && u.Target != Me).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && DeathGrip (Unit))
 					return true;
 			}
 
@@ -406,16 +214,6 @@ namespace ReBot
 			return Usable ("Death Grip") && (Range (30, u) || (HasGlyph (62259) && Range (35, u))) && C ("Death Grip", u);
 		}
 
-		public bool WilloftheForsaken ()
-		{
-			return Usable ("Will of the Forsaken") && CS ("Will of the Forsaken");
-		}
-
-		public bool EveryManforHimself ()
-		{
-			return Usable ("Every Man for Himself") && CS ("Every Man for Himself");
-		}
-
 		public bool HornofWinter ()
 		{
 			return Usable ("Horn of Winter") && !HasAura ("Horn of Winter") && !HasAura ("Battle Shout") && CS ("Horn of Winter");
@@ -424,24 +222,6 @@ namespace ReBot
 		public bool RaiseDead ()
 		{
 			return Usable ("Raise Dead") && !Me.HasAlivePet && CS ("Raise Dead");
-		}
-
-		public bool BloodFury (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Usable ("Blood Fury") && Danger (u, 10) && CS ("Blood Fury");
-		}
-
-		public bool Berserking (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Usable ("Berserking") && Danger (u, 10) && CS ("Berserking");
-		}
-
-		public bool ArcaneTorrent (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Usable ("Arcane Torrent") && Danger (u, 10) && CS ("Arcane Torrent");
 		}
 
 		public bool AntimagicShell ()
@@ -547,42 +327,42 @@ namespace ReBot
 		{
 			if (Usable ("Mind Freeze")) {
 				if (InArena || InBg) {
-					CycleTarget = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCastingAndInterruptible () && Range (u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null && MindFreeze (CycleTarget))
+					Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCastingAndInterruptible () && Range (u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null && MindFreeze (Unit))
 						return true;
 				} else {
-					CycleTarget = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null && MindFreeze (CycleTarget))
+					Unit = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null && MindFreeze (Unit))
 						return true;
 				}
 			}
 
 			if (Usable ("Strangulate")) {
 				if (InArena || InBg) {
-					CycleTarget = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsHealer && u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null && Strangulate (CycleTarget))
+					Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsHealer && u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null && Strangulate (Unit))
 						return true;
-					CycleTarget = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null && Strangulate (CycleTarget))
+					Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null && Strangulate (Unit))
 						return true;
 				} else {
-					CycleTarget = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null && Strangulate (CycleTarget))
+					Unit = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null && Strangulate (Unit))
 						return true;
 				}
 			}
 
 			if (Usable ("Asphyxiate")) {
 				if (InArena || InBg) {
-					CycleTarget = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsHealer && u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null && Asphyxiate (CycleTarget))
+					Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsHealer && u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null && Asphyxiate (Unit))
 						return true;
-					CycleTarget = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null && Asphyxiate (CycleTarget))
+					Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null && Asphyxiate (Unit))
 						return true;
 				} else {
-					CycleTarget = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null && Asphyxiate (CycleTarget))
+					Unit = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null && Asphyxiate (Unit))
 						return true;
 				}
 			}
@@ -722,28 +502,5 @@ namespace ReBot
 		{
 			return Usable ("Conversion") && CS ("Conversion");
 		}
-
-		// Items
-
-		public bool DraenicArmor ()
-		{
-			return API.HasItem (109220) && API.ItemCooldown (109220) == 0 && !Me.HasAura ("Draenic Armor Potion") && API.UseItem (109220);
-		}
-
-		public bool Healthstone ()
-		{
-			return API.HasItem (5512) && API.ItemCooldown (5512) == 0 && API.UseItem (5512);
-		}
-
-		public bool CrystalOfInsanity ()
-		{
-			return !InArena && API.HasItem (CrystalOfInsanityId) && !Me.HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityId) == 0 && API.UseItem (CrystalOfInsanityId);
-		}
-
-		public bool OraliusWhisperingCrystal ()
-		{
-			return API.HasItem (OraliusWhisperingCrystalId) && !Me.HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalId) == 0 && API.UseItem (OraliusWhisperingCrystalId);
-		}
-
 	}
 }

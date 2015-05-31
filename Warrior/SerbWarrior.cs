@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using Newtonsoft.Json;
 using ReBot.API;
 using System.Linq;
 
 namespace ReBot
 {
-	public abstract class SerbWarrior : CombatRotation
+	public abstract class SerbWarrior : SerbUtils
 	{
 		public enum WarCry
 		{
@@ -14,8 +13,6 @@ namespace ReBot
 			BattleShout = 1,
 		}
 
-		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
-		public int Ttd = 10;
 		[JsonProperty ("Use GCD")]
 		public bool Gcd = true;
 		[JsonProperty ("Auto change stance")]
@@ -23,18 +20,9 @@ namespace ReBot
 		[JsonProperty ("Use Berserker Rage in fear")]
 		public bool UseBerserkerRage;
 
-
-		public bool InCombat;
 		public bool WaitBloodthirst;
-		public DateTime StartBattle;
-		public int BossHealthPercentage = 500;
-		public int BossLevelIncrease = 5;
-		public UnitObject CycleTarget;
-		public Int32 OraliusWhisperingCrystalID = 118922;
-		public Int32 CrystalOfInsanityID = 86569;
 		public DateTime PrevBloodthirst;
 		public DateTime PrevRavager;
-		public IEnumerable<UnitObject> MaxCycle;
 
 		// Get
 
@@ -56,48 +44,6 @@ namespace ReBot
 			get {
 				return Me.HasAura ("Battle Shout") || Me.HasAura ("Horn of Winter");
 			}
-		}
-
-		public List<UnitObject> Enemy {
-			get {
-				var targets = Adds;
-				targets.Add (Target);
-				return targets;
-			}
-		}
-
-		public double TimeToDie (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.Health / Ttd;
-		}
-
-		public int Rage {
-			get {
-				return Me.GetPower (WoWPowerType.Rage);
-			}
-		}
-
-		public int RageMax {
-			get {
-				return API.ExecuteLua <int> ("return UnitPowerMax(\"player\");");
-			}
-		}
-
-		public int ActiveEnemies (int range)
-		{
-			int x = 0;
-			foreach (UnitObject u in API.CollectUnits (range)) {
-				if ((u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable && u.InCombat) {
-					x++;
-				}
-			}
-			return x;
-		}
-
-		public double Cooldown (string s)
-		{ 
-			return SpellCooldown (s) < 0 ? 0 : SpellCooldown (s);
 		}
 
 		public double Frac (string s)
@@ -122,31 +68,6 @@ namespace ReBot
 			return f;
 		}
 
-		public double DamageTaken (float t)
-		{
-			var damage = API.ExecuteLua<double> ("local ResolveName = GetSpellInfo (158300);local n,_,_,_,_,dur,expi,_,_,_,id,_,_,_,val1,val2,val3 = UnitAura (\"player\", ResolveName, nil, \"HELPFUL\");return val2");
-			if (Time < 10) {
-				if (Time < t / 1000)
-					return damage;
-				return damage / Time * (t / 1000);
-			}
-
-			return damage / 10 * (t / 1000);
-		}
-
-		public double Health (UnitObject u = null)
-		{
-			u = u ?? Me;
-			return u.HealthFraction;
-		}
-
-		public double Time {
-			get {
-				TimeSpan combatTime = DateTime.Now.Subtract (StartBattle);
-				return combatTime.TotalSeconds;
-			}
-		}
-
 		// Check
 
 		public bool UseShieldBlock {
@@ -161,93 +82,6 @@ namespace ReBot
 			}
 		}
 
-
-		public bool C (string s, UnitObject u = null)
-		{
-			u = u ?? Target;
-			if (Cast (s, u))
-				return true;
-			API.Print ("False Cast " + s + " with " + u.CombatRange + " range and " + Rage + " rage, with " + u.Distance + " distance");
-			return false;
-		}
-
-		public bool CPD (string s, UnitObject u = null, int d = 800)
-		{
-			u = u ?? Target;
-			if (CastPreventDouble (s, null, u, d))
-				return true;
-			API.Print ("False CastPreventDouble " + s + " with " + u.CombatRange + " range " + d + " delay");
-			return false;
-		}
-
-		public bool CS (string s)
-		{
-			if (CastSelf (s))
-				return true;
-			API.Print ("False CastSelf " + s);
-			return false;
-		}
-
-		public bool COT (string s, UnitObject u = null)
-		{
-			u = u ?? Target;
-			if (CastOnTerrain (s, u.Position))
-				return true;
-			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range and " + Rage + " rage, with " + u.Distance + " distance");
-			return false;
-		}
-
-		public bool COTPD (string s, UnitObject u = null)
-		{
-			u = u ?? Target;
-			if (CastOnTerrainPreventDouble (s, u.Position))
-				return true;
-			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range and " + Rage + " rage, with " + u.Distance + " distance");
-			return false;
-		}
-
-		public bool Range (int r, UnitObject u = null, int l = 0)
-		{
-			u = u ?? Target;
-			if (l != 0)
-				return u.IsInLoS && u.CombatRange <= r && u.CombatRange >= l;
-			return u.IsInLoS && u.CombatRange <= r;
-		}
-
-		public bool Danger (UnitObject u = null, int r = 0, int e = 2)
-		{
-			u = u ?? Target;
-			if (r != 0)
-				return Range (r, u) && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-			return u.IsInCombatRangeAndLoS && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-		}
-
-		public bool DangerBoss (UnitObject u = null, int r = 0, int e = 6)
-		{
-			u = u ?? Target;
-			if (r != 0)
-				return Range (r, u) && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-			return u.IsInCombatRangeAndLoS && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-		}
-
-		public bool IsBoss (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return (u.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || u.Level >= Me.Level + BossLevelIncrease;
-		}
-
-		public bool IsPlayer (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.IsPlayer;
-		}
-
-		public bool IsElite (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.IsElite ();
-		}
-
 		public bool HasRage (int r)
 		{
 			if (Me.HasAura ("Spirits of the Lost"))
@@ -255,46 +89,7 @@ namespace ReBot
 			return r <= Rage;
 		}
 
-		public bool Usable (string s)
-		{ 
-			return HasSpell (s) && Cooldown (s) == 0;
-		}
-
-		public bool UsableItem (int i)
-		{ 
-			return API.HasItem (i) && API.ItemCooldown (i) <= 0;
-		}
-
-		public bool InRaid {
-			get {
-				return API.MapInfo.Type == MapType.Raid;
-			}
-		}
-
-		public bool InInstance {
-			get {
-				return API.MapInfo.Type == MapType.Instance;
-			}
-		}
-
-		public bool InArena {
-			get {
-				return API.MapInfo.Type == MapType.Arena;
-			}
-		}
-
-		public bool InBg {
-			get {
-				return API.MapInfo.Type == MapType.PvP;
-			}
-		}
-
 		// Combo
-
-		public bool Freedom ()
-		{
-			return WilloftheForsaken () || EveryManforHimself ();
-		}
 
 		public bool Heal ()
 		{
@@ -365,13 +160,13 @@ namespace ReBot
 		public bool Interrupt ()
 		{
 			if (Usable ("Pummel")) {
-				CycleTarget = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (6, u) && u.RemainingCastTime > 0 && (u.Target == Me && !Me.HasAura ("Spell Reflect")) && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && Pummel (CycleTarget))
+				Unit = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (6, u) && u.RemainingCastTime > 0 && (u.Target == Me && !Me.HasAura ("Spell Reflect")) && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && Pummel (Unit))
 					return true;
 			}
 			if (Usable ("Storm Bolt")) {
-				CycleTarget = Enemy.Where (u => u.IsCasting && !IsBoss (u) && Range (30, u) && u.RemainingCastTime > 0 && (u.Target == Me && !Me.HasAura ("Spell Reflect")) && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && StormBolt (CycleTarget))
+				Unit = Enemy.Where (u => u.IsCasting && !IsBoss (u) && Range (30, u) && u.RemainingCastTime > 0 && (u.Target == Me && !Me.HasAura ("Spell Reflect")) && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && StormBolt (Unit))
 					return true;
 			}
 			if (Target.HasAura ("Divine Shield") || Target.HasAura ("Blessing of Protection") || Target.HasAura ("Ice Block")) {
@@ -385,13 +180,13 @@ namespace ReBot
 		public bool Reflect ()
 		{
 			if (Usable ("Spell Reflection") && !HasGlobalCooldown ()) {
-				CycleTarget = Enemy.Where (u => u.IsCasting && u.RemainingCastTime > 0 && u.Target == Me && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && SpellReflection ())
+				Unit = Enemy.Where (u => u.IsCasting && u.RemainingCastTime > 0 && u.Target == Me && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && SpellReflection ())
 					return true;
 			}
 			if (Usable ("Mass Spell Reflection") && !HasGlobalCooldown ()) {
-				CycleTarget = Enemy.Where (u => u.IsCasting && u.RemainingCastTime > 0 && u.Target == Me && !Me.HasAura ("Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && MassSpellReflection ())
+				Unit = Enemy.Where (u => u.IsCasting && u.RemainingCastTime > 0 && u.Target == Me && !Me.HasAura ("Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && MassSpellReflection ())
 					return true;
 			}
 
@@ -400,42 +195,8 @@ namespace ReBot
 
 		// Items
 
-		public bool UseItem (int i)
-		{
-			return UsableItem (i) && API.UseItem (i);
-		}
-
-		public bool DraenicArmor ()
-		{
-			return UsableItem (109220) && !Me.HasAura ("Draenic Armor Potion") && API.UseItem (109220);
-		}
-
-		public bool Healthstone ()
-		{
-			return UseItem (5512);
-		}
-
-		public bool CrystalOfInsanity ()
-		{
-			return !InArena && UsableItem (CrystalOfInsanityID) && !HasAura ("Visions of Insanity") && API.UseItem (CrystalOfInsanityID);
-		}
-
-		public bool OraliusWhisperingCrystal ()
-		{
-			return UsableItem (OraliusWhisperingCrystalID) && !HasAura ("Whispers of Insanity") && API.UseItem (OraliusWhisperingCrystalID);
-		}
 
 		// ------- Spells
-
-		public bool WilloftheForsaken ()
-		{
-			return Usable ("Will of the Forsaken") && CS ("Will of the Forsaken");
-		}
-
-		public bool EveryManforHimself ()
-		{
-			return Usable ("Every Man for Himself") && CS ("Every Man for Himself");
-		}
 
 		public bool Charge (UnitObject u = null)
 		{
@@ -461,16 +222,6 @@ namespace ReBot
 		public bool DiebytheSword ()
 		{
 			return Usable ("Die by the Sword") && CS ("Die by the Sword");
-		}
-
-		public bool Berserking ()
-		{
-			return Usable ("Berserking") && Danger () && CS ("Berserking");
-		}
-
-		public bool ArcaneTorrent ()
-		{
-			return Usable ("Arcane Torrent") && Danger () && CS ("Arcane Torrent");
 		}
 
 		public bool BerserkerRage ()
@@ -563,7 +314,6 @@ namespace ReBot
 			u = u ?? Target;
 			return Usable ("Slam") && Range (5, u) && HasRage (10) && C ("Slam", u);
 		}
-
 
 		public bool ColossusSmash (UnitObject u = null)
 		{

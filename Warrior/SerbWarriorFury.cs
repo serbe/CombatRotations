@@ -149,7 +149,7 @@ namespace ReBot
 			if (Me.HasAura ("Bloodbath") || !HasSpell ("Bloodbath") || HasAura ("Recklessness"))
 				Berserking ();
 			//	actions+=/arcane_torrent,if=rage<rage.max-40
-			if (Rage < RageMax - 40)
+			if (Rage < MaxPower - 40)
 				ArcaneTorrent ();
 			//	actions+=/call_action_list,name=single_target,if=active_enemies=1
 			if (ActiveEnemies (10) == 1) {
@@ -185,12 +185,12 @@ namespace ReBot
 					return true;
 			}
 			//	actions.single_target+=/wild_strike,if=(rage>rage.max-20)&target.health.pct>20
-			if ((Rage > RageMax - 20) && Health () > 0.2) {
+			if ((Rage > MaxPower - 20) && Health () > 0.2) {
 				if (WildStrike ())
 					return true;
 			}
 			//	actions.single_target+=/bloodthirst,if=(!talent.unquenchable_thirst.enabled&(rage<rage.max-40))|buff.enrage.down|buff.raging_blow.stack<2
-			if ((!HasSpell ("Unquenchable Thirst") && (Rage < RageMax - 40)) || !Me.HasAura ("Enrage") || AuraStackCount ("Raging Blow") < 2) {
+			if ((!HasSpell ("Unquenchable Thirst") && (Rage < MaxPower - 40)) || !Me.HasAura ("Enrage") || AuraStackCount ("Raging Blow") < 2) {
 				if (Bloodthirst ()) {
 					PrevBloodthirst = DateTime.Now;
 					return true;
@@ -292,8 +292,8 @@ namespace ReBot
 				return true;
 			//	actions.two_targets+=/execute,cycle_targets=1
 			if (HasRage (30) || Me.HasAura ("Sudden Death")) {
-				CycleTarget = Enemy.Where (u => Range (5, u) && (Health (u) < 0.2 || Me.HasAura ("Sudden Death"))).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && Execute (CycleTarget))
+				Unit = Enemy.Where (u => Range (5, u) && (Health (u) < 0.2 || Me.HasAura ("Sudden Death"))).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && Execute (Unit))
 					return true; 
 			}
 			//	actions.two_targets+=/raging_blow,if=buff.meat_cleaver.up|target.health.pct<20
@@ -353,8 +353,8 @@ namespace ReBot
 				return true;
 			//	actions.three_targets+=/execute,cycle_targets=1
 			if (HasRage (30) || Me.HasAura ("Sudden Death")) {
-				CycleTarget = Enemy.Where (u => Range (5, u) && (Health (u) < 0.2 || Me.HasAura ("Sudden Death"))).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && Execute (CycleTarget))
+				Unit = Enemy.Where (u => Range (5, u) && (Health (u) < 0.2 || Me.HasAura ("Sudden Death"))).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && Execute (Unit))
 					return true; 
 			}
 			//	actions.three_targets+=/dragon_roar,if=buff.bloodbath.up|!talent.bloodbath.enabled

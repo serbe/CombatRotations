@@ -103,7 +103,7 @@ namespace ReBot
 				BerserkerRage ();
 			}
 			//	actions+=/arcane_torrent,if=rage<rage.max-40
-			if (Rage < RageMax - 40) {
+			if (Rage < MaxPower - 40) {
 				ArcaneTorrent ();
 			}
 			//	actions+=/heroic_leap,if=(raid_event.movement.distance>25&raid_event.movement.in>45)|!raid_event.movement.exists
@@ -226,15 +226,15 @@ namespace ReBot
 			if (HasSpell ("Taste for Blood") && !Me.HasAura ("Colossus Smash")) {
 				MaxCycle = Enemy.Where (u => Range (5, u) && u.AuraTimeRemaining ("Rend", true) < 2 && TimeToDie (u) > 8);
 				if (MaxCycle.ToList ().Count <= 2) {
-					CycleTarget = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null && Rend (CycleTarget))
+					Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null && Rend (Unit))
 						return;
 				}
 			}
 			//	actions.aoe+=/rend,cycle_targets=1,if=ticks_remain<2&target.time_to_die-remains>18&!buff.colossus_smash_up.up&active_enemies<=8
 			if (ActiveEnemies (5) <= 8 && !Me.HasAura ("Colossus Smash")) {
-				CycleTarget = Enemy.Where (u => Range (5, u) && u.AuraTimeRemaining ("Rend", true) < 2 && TimeToDie (u) - u.AuraTimeRemaining ("Rend", true) > 18).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && Rend (CycleTarget))
+				Unit = Enemy.Where (u => Range (5, u) && u.AuraTimeRemaining ("Rend", true) < 2 && TimeToDie (u) - u.AuraTimeRemaining ("Rend", true) > 18).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && Rend (Unit))
 					return;
 			}
 			//	actions.aoe+=/ravager,if=buff.bloodbath.up|cooldown.colossus_smash.remains<4
@@ -256,8 +256,8 @@ namespace ReBot
 			}
 			//	actions.aoe+=/execute,cycle_targets=1,if=!buff.sudden_death.react&active_enemies<=8&((rage>72&cooldown.colossus_smash.remains>gcd)|rage>80|target.time_to_die<5|debuff.colossus_smash.up)
 			if (!Me.HasAura ("Sudden Death") && ActiveEnemies (8) <= 8) {
-				CycleTarget = Enemy.Where (u => Range (5, u) && ((Rage > 72 && Cooldown ("Colossus Smash") > 1.5) || Rage > 80 || TimeToDie (u) < 5 || u.HasAura ("Colossus Smash", true))).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && Execute (CycleTarget))
+				Unit = Enemy.Where (u => Range (5, u) && ((Rage > 72 && Cooldown ("Colossus Smash") > 1.5) || Rage > 80 || TimeToDie (u) < 5 || u.HasAura ("Colossus Smash", true))).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && Execute (Unit))
 					return;
 			}
 			//	actions.aoe+=/heroic_charge,cycle_targets=1,if=target.health.pct<20&rage<70&swing.mh.remains>2&debuff.charge.down
@@ -283,8 +283,8 @@ namespace ReBot
 			}
 			//	actions.aoe+=/rend,cycle_targets=1,if=ticks_remain<2&target.time_to_die>8&!buff.colossus_smash_up.up&active_enemies>=9&rage<50&!talent.taste_for_blood.enabled
 			if (!Me.HasAura ("Colossus Smash") && ActiveEnemies (5) >= 9 && Rage < 50 && !HasSpell ("Taste for Blood")) {
-				CycleTarget = Enemy.Where (u => Range (5, u) && u.AuraTimeRemaining ("Rend", true) < 2 && TimeToDie (u) > 8).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && Rend (CycleTarget))
+				Unit = Enemy.Where (u => Range (5, u) && u.AuraTimeRemaining ("Rend", true) < 2 && TimeToDie (u) > 8).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && Rend (Unit))
 					return;
 			}
 			//	actions.aoe+=/whirlwind,if=target.health.pct>20|active_enemies>=9

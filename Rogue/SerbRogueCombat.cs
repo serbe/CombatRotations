@@ -317,7 +317,7 @@ namespace ReBot
 				return true;
 
 			if (InArena && !IncapacitatedInRange (10)) {
-				Unit = Enemy.Where (u => Range (10, u) && !u.HasAura ("CrimsonTempest")).DefaultIfEmpty (null).FirstOrDefault;
+				Unit = Enemy.Where (u => Range (10, u) && !u.HasAura ("CrimsonTempest")).DefaultIfEmpty (null).FirstOrDefault();
 				if (Unit != null && CrimsonTempest ())
 					return true;
 			}

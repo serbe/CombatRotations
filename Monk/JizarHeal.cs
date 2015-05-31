@@ -422,9 +422,8 @@ namespace Rebot
 		{
 			foreach (var u in group)
 				if (u.HealthFraction < 0.5)
-					;
-			if (Cast ("Detonate Chi"))
-				return true;
+				if (Cast ("Detonate Chi"))
+					return true;
 			return false;
 		}
 
@@ -449,9 +448,8 @@ namespace Rebot
 
 			foreach (var u in group)
 				if (u.HealthFraction < 0.9)
-					;
-			if (Cast ("Chi Explosion"))
-				return true;
+				if (Cast ("Chi Explosion"))
+					return true;
 			return false;
 		}
 
@@ -613,6 +611,8 @@ namespace Rebot
 					UnitObject t = player.Target;
 					UnitObject tt = t.Target;
 
+					if (e == null)
+						DebugWrite ("null");
 					if (tt.IsPlayer && tt.IsFriendly) {
 						if (Cast ("Zen Sphere", () => tt.IsInLoS && !tt.IsDead && !tt.HasAura ("Zen Sphere", true), tt)) {
 							DebugWrite ("TankTank Zen Sphere on " + tt.Name);
@@ -620,8 +620,11 @@ namespace Rebot
 						}
 					}
 				} catch (NullReferenceException e2) {
+					if (e2 == null)
+						DebugWrite ("null");
 					if (Cast ("Zen Sphere", () => player.IsInLoS && !player.IsDead && !player.HasAura ("Zen Sphere", true), player)) {
 						DebugWrite ("T1  Zen Sphere on " + player.Name);
+
 						return;
 					}
 				}

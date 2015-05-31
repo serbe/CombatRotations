@@ -133,8 +133,8 @@ namespace ReBot.DeathKnight
 			}
 			//	actions.unholy+=/outbreak,cycle_targets=1,if=(active_enemies>=1&!talent.necrotic_plague.enabled)&(!(dot.blood_plague.ticking|dot.frost_fever.ticking))
 			if (ActiveEnemies (30) >= 1 && !HasSpell ("Necrotic Plague")) {
-				CycleTarget = Enemy.Where (u => Range (30, u) && !(HasBloodDisease (u) || HasFrostDisease (u))).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && Outbreak (CycleTarget))
+				Unit = Enemy.Where (u => Range (30, u) && !(HasBloodDisease (u) || HasFrostDisease (u))).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && Outbreak (Unit))
 					return true;
 			}
 			//	actions.unholy+=/plague_strike,if=(!talent.necrotic_plague.enabled&!(dot.blood_plague.ticking|dot.frost_fever.ticking))|(talent.necrotic_plague.enabled&!dot.necrotic_plague.ticking)
@@ -247,8 +247,8 @@ namespace ReBot.DeathKnight
 			}
 			//	actions.bos+=/blood_boil,cycle_targets=1,if=(active_enemies>=2&!(dot.blood_plague.ticking|dot.frost_fever.ticking))|active_enemies>=4&(runic_power<88&runic_power>30)
 			if (ActiveEnemies (10) >= 2) {
-				CycleTarget = Enemy.Where (u => Range (10, u) && ((ActiveEnemies (10) >= 2 && !(HasBloodDisease (u) || HasFrostDisease (u))) || ActiveEnemies (10) >= 4 && (RunicPower < 88 && RunicPower > 30))).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && BloodBoil ())
+				Unit = Enemy.Where (u => Range (10, u) && ((ActiveEnemies (10) >= 2 && !(HasBloodDisease (u) || HasFrostDisease (u))) || ActiveEnemies (10) >= 4 && (RunicPower < 88 && RunicPower > 30))).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && BloodBoil ())
 					return true;
 			}
 			//	actions.bos+=/death_and_decay,if=active_enemies>=2&(runic_power<88&runic_power>30)
@@ -578,9 +578,9 @@ namespace ReBot.DeathKnight
 			}
 			//actions.bos_st+=/outbreak,cycle_targets=1,if=!(dot.blood_plague.ticking|dot.frost_fever.ticking)
 			if (Usable ("Outbreak")) {
-				CycleTarget = targets.Where (x => !(x.HasAura ("Blood Plague") || x.HasAura ("Frost Fever"))).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Outbreak (CycleTarget))
+				Unit = targets.Where (x => !(x.HasAura ("Blood Plague") || x.HasAura ("Frost Fever"))).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null) {
+					if (Outbreak (Unit))
 						return true;
 				}
 			}
@@ -591,8 +591,8 @@ namespace ReBot.DeathKnight
 			}
 			//actions.bos_st+=/blood_boil,cycle_targets=1,if=!(dot.blood_plague.ticking|dot.frost_fever.ticking)
 			if (Usable ("Blood Boil")) {
-				CycleTarget = targets.Where (x => !(x.HasAura ("Blood Plague") || x.HasAura ("Frost Fever"))).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
+				Unit = targets.Where (x => !(x.HasAura ("Blood Plague") || x.HasAura ("Frost Fever"))).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null) {
 					if (BloodBoil ())
 						return true;
 				}

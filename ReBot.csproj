@@ -82,6 +82,8 @@
     <Compile Include="Paladin\PalAlpha.cs" />
     <Compile Include="Monk\JizarHeal.cs" />
     <Compile Include="Paladin\Jizar.cs" />
+    <Compile Include="Druid\Pasterke.cs" />
+    <Compile Include="SerbUtils.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

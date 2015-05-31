@@ -88,12 +88,12 @@ namespace ReBot
 			if (MannorothsFury ())
 				return;
 			//	actions+=/dark_soul,if=talent.demonbolt.enabled&((charges=2&((!glyph.imp_swarm.enabled&(dot.corruption.ticking|trinket.proc.haste.remains<=10))|cooldown.imp_swarm.remains))|target.time_to_die<buff.demonbolt.remains|(!buff.demonbolt.remains&demonic_fury>=790))
-			if (HasSpell ("Demonbolt") && ((SpellCharges ("Dark Soul: Instability") == 2 && ((!HasGlyph (56242) && (Target.HasAura ("Corruption", true))) || Cooldown ("Imp Swarm") == 0)) || TimeToDie (Target) < Me.AuraTimeRemaining ("Demonbolt") || (!Me.HasAura ("Demonbolt") && Fury >= 790))) {
+			if (HasSpell ("Demonbolt") && ((SpellCharges ("Dark Soul: Instability") == 2 && ((!HasGlyph (56242) && (Target.HasAura ("Corruption", true))) || Cooldown ("Imp Swarm") == 0)) || TimeToDie (Target) < Me.AuraTimeRemaining ("Demonbolt") || (!Me.HasAura ("Demonbolt") && DemonicFury >= 790))) {
 				if (DarkSoul ())
 					return;
 			}
 			//	actions+=/dark_soul,if=!talent.demonbolt.enabled&((charges=2&(time>6|(debuff.shadowflame.stack=1&action.hand_of_guldan.in_flight)))|!talent.archimondes_darkness.enabled|(target.time_to_die<=20&!glyph.dark_soul.enabled)|target.time_to_die<=10|(target.time_to_die<=60&demonic_fury>400)|((trinket.proc.any.react|trinket.stacking_proc.any.react)&(demonic_fury>600|(glyph.dark_soul.enabled&demonic_fury>450))))
-			if (!HasSpell ("Demonbolt") && ((SpellCharges ("Dark Soul: Instability") == 2 && (Time > 6 || (Target.GetAura ("Shadowflame", true).StackCount == 1 && HandInFlight))) || !HasSpell ("Archimonde's Darkness") || (TimeToDie (Target) <= 20 && !HasGlyph (159665) || TimeToDie (Target) <= 10) || (TimeToDie (Target) <= 60 && Fury > 400))) {
+			if (!HasSpell ("Demonbolt") && ((SpellCharges ("Dark Soul: Instability") == 2 && (Time > 6 || (Target.GetAura ("Shadowflame", true).StackCount == 1 && HandInFlight))) || !HasSpell ("Archimonde's Darkness") || (TimeToDie (Target) <= 20 && !HasGlyph (159665) || TimeToDie (Target) <= 10) || (TimeToDie (Target) <= 60 && DemonicFury > 400))) {
 				if (DarkSoul ())
 					return;
 			}
@@ -114,7 +114,7 @@ namespace ReBot
 					return;
 			}
 			//	actions+=/hand_of_guldan,if=!in_flight&dot.shadowflame.remains<travel_time+action.shadow_bolt.cast_time&(((set_bonus.tier17_4pc=0&((charges=1&recharge_time<4)|charges=2))|(charges=3|(charges=2&recharge_time<13.8-travel_time*2))&((cooldown.cataclysm.remains>dot.shadowflame.duration)|!talent.cataclysm.enabled))|dot.shadowflame.remains>travel_time)
-			if (!HandInFlight && Target.AuraTimeRemaining ("Shadowflame", true) < HandTravelTime + CastTimeSB && (((!HasSpell (165451) && ((SpellCharges ("Hand of Gul'dan") == 1 && Cooldown ("Hand of Gul'dan") < 4) || SpellCharges ("Hand of Gul'dan") == 2)) || (SpellCharges ("Hand of Gul'dan") == 3 || (SpellCharges ("Hand of Gul'dan") == 2 && Cooldown ("Hand of Gul'dan") < 13.8 - HandTravelTime * 2)) && ((Cooldown ("Cataclysm") > 6) || !HasSpell ("Cataclysm"))) || Target.AuraTimeRemaining ("Shadowflame", true) > HandTravelTime)) {
+			if (!HandInFlight && Target.AuraTimeRemaining ("Shadowflame", true) < HandTravelTime + CastTime (686) && (((!HasSpell (165451) && ((SpellCharges ("Hand of Gul'dan") == 1 && Cooldown ("Hand of Gul'dan") < 4) || SpellCharges ("Hand of Gul'dan") == 2)) || (SpellCharges ("Hand of Gul'dan") == 3 || (SpellCharges ("Hand of Gul'dan") == 2 && Cooldown ("Hand of Gul'dan") < 13.8 - HandTravelTime * 2)) && ((Cooldown ("Cataclysm") > 6) || !HasSpell ("Cataclysm"))) || Target.AuraTimeRemaining ("Shadowflame", true) > HandTravelTime)) {
 				if (HandofGuldan ()) {
 					HandInFlight = true;
 					HandRange = Target.CombatRange;
@@ -123,7 +123,7 @@ namespace ReBot
 				}
 			}
 			//	actions+=/hand_of_guldan,if=!in_flight&dot.shadowflame.remains<travel_time+action.shadow_bolt.cast_time&talent.demonbolt.enabled&((set_bonus.tier17_4pc=0&((charges=1&recharge_time<4)|charges=2))|(charges=3|(charges=2&recharge_time<13.8-travel_time*2))|dot.shadowflame.remains>travel_time)
-			if (!HandInFlight && Target.AuraTimeRemaining ("Shadowflame", true) < HandTravelTime + CastTimeSB && HasSpell ("Demonbolt") && ((!HasSpell (165451) && ((SpellCharges ("Hand of Gul'dan") == 1 && Cooldown ("Hand of Gul'dan") < 4) || SpellCharges ("Hand of Gul'dan") == 2)) || (SpellCharges ("Hand of Gul'dan") == 3 || (SpellCharges ("Hand of Gul'dan") == 2 && Cooldown ("Hand of Gul'dan") < 13.8 - HandTravelTime * 2)) || Target.AuraTimeRemaining ("Shadowflame", true) > HandTravelTime)) {
+			if (!HandInFlight && Target.AuraTimeRemaining ("Shadowflame", true) < HandTravelTime + CastTime (686) && HasSpell ("Demonbolt") && ((!HasSpell (165451) && ((SpellCharges ("Hand of Gul'dan") == 1 && Cooldown ("Hand of Gul'dan") < 4) || SpellCharges ("Hand of Gul'dan") == 2)) || (SpellCharges ("Hand of Gul'dan") == 3 || (SpellCharges ("Hand of Gul'dan") == 2 && Cooldown ("Hand of Gul'dan") < 13.8 - HandTravelTime * 2)) || Target.AuraTimeRemaining ("Shadowflame", true) > HandTravelTime)) {
 				if (HandofGuldan ()) {
 					HandInFlight = true;
 					HandRange = Target.CombatRange;
@@ -165,7 +165,7 @@ namespace ReBot
 					return;
 			}
 			//	actions+=/immolation_aura,if=demonic_fury>450&active_enemies>=3&buff.immolation_aura.down
-			if (Fury > 450 && ActiveEnemies (10) >= 3 && !Me.HasAura ("Immolation Aura")) {
+			if (DemonicFury > 450 && ActiveEnemies (10) >= 3 && !Me.HasAura ("Immolation Aura")) {
 				if (ImmolationAura ())
 					return;
 			}
@@ -176,17 +176,17 @@ namespace ReBot
 			}
 			//	actions+=/corruption,cycle_targets=1,if=target.time_to_die>=6&remains<=(0.3*duration)&buff.metamorphosis.down
 			if (Usable ("Corruption") && !Me.HasAura ("Metamorphosis")) {
-				CycleTarget = Enemy.Where (u => u.IsInLoS && u.CombatRange <= 40 && u.AuraTimeRemaining ("Corruption", true) < (18 * 0.3) && TimeToDie (u) >= 6).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Corruption (CycleTarget))
+				Unit = Enemy.Where (u => u.IsInLoS && u.CombatRange <= 40 && u.AuraTimeRemaining ("Corruption", true) < (18 * 0.3) && TimeToDie (u) >= 6).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null) {
+					if (Corruption (Unit))
 						return;
 				}
 			}
 			//	actions+=/cancel_metamorphosis,if=buff.metamorphosis.up&((demonic_fury<650&!glyph.dark_soul.enabled)|demonic_fury<450)&buff.dark_soul.down&(trinket.stacking_proc.multistrike.down&trinket.proc.any.down|demonic_fury<(800-cooldown.dark_soul.remains*(10%spell_haste)))&target.time_to_die>20
-			if (Me.HasAura ("Metamorphosis") && ((Fury < 650 && !HasGlyph (159665)) || Fury < 450) && !Me.HasAura ("Dark Soul: Instability") && (Fury < (800 - Cooldown ("Dark Soul: Instability") * (10 / SpellHaste))) && TimeToDie () > 20)
+			if (Me.HasAura ("Metamorphosis") && ((DemonicFury < 650 && !HasGlyph (159665)) || DemonicFury < 450) && !Me.HasAura ("Dark Soul: Instability") && (DemonicFury < (800 - Cooldown ("Dark Soul: Instability") * (10 / SpellHaste))) && TimeToDie () > 20)
 				CancelAura ("Metamorphosis");
 			//	actions+=/cancel_metamorphosis,if=buff.metamorphosis.up&action.hand_of_guldan.charges>0&dot.shadowflame.remains<action.hand_of_guldan.travel_time+action.shadow_bolt.cast_time&((demonic_fury<100&buff.dark_soul.remains>10)|time<15)&!glyph.dark_soul.enabled
-			if (Me.HasAura ("Metamorphosis") && SpellCharges ("Hand of Gul'dan") > 0 && Target.AuraTimeRemaining ("Shadowflame", true) < HandTravelTime + CastTimeSB && ((Fury < 100 && Me.AuraTimeRemaining ("Dark Soul: Instability") > 10) || Time < 15) && !HasGlyph (159665)) {
+			if (Me.HasAura ("Metamorphosis") && SpellCharges ("Hand of Gul'dan") > 0 && Target.AuraTimeRemaining ("Shadowflame", true) < HandTravelTime + CastTime (686) && ((DemonicFury < 100 && Me.AuraTimeRemaining ("Dark Soul: Instability") > 10) || Time < 15) && !HasGlyph (159665)) {
 				CancelAura ("Metamorphosis");
 			}
 			//	actions+=/cancel_metamorphosis,if=buff.metamorphosis.up&action.hand_of_guldan.charges=3&(!buff.dark_soul.remains>gcd|action.metamorphosis.cooldown<gcd)
@@ -200,10 +200,10 @@ namespace ReBot
 			}
 			//	actions+=/soul_fire,if=buff.metamorphosis.up&buff.molten_core.react&(buff.dark_soul.remains>execute_time|target.health.pct<=25)&(((buff.molten_core.stack*execute_time>=trinket.stacking_proc.multistrike.remains-1|demonic_fury<=ceil((trinket.stacking_proc.multistrike.remains-buff.molten_core.stack*execute_time)*40)+80*buff.molten_core.stack)|target.health.pct<=25)&trinket.stacking_proc.multistrike.remains>=execute_time|trinket.stacking_proc.multistrike.down|!trinket.has_stacking_proc.multistrike)
 			//	actions+=/touch_of_chaos,cycle_targets=1,if=buff.metamorphosis.up&dot.corruption.remains<17.4&demonic_fury>750
-			if (Me.HasAura ("Metamorphosis") && Fury > 750) {
-				CycleTarget = Enemy.Where (x => x.IsInLoS && x.CombatRange <= 40 && x.AuraTimeRemaining ("Corruption", true) < 17.4).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (TouchofChaos (CycleTarget))
+			if (Me.HasAura ("Metamorphosis") && DemonicFury > 750) {
+				Unit = Enemy.Where (x => x.IsInLoS && x.CombatRange <= 40 && x.AuraTimeRemaining ("Corruption", true) < 17.4).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null) {
+					if (TouchofChaos (Unit))
 						return;
 				}
 			}
@@ -213,7 +213,7 @@ namespace ReBot
 					return;
 			}
 			//	actions+=/metamorphosis,if=buff.dark_soul.remains>gcd&(time>6|debuff.shadowflame.stack=2)&(demonic_fury>300|!glyph.dark_soul.enabled)&(demonic_fury>=80&buff.molten_core.stack>=1|demonic_fury>=40)
-			if (Me.AuraTimeRemaining ("Dark Soul: Instability") > 1.5 && (Time > 6 || Target.GetAura ("Shadowflame", true).StackCount == 2) && (Fury > 300 || !HasGlyph (159665)) && (Fury >= 80 && AuraStackCount ("Molten Core") >= 1 || Fury >= 40)) {
+			if (Me.AuraTimeRemaining ("Dark Soul: Instability") > 1.5 && (Time > 6 || Target.GetAura ("Shadowflame", true).StackCount == 2) && (DemonicFury > 300 || !HasGlyph (159665)) && (DemonicFury >= 80 && AuraStackCount ("Molten Core") >= 1 || DemonicFury >= 40)) {
 				if (Metamorphosis ())
 					return;
 			}
@@ -224,17 +224,17 @@ namespace ReBot
 					return;
 			}
 			//	actions+=/metamorphosis,if=!dot.doom.ticking&target.time_to_die>=30%(1%spell_haste)&demonic_fury>300
-			if (!Target.HasAura ("Doom", true) && TimeToDie () >= 30 / (1 / SpellHaste) && Fury > 300) {
+			if (!Target.HasAura ("Doom", true) && TimeToDie () >= 30 / (1 / SpellHaste) && DemonicFury > 300) {
 				if (Metamorphosis ())
 					return;
 			}
 			//	actions+=/metamorphosis,if=(demonic_fury>750&(action.hand_of_guldan.charges=0|(!dot.shadowflame.ticking&!action.hand_of_guldan.in_flight_to_target)))|floor(demonic_fury%80)*action.soul_fire.execute_time>=target.time_to_die
-			if ((Fury > 750 && (SpellCharges ("Hand of Gul'dan") == 0 || (!Target.HasAura ("Shadowflame") && !HandInFlight))) || (Fury / 80) * 4 >= TimeToDie ()) {
+			if ((DemonicFury > 750 && (SpellCharges ("Hand of Gul'dan") == 0 || (!Target.HasAura ("Shadowflame") && !HandInFlight))) || (DemonicFury / 80) * 4 >= TimeToDie ()) {
 				if (Metamorphosis ())
 					return;
 			}
 			//	actions+=/metamorphosis,if=demonic_fury>=950
-			if (Fury >= 950) {
+			if (DemonicFury >= 950) {
 				if (Metamorphosis ())
 					return;
 			}
@@ -283,25 +283,25 @@ namespace ReBot
 		public bool DB_Action ()
 		{
 			//	actions.db=immolation_aura,if=demonic_fury>450&active_enemies>=5&buff.immolation_aura.down
-			if (Fury > 450 && ActiveEnemies (10) >= 5 && !Me.HasAura ("Immolation Aura")) {
+			if (DemonicFury > 450 && ActiveEnemies (10) >= 5 && !Me.HasAura ("Immolation Aura")) {
 				if (ImmolationAura ())
 					return true;
 			}
 			//	actions.db+=/doom,cycle_targets=1,if=buff.metamorphosis.up&active_enemies>=6&target.time_to_die>=30*spell_haste&remains<=(duration*0.3)&(buff.dark_soul.down|!glyph.dark_soul.enabled)
 			if (Me.HasAura ("Metamorphosis") && ActiveEnemies (40) >= 6 && (Me.HasAura ("Dark Soul: Instability") || !HasSpell (165451))) {
-				CycleTarget = Enemy.Where (u => u.IsInLoS && u.CombatRange <= 40 && TimeToDie (u) >= 30 * SpellHaste && u.AuraTimeRemaining ("Doom", true) < (60 * 0.3)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Doom (CycleTarget))
+				Unit = Enemy.Where (u => u.IsInLoS && u.CombatRange <= 40 && TimeToDie (u) >= 30 * SpellHaste && u.AuraTimeRemaining ("Doom", true) < (60 * 0.3)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null) {
+					if (Doom (Unit))
 						return true;
 				}
 			}
 			//	actions.db+=/kiljaedens_cunning,moving=1,if=buff.demonbolt.stack=0|(buff.demonbolt.stack<4&buff.demonbolt.remains>=(40*spell_haste-execute_time))
 			//	actions.db+=/demonbolt,if=buff.demonbolt.stack=0|(buff.demonbolt.stack<4&buff.demonbolt.remains>=(40*spell_haste-execute_time))
 			//	actions.db+=/doom,cycle_targets=1,if=buff.metamorphosis.up&target.time_to_die>=30*spell_haste&remains<=(duration*0.3)&(buff.dark_soul.down|!glyph.dark_soul.enabled)
-			if (Me.HasAura ("Metamorphosis") && Fury > 750 && (Me.HasAura ("Dark Soul: Instability") || !HasSpell (165451))) {
-				CycleTarget = Enemy.Where (u => u.IsInLoS && u.CombatRange <= 40 && TimeToDie (u) >= 30 * SpellHaste && u.AuraTimeRemaining ("Doom", true) < (60 * 0.3)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Doom (CycleTarget))
+			if (Me.HasAura ("Metamorphosis") && DemonicFury > 750 && (Me.HasAura ("Dark Soul: Instability") || !HasSpell (165451))) {
+				Unit = Enemy.Where (u => u.IsInLoS && u.CombatRange <= 40 && TimeToDie (u) >= 30 * SpellHaste && u.AuraTimeRemaining ("Doom", true) < (60 * 0.3)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null) {
+					if (Doom (Unit))
 						return true;
 				}
 			}

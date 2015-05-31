@@ -6,45 +6,13 @@ using ReBot.API;
 
 namespace ReBot
 {
-	public abstract class SerbPaladin : CombatRotation
+	public abstract class SerbPaladin : SerbUtils
 	{
 		// Consts && Vars
 
-		public bool InCombat;
-		public DateTime StartBattle;
-		public PlayerObject Player;
-		public UnitObject Unit;
 		public UnitObject LastJudgmentTarget;
-		public int BossHealthPercentage = 500;
-		public int BossLevelIncrease = 5;
-		public Int32 OraliusWhisperingCrystalId = 118922;
-		public Int32 CrystalOfInsanityId = 86569;
 
 		// Get
-
-		public bool InRaid {
-			get {
-				return API.MapInfo.Type == MapType.Raid;
-			}
-		}
-
-		public bool InInstance {
-			get {
-				return API.MapInfo.Type == MapType.Instance;
-			}
-		}
-
-		public bool InArena {
-			get {
-				return API.MapInfo.Type == MapType.Arena;
-			}
-		}
-
-		public bool InBg {
-			get {
-				return API.MapInfo.Type == MapType.PvP;
-			}
-		}
 
 		public double TimeToHpg {
 			get {
@@ -52,61 +20,6 @@ namespace ReBot
 					return 1.5;
 				return 0.35 + 1.5;
 			}
-		}
-
-		public List<UnitObject> Enemy {
-			get {
-				var targets = Adds;
-				targets.Add (Target);
-				return targets;
-			}
-		}
-
-		public int HolyPower {
-			get {
-				return Me.GetPower (WoWPowerType.PaladinHolyPower);
-			}
-		}
-
-		public double Cooldown (string s)
-		{
-			return SpellCooldown (s) > 0 ? SpellCooldown (s) : 0;
-		}
-
-		public int ActiveEnemies (int r)
-		{
-			int x = 0;
-			foreach (UnitObject u in API.CollectUnits(r)) {
-				if ((u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable && u.InCombat) {
-					x++;
-				}
-			}
-			return x;
-		}
-
-		public int ActiveEnemiesWithTarget (int r, UnitObject t = null)
-		{
-			t = t ?? Target;
-			int x = 0;
-			foreach (UnitObject u in API.CollectUnits(45)) {
-				if (Vector3.Distance (t.Position, u.Position) <= r && (u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable) {
-					x++;
-				}
-			}
-			return x;
-		}
-
-		public double Time {
-			get {
-				TimeSpan combatTime = DateTime.Now.Subtract (StartBattle);
-				return combatTime.TotalSeconds;
-			}
-		}
-
-		public double Health (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.HealthFraction;
 		}
 
 		public string SealSpell {
@@ -120,77 +33,10 @@ namespace ReBot
 
 		// Check
 
-		public bool CS (string s)
-		{
-			if (CastSelf (s))
-				return true;
-			API.Print ("False CastSelf " + s);
-			return false;
-		}
-
-		public bool C (string s, UnitObject u = null)
-		{
-			u = u ?? Target;
-			if (Cast (s, u))
-				return true;
-			API.Print ("False Cast " + s + " with " + u.CombatRange + " range " + u.Distance + " distance");
-			return false;
-		}
-
 		public bool HasBuff (UnitObject u = null)
 		{
 			u = u ?? Me;
 			return u.HasAura ("Blessing of Kings") || u.HasAura ("Legacy of the Emperor") || u.HasAura ("Mark of the Wild");
-		}
-
-		public bool IsBoss (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return(u.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || u.Level >= Me.Level + BossLevelIncrease;
-		}
-
-		public bool IsPlayer (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.IsPlayer;
-		}
-
-		public bool IsElite (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.IsElite ();
-		}
-
-		public bool Usable (string s)
-		{
-			return HasSpell (s) && Cooldown (s) == 0;
-		}
-
-		public double DamageTaken (float t)
-		{
-			var damage = API.ExecuteLua<double> ("local ResolveName = GetSpellInfo(158300);local n,_,_,_,_,dur,expi,_,_,_,id,_,_,_,val1,val2,val3 = UnitAura(\"player\", ResolveName, nil, \"HELPFUL\");return val2");
-			if (Time < 10) {
-				if (Time < t / 1000)
-					return damage;
-				return damage / Time * (t / 1000);
-			}
-			return damage / 10 * (t / 1000);
-		}
-
-		public bool Range (int r, UnitObject u = null, int l = 0)
-		{
-			u = u ?? Target;
-			if (l != 0)
-				return u.IsInLoS && u.CombatRange <= r && u.CombatRange >= l;
-			return u.IsInLoS && u.CombatRange <= r;
-		}
-
-		public bool Danger (UnitObject u = null, int r = 0, int e = 2)
-		{
-			u = u ?? Target;
-			if (r != 0)
-				return Range (r, u) && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-			return u.IsInCombatRangeAndLoS && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
 		}
 
 		// Combo
@@ -209,11 +55,6 @@ namespace ReBot
 		{
 			Player = Group.GetGroupMemberObjects ().Where (u => (Range (40, u) && u.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType)))).DefaultIfEmpty (null).FirstOrDefault ();
 			return Player != null && Cleanse (Player);
-		}
-
-		public bool Freedom ()
-		{
-			return WilloftheForsaken () || EveryManforHimself ();
 		}
 
 		public bool Buff (UnitObject u = null)
@@ -555,31 +396,10 @@ namespace ReBot
 			return Usable ("Lay on Hands") && Range (40, u) && !u.HasAura ("Forbearance") && C ("Lay on Hands", u);
 		}
 
-		public bool WilloftheForsaken ()
-		{
-			return Usable ("Will of the Forsaken") && CS ("Will of the Forsaken");
-		}
-
-		public bool EveryManforHimself ()
-		{
-			return Usable ("Every Man for Himself") && CS ("Every Man for Himself");
-		}
 
 		// Items
 
-		public bool CrystalOfInsanity ()
-		{
-			if (!InArena && API.HasItem (CrystalOfInsanityId) && !HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityId) == 0)
-				return (API.UseItem (CrystalOfInsanityId));
-			return false;
-		}
 
-		public bool OraliusWhisperingCrystal ()
-		{
-			if (API.HasItem (OraliusWhisperingCrystalId) && !HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalId) == 0)
-				return API.UseItem (OraliusWhisperingCrystalId);
-			return false;
-		}
 	}
 }
 

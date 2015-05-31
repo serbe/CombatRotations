@@ -59,7 +59,7 @@ namespace ReBot
 		string myHealTalent2;
 		AutoResetDelay FlameChangeDelay = new AutoResetDelay (2000);
 
-		private int _HP;
+		//		private int _HP;
 
 		public int HP { get { return Me.GetPower (WoWPowerType.PaladinHolyPower); } }
 
@@ -300,8 +300,7 @@ namespace ReBot
 			if (HOS) {
 				if (Me.Focus != null) {
 					if (Me.Focus.IsFriendly && Me.Focus.IsInLoS && Me.Focus.IsInCombatRange) {
-						if (Cast ("Hand of Sacrifice", () => Me.Focus.HealthFraction <= HoS && !Me.Focus.HasAura ("Hand of Sacrifice", true), Me.Focus))
-							;
+						Cast ("Hand of Sacrifice", () => Me.Focus.HealthFraction <= HoS && !Me.Focus.HasAura ("Hand of Sacrifice", true), Me.Focus);
 					}
 				}
 			}
@@ -321,12 +320,10 @@ namespace ReBot
 
 			if (Me.Focus != null) {
 				if (Me.Focus.IsFriendly && Me.Focus.IsInLoS && Me.Focus.IsInCombatRange) {
-					if (Cast ("Beacon of Light", () => !Me.Focus.HasAura ("Beacon of Light", true), Me.Focus))
-						;
+					Cast ("Beacon of Light", () => !Me.Focus.HasAura ("Beacon of Light", true), Me.Focus);
 				}
 			} else if (FlameChangeDelay.IsReady) {
-				if (Cast ("Beacon of Light", () => !lowestPlayer.HasAura ("Beacon of Light", true) && !lowestPlayer.HasAura ("Beacon of Faith", true), lowestPlayer))
-					;
+				Cast ("Beacon of Light", () => !lowestPlayer.HasAura ("Beacon of Light", true) && !lowestPlayer.HasAura ("Beacon of Faith", true), lowestPlayer);
 			}
 
 			/// Target heal

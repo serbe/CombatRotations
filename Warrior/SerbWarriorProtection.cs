@@ -140,11 +140,11 @@ namespace ReBot
 //					return true;
 //			}
 			if (Me.Level < 100) {
-				if (Rage >= RageMax - 10) {
+				if (Rage >= MaxPower - 10) {
 					if (Execute ())
 						return true;
 				}
-				if (Rage >= RageMax - 40) {
+				if (Rage >= MaxPower - 40) {
 					if (HeroicStrike ())
 						return true;
 				}
@@ -241,12 +241,12 @@ namespace ReBot
 			Avatar ();
 			//	actions.prot_aoe+=/thunder_clap,if=!dot.deep_wounds.ticking
 			if (Me.Level >= 32 && Usable ("Thunder Clap")) {
-				CycleTarget = Enemy.Where (u => Range (8, u) && !u.HasAura ("Deep Wounds", true)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && ThunderClap ())
+				Unit = Enemy.Where (u => Range (8, u) && !u.HasAura ("Deep Wounds", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && ThunderClap ())
 					return true;
 			}
 			//	actions.prot_aoe+=/heroic_strike,if=buff.ultimatum.up|rage>110|(talent.unyielding_strikes.enabled&buff.unyielding_strikes.stack>=6)
-			if (Me.HasAura ("Ultimatum") || Rage >= RageMax - 20 || (HasSpell ("Unyielding Strikes") && Me.GetAura ("Unyielding Strikes").StackCount >= 6)) {
+			if (Me.HasAura ("Ultimatum") || Rage >= MaxPower - 20 || (HasSpell ("Unyielding Strikes") && Me.GetAura ("Unyielding Strikes").StackCount >= 6)) {
 				if (HeroicStrike ())
 					return true;
 			}
@@ -270,9 +270,9 @@ namespace ReBot
 				return true;
 			//	actions.prot_aoe+=/revenge
 			if (InInstance) {
-				CycleTarget = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Revenge (CycleTarget))
+				Unit = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null) {
+					if (Revenge (Unit))
 						return true;
 				} else {
 					if (Revenge ())
@@ -300,9 +300,9 @@ namespace ReBot
 			//	actions.prot_aoe+=/execute,if=buff.sudden_death.react
 			if (Me.HasAura ("Sudden Death")) {
 				if (InInstance) {
-					CycleTarget = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
-					if (CycleTarget != null) {
-						if (Execute (CycleTarget))
+					Unit = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null) {
+						if (Execute (Unit))
 							return true;
 					} else {
 						if (Execute ())
@@ -315,9 +315,9 @@ namespace ReBot
 			}
 			//	actions.prot_aoe+=/devastate
 			if (InInstance) {
-				CycleTarget = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Devastate (CycleTarget))
+				Unit = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null) {
+					if (Devastate (Unit))
 						return true;
 				} else {
 					if (Devastate ())
@@ -356,7 +356,7 @@ namespace ReBot
 			if (Me.HasAura ("Bloodbath") || Me.HasAura ("Avatar") || Me.HasAura ("Shield Charge") || TimeToDie () < 10)
 				Berserking ();
 			//	actions+=/arcane_torrent,if=rage<rage.max-40
-			if (Rage < RageMax - 40)
+			if (Rage < MaxPower - 40)
 				ArcaneTorrent ();
 			//	actions+=/potion,name=draenic_armor,if=buff.bloodbath.up|buff.avatar.up|buff.shield_charge.up
 			if (Me.HasAura ("Bloodbath") || Me.HasAura ("Avatar") || Me.HasAura ("Shield Charge"))
@@ -376,7 +376,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions+=/heroic_strike,if=buff.ultimatum.up|rage>=rage.max-20|buff.unyielding_strikes.stack>4|target.time_to_die<10
-			if (Me.HasAura ("Ultimatum") || Rage >= RageMax - 20 || Me.GetAura ("Unyielding Strikes").StackCount > 4 || TimeToDie () < 10) {
+			if (Me.HasAura ("Ultimatum") || Rage >= MaxPower - 20 || Me.GetAura ("Unyielding Strikes").StackCount > 4 || TimeToDie () < 10) {
 				if (HeroicStrike ())
 					return true;
 			}
@@ -463,8 +463,8 @@ namespace ReBot
 			}
 			//	actions.aoe+=/thunder_clap,cycle_targets=1,if=dot.deep_wounds.remains<3&active_enemies>4
 			if (ActiveEnemies (8) > 4) {
-				CycleTarget = Enemy.Where (u => Me.Level >= 32 & u.AuraTimeRemaining ("Deep Wounds", true) < 3).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null && ThunderClap ())
+				Unit = Enemy.Where (u => Me.Level >= 32 & u.AuraTimeRemaining ("Deep Wounds", true) < 3).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && ThunderClap ())
 					return true;
 			}
 			//	actions.aoe+=/bladestorm,if=buff.shield_charge.down
@@ -483,9 +483,9 @@ namespace ReBot
 					return true;
 			}
 			//	actions.aoe+=/devastate,cycle_targets=1,if=dot.deep_wounds.remains<5&cooldown.shield_slam.remains>execute_time*0.4
-			CycleTarget = Enemy.Where (u => Me.Level >= 32 && u.AuraTimeRemaining ("Deep Wounds", true) < 5 && Cooldown ("Shield Slam") > 1.5 * 0.4).DefaultIfEmpty (null).FirstOrDefault ();
-			if (CycleTarget != null) {
-				if (Devastate (CycleTarget))
+			Unit = Enemy.Where (u => Me.Level >= 32 && u.AuraTimeRemaining ("Deep Wounds", true) < 5 && Cooldown ("Shield Slam") > 1.5 * 0.4).DefaultIfEmpty (null).FirstOrDefault ();
+			if (Unit != null) {
+				if (Devastate (Unit))
 					return true;
 			}
 			//	actions.aoe+=/devastate,if=cooldown.shield_slam.remains>execute_time*0.4
