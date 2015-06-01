@@ -216,11 +216,61 @@ namespace ReBot
 		public bool UseEternalFlame ()
 		{
 			if (HolyPower > 0 && Usable ("Eternal Flame")) {
-				Player = MyGroupAndMe.Where (p => Health (p) < 0.95 && !p.HasAura ("Eternal Flame")).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Player != null && EternalFlame (Player))
-					return true;
+				if (Me.Focus != null) {
+					if (Me.Focus.IsFriendly && Range (40, Me.Focus) && Health (Me.Focus) < 0.95 && !Me.Focus.HasAura ("Eternal Flame", true)) {
+						if (EternalFlame (Me.Focus))
+							return true;
+					}
+				} else if (Tank != null) {
+					if (!Tank.HasAura ("Eternal Flame", true) && Health (Tank) < 0.95) {
+						if (EternalFlame (Tank))
+							return true;
+					}
+				} else if (LowestPlayer != null) {
+					if (!LowestPlayer.HasAura ("Eternal Flame", true) && Health (LowestPlayer) < 0.95) {
+						if (EternalFlame (LowestPlayer))
+							return true;
+					}
+				} else {
+					if (!Me.HasAura ("Eternal Flame", true) && Health (Me) < 0.95) {
+						if (EternalFlame (Me))
+							return true;
+					}
+				}
 			}
 			return false;
+		}
+
+		public bool UseLayonHands ()
+		{
+			if (Usable ("Lay on Hands")) {
+				if (Me.Focus != null) {
+					if (Health (Me.Focus) <= 0.25) {
+						if (LayonHands (Me.Focus))
+							return true;
+					}
+				} else if (Tank != null) {
+					if (Health (Tank) <= 0.25) {
+						if (LayonHands (Tank))
+							return true;
+					}
+				} else {
+					if (Health (Me) <= 0.25) {
+						if (LayonHands (Me))
+							return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		public bool UseHolyShock ()
+		{
+			if (HolyPower < 5 && Usable ("Holy Shock")) {
+				Player = MyGroupAndMe.Where (p => Health (p) <= 0.95).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Player != null && HolyShock (Player))
+					return true;
+			}
 		}
 
 		public bool UseHolyLight (double HL)
@@ -304,21 +354,6 @@ namespace ReBot
 			return Usable ("Speed of Light") && CS ("Speed of Light");
 		}
 
-		public bool BloodFury ()
-		{
-			return Usable ("Blood Fury") && Danger () && CS ("BloodFury");
-		}
-
-		public bool Berserking ()
-		{
-			return Usable ("Berserking") && Danger () && CS ("Berserking");
-		}
-
-		public bool ArcaneTorrent ()
-		{
-			return Usable ("Arcane Torrent") && Danger () && CS ("Arcane Torrent");
-		}
-
 		public bool HolyAvenger ()
 		{
 			return Usable ("Holy Avenger") && Danger () && CS ("Holy Avenger");
@@ -354,6 +389,12 @@ namespace ReBot
 		{
 			u = u ?? Target;
 			return Usable ("Flash of Light") && Range (40, u) && C ("Flash of Light", u);
+		}
+
+		public bool HolyShock (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Holy Shock") && Range (40, u) && C ("Holy Shockt", u);
 		}
 
 		public bool EternalFlame (UnitObject u = null)

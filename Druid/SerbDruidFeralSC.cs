@@ -147,6 +147,9 @@ namespace ReBot
 						return;
 				}
 
+				if (Time > 3 && IncarnationKingoftheJungle ())
+					return;
+
 				//	actions+=/wild_charge
 				//	actions+=/displacer_beast,if=movement.distance>10
 				//	actions+=/dash,if=movement.distance&buff.displacer_beast.down&buff.wild_charge_movement.down
