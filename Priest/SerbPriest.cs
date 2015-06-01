@@ -7,17 +7,8 @@ using System;
 
 namespace ReBot
 {
-	public abstract class SerbPriest : CombatRotation
+	public abstract class SerbPriest : SerbUtils
 	{
-		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
-		public int Ttd = 10;
-
-		public int BossHealthPercentage = 500;
-		public int BossLevelIncrease = 5;
-		public UnitObject Unit;
-		public UnitObject InterruptTarget;
-		public PlayerObject Player;
-		public IEnumerable<UnitObject> MaxCycle;
 		public string IfInterrupt;
 		public string Spell = "";
 
@@ -27,162 +18,11 @@ namespace ReBot
 			"Kavan the Arcanist",
 			"Ki the Assassin"
 		};
-
-
+			
 		// Check
 
-		public bool C (string s, UnitObject u = null)
-		{
-			u = u ?? Target;
-			if (Cast (s, u))
-				return true;
-			API.Print ("False Cast " + s + " with " + u.CombatRange + " range and " + u.Distance + " distance");
-			return false;
-		}
-
-		public bool CPD (string s, UnitObject u = null, int d = 800)
-		{
-			u = u ?? Target;
-			if (CastPreventDouble (s, null, u, d))
-				return true;
-			API.Print ("False CastPreventDouble " + s + " with " + u.CombatRange + " range " + d + " delay");
-			return false;
-		}
-
-		public bool CS (string s)
-		{
-			if (CastSelf (s))
-				return true;
-			API.Print ("False CastSelf " + s);
-			return false;
-		}
-
-		public bool COT (string s, UnitObject u = null)
-		{
-			u = u ?? Target;
-			if (CastOnTerrain (s, u.Position))
-				return true;
-			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range and " + u.Distance + " distance");
-			return false;
-		}
-
-		public bool COTPD (string s, UnitObject u = null)
-		{
-			u = u ?? Target;
-			if (CastOnTerrainPreventDouble (s, u.Position))
-				return true;
-			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range and " + u.Distance + " distance");
-			return false;
-		}
-
-		public bool Range (int r, UnitObject u = null, int l = 0)
-		{
-			u = u ?? Target;
-			if (l != 0)
-				return u.IsInLoS && u.CombatRange <= r && u.CombatRange >= l;
-			return u.IsInLoS && u.CombatRange <= r;
-		}
-
-		public bool Danger (UnitObject u = null, int r = 0, int e = 2)
-		{
-			u = u ?? Target;
-			if (r != 0)
-				return Range (r, u) && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-			return u.IsInCombatRangeAndLoS && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-		}
-
-		public bool DangerBoss (UnitObject u = null, int r = 0, int e = 6)
-		{
-			u = u ?? Target;
-			if (r != 0)
-				return Range (r, u) && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-			return u.IsInCombatRangeAndLoS && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-		}
-
-		public bool InGroup {
-			get {
-				return Group.GetGroupMemberObjects ().Count > 0;
-			}
-		}
-
-		public bool InRaid {
-			get {
-				return API.MapInfo.Type == MapType.Raid;
-			}
-		}
-
-		public bool InArena {
-			get {
-				return API.MapInfo.Type == MapType.Arena;
-			}
-		}
-
-		public bool InBg {
-			get {
-				return API.MapInfo.Type == MapType.PvP;
-			}
-		}
-
-		public bool InInstance {
-			get {
-				return API.MapInfo.Type == MapType.Instance;
-			}
-		}
-
-		public bool InPG {
-			get {
-				return API.MapInfo.Name.Contains ("Proving Grounds");
-			}
-		}
-
-		public bool Usable (string s)
-		{ 
-			return HasSpell (s) && Cooldown (s) == 0;
-		}
-
-		public bool IsBoss (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return (u.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || u.Level >= Me.Level + BossLevelIncrease;
-		}
-
-		public bool IsPlayer (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.IsPlayer;
-		}
-
-		public bool IsElite (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.IsElite ();
-		}
-
-		public bool IncapacitatedInRange (int range)
-		{
-			int x = 0;
-			foreach (UnitObject mob in API.CollectUnits(range)) {
-				if ((mob.IsEnemy || Me.Target == mob) && !mob.IsDead && mob.IsAttackable && IsNotForDamage (mob)) {
-					x++;
-				}
-			}
-			return x > 0;
-		}
 
 		// Get
-
-		public List<UnitObject> Enemy {
-			get {
-				var targets = Adds;
-				targets.Add (Target);
-				return targets;
-			}
-		}
-
-		public double CastTime (Int32 i)
-		{
-			return API.ExecuteLua<double> ("local _, _, _, castTime, _, _ = GetSpellInfo(" + i + "); return castTime;");
-		}
 
 		public GUID AutoTarget {
 			get {
@@ -210,66 +50,6 @@ namespace ReBot
 			}
 		}
 
-		public int Orb {
-			get {
-				return Me.GetPower (WoWPowerType.PriestShadowOrbs);
-			}
-		}
-
-		public double Health (UnitObject u = null)
-		{
-			u = u ?? Me;
-			return u.HealthFraction;
-		}
-
-		public double Mana (UnitObject u = null)
-		{
-			u = u ?? Me;
-			return u.ManaFraction;
-		}
-
-		public double Cooldown (string s)
-		{ 
-			return SpellCooldown (s) < 0 ? 0 : SpellCooldown (s);
-		}
-
-		public double TimeToDie (UnitObject u = null)
-		{
-			u = u ?? Target;
-			if (u != null)
-				return u.Health / Ttd;
-			return 0;
-		}
-
-		public bool IsNotForDamage (UnitObject o)
-		{
-			if (o.HasAura ("Fear") || o.HasAura ("Polymorph") || o.HasAura ("Gouge") || o.HasAura ("Paralysis") || o.HasAura ("Blind") || o.HasAura ("Hex"))
-				return true;
-			return false;
-		}
-
-		public int ActiveEnemies (int r)
-		{
-			int x = 0;
-			foreach (UnitObject u in API.CollectUnits(r)) {
-				if ((u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable && u.InCombat) {
-					x++;
-				}
-			}
-			return x;
-		}
-
-		public int ActiveEnemiesWithTarget (int r, UnitObject t = null)
-		{
-			t = t ?? Target;
-			int x = 0;
-			foreach (UnitObject u in API.CollectUnits(45)) {
-				if (Vector3.Distance (t.Position, u.Position) <= r && (u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable) {
-					x++;
-				}
-			}
-			return x;
-		}
 
 		public List<PlayerObject> GroupMembers {
 			get {
@@ -290,15 +70,6 @@ namespace ReBot
 					allGroup.Add (Me);
 					return allGroup;
 				}
-			}
-		}
-
-		public PlayerObject Tank {
-			get {
-				if (InPG) {
-					return (PlayerObject)API.Units.Where (p => p.Name == "Oto the Protector").DefaultIfEmpty (null).FirstOrDefault ();
-				}
-				return GroupMembers.Where (u => u.IsTank && u.IsInLoS && Range (40, u) && !u.IsDead).OrderBy (u => u.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
@@ -438,24 +209,6 @@ namespace ReBot
 			return Usable ("Desperate Prayer") && C ("Desperate Prayer");
 		}
 
-		public bool BloodFury ()
-		{
-			return Usable ("Blood Fury") && Danger () && C ("Blood Fury");
-			// GCD = 0
-		}
-
-		public bool Berserking ()
-		{
-			return Usable ("Berserking") && Danger () && C ("Berserking");
-			// GCD = 0
-		}
-
-		public bool ArcaneTorrent ()
-		{
-			return Usable ("Arcane Torrent") && Danger () && C ("Arcane Torrent");
-			// GCD = 0
-		}
-
 		public bool PowerInfusion (UnitObject u = null)
 		{
 			u = u ?? Target;
@@ -537,14 +290,6 @@ namespace ReBot
 			}
 			return false;
 		}
-
-		public bool DraenicIntellect ()
-		{
-			return API.HasItem (109218) && API.ItemCooldown (109218) <= 0 && API.UseItem (109218);
-		}
-
-
-
 
 		public bool PowerWordSolace (UnitObject u = null)
 		{
@@ -710,14 +455,6 @@ namespace ReBot
 			return Usable ("Pain Suppression") && u.IsInLoS && Range (40, u) && C ("Pain Suppression", u);
 		}
 
-		public bool Healthstone ()
-		{
-			// Analysis disable once CompareOfFloatsByEqualityOperator
-			if (API.HasItem (5512) && API.ItemCooldown (5512) == 0)
-				return API.UseItem (5512);
-			return false;
-		}
-
 		public UnitObject CascadeTarget {
 			get {
 				List<PlayerObject> CascadeCounts;
@@ -764,7 +501,6 @@ namespace ReBot
 			}
 			return false;
 		}
-
 
 	}
 }

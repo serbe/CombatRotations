@@ -51,12 +51,6 @@ namespace ReBot
 			return false;
 		}
 
-		public bool CleanAll ()
-		{
-			Player = Group.GetGroupMemberObjects ().Where (u => (Range (40, u) && u.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType)))).DefaultIfEmpty (null).FirstOrDefault ();
-			return Player != null && Cleanse (Player);
-		}
-
 		public bool Buff (UnitObject u = null)
 		{
 			u = u ?? Me;
@@ -166,6 +160,121 @@ namespace ReBot
 			return false;
 		}
 
+		// Healer
+
+		public bool UseBeaconofLight ()
+		{
+			if (Usable ("Beacon of Light")) {
+				if (Me.Focus != null) {
+					if (Me.Focus.IsFriendly && Range (60, Me.Focus) && !Me.Focus.HasAura ("Beacon of Light", true)) {
+						if (BeaconofLight (Me.Focus))
+							return true;
+					}
+				} else if (Tank != null) {
+					if (!Tank.HasAura ("Beacon of Light", true)) {
+						if (BeaconofLight (Tank))
+							return true;
+					}
+				} else if (LowestPlayer != null) {
+					if (!LowestPlayer.HasAura ("Beacon of Light", true) && !LowestPlayer.HasAura ("Beacon of Faith", true)) {
+						if (BeaconofLight (LowestPlayer))
+							return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		public bool UseSacredShield ()
+		{
+			if (Usable ("Sacred Shield")) {
+				if (Me.Focus != null) {
+					if (Me.Focus.IsFriendly && Range (40, Me.Focus) && !Me.Focus.HasAura ("Sacred Shield", true)) {
+						if (SacredShield (Me.Focus))
+							return true;
+					}
+				} else if (Tank != null) {
+					if (!Tank.HasAura ("Sacred Shield", true)) {
+						if (SacredShield (Tank))
+							return true;
+					}
+				} else if (LowestPlayer != null) {
+					if (!LowestPlayer.HasAura ("Sacred Shield", true)) {
+						if (SacredShield (LowestPlayer))
+							return true;
+					}
+				} else {
+					if (!Me.HasAura ("Sacred Shield", true)) {
+						if (SacredShield (Me))
+							return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		public bool UseEternalFlame ()
+		{
+			if (HolyPower > 0 && Usable ("Eternal Flame")) {
+				Player = MyGroupAndMe.Where (p => Health (p) < 0.95 && !p.HasAura ("Eternal Flame")).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Player != null && EternalFlame (Player))
+					return true;
+			}
+			return false;
+		}
+
+		public bool UseHolyLight (double HL)
+		{
+			if (Usable ("Eternal Flame")) {
+				Player = MyGroupAndMe.Where (p => Health (p) <= HL).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Player != null && HolyLight (Player))
+					return true;
+			}
+			return false;
+		}
+
+		public bool UseFlashLight (double HL, double FL)
+		{
+			if (Usable ("Holy Light") && Me.HasAura ("Infusion of Light")) {
+				Player = MyGroupAndMe.Where (p => Health (p) < HL).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Player != null && HolyLight (Player))
+					return true;
+			} else if (Usable ("Flash of Light")) {
+				Player = MyGroupAndMe.Where (p => Health (p) < FL).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Player != null && FlashofLight (Player))
+					return true;
+			}
+			return false;
+		}
+
+		public bool UseLightofDawn ()
+		{
+			if (HolyPower > 3) {
+				Player = MyGroupAndMe.Where (p => Range (30, p)).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Player != null && LightofDawn ())
+					return true;
+			}
+			return false;
+		}
+
+		public bool CleanAll ()
+		{
+			if (Usable ("Cleanse")) {
+				Player = MyGroupAndMe.Where (u => u.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
+				return Player != null && Cleanse (Player);
+			}
+			return false;
+		}
+
+		public bool RessurectAll ()
+		{
+			if (InGroup && Usable ("Redemption")) {
+				Player = MyGroup.Where (p => p.IsDead).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Player != null && Redemption (Player))
+					return true;
+			}
+			return false;
+		}
 
 		// Spell
 
@@ -269,6 +378,11 @@ namespace ReBot
 		{
 			u = u ?? Target;
 			return Usable ("Templar's Verdict") && (HolyPower >= 3 || Me.HasAura ("Divine Purpose")) && Range (5, u) && C ("Templar's Verdict", u);
+		}
+
+		public bool LightofDawn ()
+		{
+			return Usable ("Light of Dawn") && (HolyPower >= 1 || Me.HasAura ("Divine Purpose")) && CS ("Light of Dawn");
 		}
 
 		public bool FinalVerdict (UnitObject u = null)
@@ -396,6 +510,29 @@ namespace ReBot
 			return Usable ("Lay on Hands") && Range (40, u) && !u.HasAura ("Forbearance") && C ("Lay on Hands", u);
 		}
 
+		public bool Redemption (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Redemption") && Range (40, u) && u.IsDead && C ("Redemption", u);
+		}
+
+		public bool BeaconofLight (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Beacon of Light") && Range (60, u) && C ("Beacon of Light", u);
+		}
+
+		public bool HandofFreedom (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Hand of Freedom") && Range (40, u) && C ("Hand of Freedom", u);
+		}
+
+		public bool HolyLight (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Holy Light") && Range (40, u) && C ("Holy Light", u);
+		}
 
 		// Items
 

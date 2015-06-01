@@ -126,7 +126,7 @@ namespace ReBot.Hunter
 				// 	var IceTarget = new Vector3((Target.Position.X + Me.Position.X) / 2, (Target.Position.Y + Me.Position.Y) / 2, (Target.Position.Z + Me.Position.Z) / 2);
 				// 	if (CastOnTerrain("Ice Trap", IceTarget, () => Cooldown("Ice Trap") == 0)) return;
 				// }
-				if ((InArena || InBg) && Usable ("Freezing Trap") && EnemyWithTarget (Target, 15) == 0) {
+				if ((InArena || InBg) && Usable ("Freezing Trap") && ActiveEnemies (15) == 0) {
 					Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && x.IsPlayer && x != Target && x.CanParticipateInCombat).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						if (FreezingTrap (Unit))
@@ -208,7 +208,7 @@ namespace ReBot.Hunter
 					return;
 			}
 			//	actions+=/multishot,if=active_enemies>1&pet.cat.buff.beast_cleave.remains<0.5
-			if (EnemyWithTarget (Target, 10) > 1 && Me.Pet.AuraTimeRemaining ("Beast Cleave") < 0.5) {
+			if (ActiveEnemiesWithTarget (10) > 1 && Me.Pet.AuraTimeRemaining ("Beast Cleave") < 0.5) {
 				if (MultiShot ())
 					return;
 			}
@@ -216,17 +216,17 @@ namespace ReBot.Hunter
 //			Me.HasAura ("Frenzy", false, 5)
 
 			//	actions+=/barrage,if=active_enemies>1
-			if (EnemyWithTarget (Target, 25) > 1) {
+			if (ActiveEnemiesWithTarget (25) > 1) {
 				if (Barrage ())
 					return;
 			}
 			//	actions+=/explosive_trap,if=active_enemies>5
-			if (FireTrap && (EnemyWithTarget (Target, 8) > 5 || IsPlayer () || IsElite ())) {
+			if (FireTrap && (ActiveEnemiesWithTarget (8) > 5 || IsPlayer () || IsElite ())) {
 				if (ExplosiveTrap (Target))
 					return;
 			}
 			//	actions+=/multishot,if=active_enemies>5
-			if (EnemyWithTarget (Target, 15) > 5) {
+			if (ActiveEnemiesWithTarget (15) > 5) {
 				if (MultiShot ())
 					return;
 			}
@@ -237,7 +237,7 @@ namespace ReBot.Hunter
 			if (AMurderofCrows ())
 				return;
 			//	actions+=/kill_shot,if=focus.time_to_max>gcd
-			if (FocusDeflict / FocusRegen > 1) {
+			if (FocusDeflict / RegenPower > 1) {
 				if (KillShot ())
 					return;
 			}
@@ -248,12 +248,12 @@ namespace ReBot.Hunter
 			}
 			//	# Cast a second shot for steady focus if that won't cap us.
 			//	actions+=/cobra_shot,if=buff.pre_steady_focus.up&buff.steady_focus.remains<7&(14+cast_regen)<focus.deficit
-			if (Me.HasAura ("Steady Focus") && Me.AuraTimeRemaining ("Steady Focus") < 7 && (14 + 2 * FocusRegen) <= FocusDeflict) {
+			if (Me.HasAura ("Steady Focus") && Me.AuraTimeRemaining ("Steady Focus") < 7 && (14 + 2 * RegenPower) <= FocusDeflict) {
 				if (CobraShot ())
 					return;
 			}
 			//	actions+=/explosive_trap,if=active_enemies>1
-			if (FireTrap && (EnemyWithTarget (Target, 8) > 1 || IsPlayer () || IsElite ())) {
+			if (FireTrap && (ActiveEnemiesWithTarget (8) > 1 || IsPlayer () || IsElite ())) {
 				if (ExplosiveTrap (Target))
 					return;
 			}
@@ -270,7 +270,7 @@ namespace ReBot.Hunter
 			if (Barrage ())
 				return;
 			//	actions+=/powershot,if=focus.time_to_max>cast_time
-			if (FocusDeflict / FocusRegen > 2.25) {
+			if (FocusDeflict / RegenPower > 2.25) {
 				if (Powershot ())
 					return;
 			}

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace ReBot
 {
-	public abstract class SerbHunter : CombatRotation
+	public abstract class SerbHunter : SerbUtils
 	{
 		// Vars
 
@@ -42,8 +42,6 @@ namespace ReBot
 			LoneWolfSpellpower,
 		}
 
-		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
-		public int Ttd = 10;
 		[JsonProperty ("Run to enemy")]
 		public bool Run;
 		[JsonProperty ("Use multitarget")]
@@ -53,142 +51,7 @@ namespace ReBot
 		[JsonProperty ("Use GCD")]
 		public bool Gcd = true;
 
-		public int BossHealthPercentage = 500;
-		public int BossLevelIncrease = 5;
-		public DateTime StartBattle;
-		public DateTime StartSleepTime;
-		public bool InCombat;
-		public PlayerObject Player;
-		public UnitObject Unit;
-		public Int32 OraliusWhisperingCrystalId = 118922;
-		public Int32 CrystalOfInsanityId = 86569;
-
 		// Check
-
-		public bool C (string s, UnitObject u = null)
-		{
-			u = u ?? Target;
-			if (Cast (s, u))
-				return true;
-			API.Print ("False Cast " + s + " with " + u.CombatRange + " range and " + Focus + " focus, with " + u.Distance + " distance");
-			return false;
-		}
-
-		public bool CPD (string s, UnitObject u = null, int d = 800)
-		{
-			u = u ?? Target;
-			if (CastPreventDouble (s, null, u, d))
-				return true;
-			API.Print ("False CastPreventDouble " + s + " with " + u.CombatRange + " range " + d + " delay");
-			return false;
-		}
-
-		public bool CS (string s)
-		{
-			if (CastSelf (s))
-				return true;
-			API.Print ("False CastSelf " + s);
-			return false;
-		}
-
-		public bool CSPD (string s, int d = 800)
-		{
-			if (CastSelfPreventDouble (s, null, d))
-				return true;
-			API.Print ("False CastSelfPreventDouble " + s + " with " + d + " delay");
-			return false;
-		}
-
-		public bool COT (string s, UnitObject u = null)
-		{
-			u = u ?? Target;
-			if (CastOnTerrain (s, u.Position))
-				return true;
-			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range and " + Focus + " focus, with " + u.Distance + " distance");
-			return false;
-		}
-
-		public bool COTPD (string s, UnitObject u = null)
-		{
-			u = u ?? Target;
-			if (CastOnTerrainPreventDouble (s, u.Position))
-				return true;
-			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range and " + Focus + " focus, with " + u.Distance + " distance");
-			return false;
-		}
-
-		public bool Range (int r, UnitObject u = null, int l = 0)
-		{
-			u = u ?? Target;
-			if (l != 0)
-				return u.IsInLoS && u.CombatRange <= r && u.CombatRange >= l;
-			return u.IsInLoS && u.CombatRange <= r;
-		}
-
-		public bool Danger (UnitObject u = null, int r = 0, int e = 2)
-		{
-			u = u ?? Target;
-			if (r != 0)
-				return Range (r, u) && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-			return u.IsInCombatRangeAndLoS && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-		}
-
-		public bool DangerBoss (UnitObject u = null, int r = 0, int e = 6)
-		{
-			u = u ?? Target;
-			if (r != 0)
-				return Range (r, u) && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-			return u.IsInCombatRangeAndLoS && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-		}
-
-		public bool InRaid {
-			get {
-				return API.MapInfo.Type == MapType.Raid;
-			}
-		}
-
-		public bool InInstance {
-			get {
-				return API.MapInfo.Type == MapType.Instance;
-			}
-		}
-
-		public bool InArena {
-			get {
-				return API.MapInfo.Type == MapType.Arena;
-			}
-		}
-
-		public bool InBg {
-			get {
-				return API.MapInfo.Type == MapType.PvP;
-			}
-		}
-
-		public bool IsBoss (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return(u.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || u.Level >= Me.Level + BossLevelIncrease;
-		}
-
-		public bool IsPlayer (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.IsPlayer;
-		}
-
-		public bool IsElite (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.IsElite ();
-		}
-
-		public bool IsInEnrage (UnitObject o)
-		{
-			if (o.HasAura ("Enrage") || o.HasAura ("Berserker Rage") || o.HasAura ("Demonic Enrage") || o.HasAura ("Aspect of Thekal") || o.HasAura ("Charge Rage") || o.HasAura ("Electric Spur") || o.HasAura ("Cornered and Enraged!") || o.HasAura ("Draconic Rage") || o.HasAura ("Brood Rage") || o.HasAura ("Determination") || o.HasAura ("Charged Fists") || o.HasAura ("Beatdown") || o.HasAura ("Consuming Bite") || o.HasAura ("Delirious") || o.HasAura ("Angry") || o.HasAura ("Blood Rage") || o.HasAura ("Berserking Howl") || o.HasAura ("Bloody Rage") || o.HasAura ("Brewrific") || o.HasAura ("Desperate Rage") || o.HasAura ("Blood Crazed") || o.HasAura ("Combat Momentum") || o.HasAura ("Dire Rage") || o.HasAura ("Dominate Slave") || o.HasAura ("Blackrock Rabies") || o.HasAura ("Burning Rage") || o.HasAura ("Bloodletting Howl"))
-				return true;
-			return false;
-		}
 
 		public bool IsDispeling (UnitObject o)
 		{
@@ -199,20 +62,6 @@ namespace ReBot
 			if (o.HasAura ("Execution Sentence") || o.HasAura ("Hand of Purity") || o.HasAura ("Speed of Light") || o.HasAura ("Long Arm of the Law") || o.HasAura ("Illuminated Healing") || o.HasAura ("Power Word: Shield") || o.HasAura ("Power Word: Fortitude") || o.HasAura ("Fear Ward") || o.HasAura ("Prayer of Mending") || o.HasAura ("Power Infusion") || o.HasAura ("Angelic Feather") || o.HasAura ("Body and Soul") || o.HasAura ("Borrowed Time") || o.HasAura ("Unleash Fury") || o.HasAura ("Elemental Overload") || o.HasAura ("Ancestral Swiftness"))
 				result2 = true;
 			return result1 || result2;
-		}
-
-		public bool IsNotForDamage (UnitObject o)
-		{
-			if (o.HasAura ("Fear") || o.HasAura ("Polymorph") || o.HasAura ("Gouge") || o.HasAura ("Paralysis") || o.HasAura ("Blind") || o.HasAura ("Hex"))
-				return true;
-			return false;
-		}
-
-		public bool Usable (string s, double d = 0)
-		{ 
-			if (d == 0)
-				return HasSpell (s) && Cooldown (s) == 0;
-			return HasSpell (s) && Cooldown (s) <= d;
 		}
 
 		public bool HasFocus (double i)
@@ -243,126 +92,8 @@ namespace ReBot
 				i = 0;
 			return Focus >= i;
 		}
-
-		public bool IncapacitatedInRange (int range)
-		{
-			int x = 0;
-			foreach (UnitObject u in API.CollectUnits(range)) {
-				if ((u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable && u.InCombat && IsNotForDamage (u)) {
-					x++;
-				}
-			}
-			return x > 0;
-		}
-
-		public bool MeIsBusy ()
-		{
-			if (Me.HasAura ("Feign Death"))
-				return true; 
-			if (Me.IsChanneling)
-				return true;
-			if (Me.IsCasting)
-				return true;
-			if (Me.HasAura ("Drink"))
-				return true;
-
-			return false;
-		}
-
-
+	
 		// Getters
-
-		public List<UnitObject> Enemy {
-			get {
-				var Enemy = Adds;
-				Enemy.Add (Target);
-				return Enemy;
-			}
-		}
-
-		public double Health (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.HealthFraction;
-		}
-
-		public int Focus {
-			get {
-				return Me.GetPower (WoWPowerType.Focus);
-			}
-		}
-
-		public int FocusMax {
-			get {
-				return API.ExecuteLua <int> ("return UnitPowerMax(\"player\");");
-			}
-		}
-
-		public int FocusDeflict {
-			get {
-				return FocusMax - Focus;
-			}
-		}
-
-		public double FocusRegen {
-			get {
-				string activeRegen = API.ExecuteLua<string> ("inactiveRegen, activeRegen = GetPowerRegen(); return activeRegen");
-				return Convert.ToDouble (activeRegen);
-			}
-		}
-
-		public double Time {
-			get {
-				TimeSpan combatTime = DateTime.Now.Subtract (StartBattle);
-				return combatTime.TotalSeconds;
-			}
-		}
-
-		public double SleepTime {
-			get {
-				TimeSpan currentSleepTime = DateTime.Now.Subtract (StartSleepTime);
-				return currentSleepTime.TotalSeconds;
-			}
-		}
-
-		public double TimeToStartBattle {
-			get {
-				return API.ExecuteLua<double> ("return GetBattlefieldInstanceRunTime()") / 1000;
-			}
-		}
-
-		public int ActiveEnemies (int range)
-		{
-			int x = 0;
-			foreach (UnitObject u in API.CollectUnits (range)) {
-				if ((u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable && u.InCombat) {
-					x++;
-				}
-			}
-			return x;
-		}
-
-		public int EnemyWithTarget (UnitObject o, int range)
-		{
-			return Adds.Where (x => x.IsInCombatRangeAndLoS && Vector3.Distance (x.Position, o.Position) <= range).ToList ().Count;
-		}
-
-		public double Cooldown (string s)
-		{ 
-			return SpellCooldown (s) < 0 ? 0 : SpellCooldown (s);
-		}
-
-		public double CooldownById (Int32 i)
-		{ 
-			return SpellCooldown (i) < 0 ? 0 : SpellCooldown (i);
-		}
-
-		public double TimeToDie (UnitObject o)
-		{
-			if (o != null)
-				return o.Health / Ttd;
-			return 0;
-		}
 
 		// Combo
 
@@ -466,12 +197,6 @@ namespace ReBot
 			return false;
 		}
 
-		public bool Freedom ()
-		{
-			return WilloftheForsaken () || EveryManforHimself () || MastersCall ();
-		}
-
-
 		// Spells
 
 		public bool TrapLauncher ()
@@ -514,16 +239,6 @@ namespace ReBot
 			return Usable ("Freezing Trap") && Me.HasAura ("Trap Launcher") && Range (40, u) && COT ("Freezing Trap", u);
 		}
 
-		public bool WilloftheForsaken ()
-		{
-			return Usable ("Will of the Forsaken") && CS ("Will of the Forsaken");
-		}
-
-		public bool EveryManforHimself ()
-		{
-			return Usable ("Every Man for Himself") && CS ("Every Man for Himself");
-		}
-
 		public bool MastersCall ()
 		{
 			return Usable ("Master's Call") && Me.HasAlivePet && Me.Pet.CombatRange <= 40 && CS ("Master's Call");
@@ -552,21 +267,6 @@ namespace ReBot
 		public bool FeignDeath ()
 		{
 			return Usable ("Feign Death") && !Me.HasAura ("Feign Death") && C ("Feign Death");
-		}
-
-		public bool BloodFury ()
-		{
-			return Usable ("Blood Fury") && Danger () && CS ("Blood Fury");
-		}
-
-		public bool Berserking ()
-		{
-			return Usable ("Berserking") && Danger () && CS ("Berserking");
-		}
-
-		public bool ArcaneTorrent ()
-		{
-			return Usable ("Arcane Torrent") && Danger () && CS ("Arcane Torrent");
 		}
 
 		public bool Stampede (UnitObject u = null)
@@ -660,23 +360,6 @@ namespace ReBot
 		{
 			u = u ?? Me.Pet;
 			return Usable ("Misdirection") && Range (100, u) && CPD ("Misdirection", u, d);
-		}
-
-		// Items
-
-		public bool Healthstone ()
-		{
-			return API.HasItem (5512) && API.ItemCooldown (5512) == 0 && API.UseItem (5512);
-		}
-
-		public bool CrystalOfInsanity ()
-		{
-			return !InArena && API.HasItem (CrystalOfInsanityId) && !HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityId) == 0 && (API.UseItem (CrystalOfInsanityId));
-		}
-
-		public bool OraliusWhisperingCrystal ()
-		{
-			return API.HasItem (OraliusWhisperingCrystalId) && !HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalId) == 0 && API.UseItem (OraliusWhisperingCrystalId);
 		}
 	}
 }

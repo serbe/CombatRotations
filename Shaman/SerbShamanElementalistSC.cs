@@ -249,12 +249,10 @@ namespace ReBot
 
 			//	actions.aoe=earthquake,cycle_targets=1,if=!ticking&(buff.enhanced_chain_lightning.up|level<=90)&active_enemies>=2
 			if ((Me.HasAura ("Enhanced Chain Lightning") || Me.Level <= 90) && ActiveEnemies (40) >= 2) {
-				CycleTarget = targets.Where (u => !u.HasAura ("Earthquake") && !u.IsMoving && Range (35, u)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (CycleTarget != null) {
-					if (Earthquake (CycleTarget)) {
+				Unit = targets.Where (u => !u.HasAura ("Earthquake") && !u.IsMoving && Range (35, u)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && Earthquake (Unit)) {
 //						API.PrintInfo ("19");
-						return;
-					}
+					return;
 				}
 			}
 			//	actions.aoe+=/lava_beam

@@ -18,6 +18,7 @@ namespace ReBot
 		public DateTime StartSleepTime;
 		public bool InCombat;
 		public UnitObject Unit;
+		public UnitObject InterruptTarget;
 		public PlayerObject Player;
 		public IEnumerable<UnitObject> MaxCycle;
 		public String RangedAttack = "Throw";
@@ -150,6 +151,18 @@ namespace ReBot
 			}
 		}
 
+		public int Focus {
+			get {
+				return Me.GetPower (WoWPowerType.Focus);
+			}
+		}
+
+		public int FocusDeflict {
+			get {
+				return MaxPower - Focus;
+			}
+		}
+
 		public double EnergyTimeToMax {
 			get {
 				return MaxPower - Energy / RegenPower;
@@ -177,6 +190,11 @@ namespace ReBot
 			}
 		}
 
+		public int Orb {
+			get {
+				return Me.GetPower (WoWPowerType.PriestShadowOrbs);
+			}
+		}
 
 		public double RegenPower {
 			get {
@@ -260,10 +278,21 @@ namespace ReBot
 		{
 			if (CastSelf (s)) {
 				if (t)
-					API.Print ("--- CastPreventDouble " + s + " on self");
+					API.Print ("--- CastSelf " + s + " on self");
 				return true;
 			}
 			API.Print ("False CastSelf " + s);
+			return false;
+		}
+
+		public bool CSPD (string s, int d = 800, bool t = false)
+		{
+			if (CastSelfPreventDouble (s, null, d)) {
+				if (t)
+					API.Print ("--- CastSelfPreventDouble " + s + " on self " + d);
+				return true;
+			}
+			API.Print ("False CastSelfPreventDouble " + s + " " + d);
 			return false;
 		}
 
@@ -345,6 +374,12 @@ namespace ReBot
 			}
 		}
 
+		public bool InPG {
+			get {
+				return API.MapInfo.Name.Contains ("Proving Grounds");
+			}
+		}
+
 		public bool IsBoss (UnitObject u = null)
 		{
 			u = u ?? Target;
@@ -410,15 +445,95 @@ namespace ReBot
 			return API.HasItem (i) && API.ItemCooldown (i) <= 0;
 		}
 
+		public bool MeIsBusy ()
+		{
+			if (Me.HasAura ("Feign Death"))
+				return true; 
+			if (Me.IsChanneling)
+				return true;
+			if (Me.IsCasting)
+				return true;
+			if (Me.HasAura ("Drink"))
+				return true;
+
+			return false;
+		}
+
 		// Party
 
 		public PlayerObject Healer {
 			get {
-				return Group.GetGroupMemberObjects ().Where (p => !p.IsDead && p.IsHealer).DefaultIfEmpty (null).FirstOrDefault ();
+				return MyGroupAndMe.Where (p => p.IsHealer).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
+		public PlayerObject Tank {
+			get {
+				if (InPG) {
+					return (PlayerObject)API.Units.Where (p => p.Name == "Oto the Protector" && !p.IsDead).DefaultIfEmpty (null).FirstOrDefault ();
+				}
+				return MyGroupAndMe.Where (p => p.IsTank).DefaultIfEmpty (null).FirstOrDefault ();
+			}
+		}
 
+		public bool InGroup {
+			get {
+				return MyGroup.Count > 0;
+			}
+		}
+
+		public List<PlayerObject> MyGroup {
+			get {
+				return Group.GetGroupMemberObjects ();
+			}
+		}
+
+		//		public List<PlayerObject> GroupMembers {
+		//			get {
+		//				if (InPG) {
+		//					var pgGroup = new List<PlayerObject> ();
+		//					var t = API.Units.Where (p => p != null && !p.IsDead && p.IsValid).ToList ();
+		//					if (t.Any ()) {
+		//						foreach (var unit in t) {
+		//							if (PgUnits.Contains (unit.Name)) {
+		//								pgGroup.Add ((PlayerObject)unit);
+		//							}
+		//						}
+		//					}
+		//					pgGroup.Add (Me);
+		//					return pgGroup;
+		//				} else {
+		//					var allGroup = Group.GetGroupMemberObjects ();
+		//					allGroup.Add (Me);
+		//					return allGroup;
+		//				}
+		//			}
+		//		}
+
+		public List<PlayerObject> MyGroupAndMe {
+			get {
+				return MyGroup.Where (p => p.HealthFraction > 0 && Range (40, p) && !p.IsDead).Concat (new[] { Me }).ToList ();
+			}
+		}
+
+		public PlayerObject LowestPlayer {
+			get {
+				return MyGroupAndMe.OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
+			}
+		}
+
+		// Scripts
+
+		public void BeerTimersInit ()
+		{
+			if (API.ExecuteLua<int> ("return BeerTimerInit;") != 1)
+				API.ExecuteLua ("local f = CreateFrame(\"Frame\");" +
+				"BeerTimer = 0;" +
+				"BeerTimerInit = 1;" +
+				"f:RegisterEvent(\"CHAT_MSG_ADDON\");" +
+				"f:SetScript(\"OnEvent\", function(self, event, prefix, msg, channel, sender) if prefix == \"D4\" then local dbmPrefix, arg1, arg2, arg3, arg4 = strsplit(\"\t\", msg); if dbmPrefix == \"PT\" then BeerTimer = arg1 end end end);" +
+				"f:SetScript(\"OnUpdate\", function(self, e) BeerTimer = BeerTimer - e; if BeerTimer < 0 then BeerTimer = 0 end end);");
+		}
 
 		// Combos
 
@@ -478,6 +593,11 @@ namespace ReBot
 		public bool DraenicArmor ()
 		{
 			return UsableItem (109220) && !Me.HasAura ("Draenic Armor Potion") && API.UseItem (109220);
+		}
+
+		public bool DraenicIntellect ()
+		{
+			return UsableItem (109218) && !Me.HasAura ("Draenic Intellect Potion") && API.UseItem (109218);
 		}
 
 		public bool EternalWilloftheMartyr ()
