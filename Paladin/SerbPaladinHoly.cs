@@ -121,6 +121,14 @@ namespace ReBot
 				return;
 			}
 
+			if (Health (Me) <= 0.25) {
+				if (DivineShield ())
+					return;
+			}
+
+			if (UseLayonHands ())
+				return;
+
 			if (UseBeaconofLight ())
 				return;
 			
@@ -130,6 +138,9 @@ namespace ReBot
 			if (UseEternalFlame ())
 				return;
 
+			if (UseHolyShock ())
+				return;
+			
 //			if (Me.Focus.Target != null) {
 //				if (Me.Focus.Target.IsEnemy && Me.Focus.Target.IsInCombatRange) {
 //					Cast ("Holy Prism");
