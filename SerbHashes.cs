@@ -12,7 +12,7 @@ namespace ReBot
 			"Ki the Assassin"
 		};
 
-		public HashSet<string> Burst = new HashSet<string> {
+		public HashSet<string> BurstAura = new HashSet<string> {
 			"Adrenaline Rush",
 			"Vendetta",
 			"Breath of Sindragosa",
@@ -23,27 +23,29 @@ namespace ReBot
 			"Incarnation: Son of Ursoc",
 			"Bestial Wrath",
 			"Frenzy",
-			"Barrage"
+			"Barrage",
 			"Rapid Fire",
 			"Serenity",
 			"Avenging Wrath",
 			"Hand of Protection"
 		};
 
-		public HashSet<string> Def = new HashSet<string> {
+		public HashSet<string> DefAura = new HashSet<string> {
 			
 		};
 
-		public HashSet<string> RangeDef = new HashSet<string> {
+		public HashSet<string> RangeDefAura = new HashSet<string> {
 			"Zen Meditation"
 		};
 
-		public HashSet<string> MagicDef = new HashSet<string> {
+		public HashSet<string> MagicDefAura = new HashSet<string> {
 			"Diffuse Magic",
 			"Devotion Aura"
 		};
 
-
+		public HashSet<string> AoeSkill = new HashSet<string> {
+			"Blizzard"
+		};
 	}
 }
 

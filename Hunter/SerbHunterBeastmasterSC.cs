@@ -90,7 +90,7 @@ namespace ReBot.Hunter
 				CancelAura ("Aspect of the Cheetah");
 			}
 
-			if (MeIsBusy ())
+			if (MeIsBusy)
 				return;
 
 			if (Interrupt ())

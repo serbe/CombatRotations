@@ -271,11 +271,12 @@ namespace ReBot
 				if (Player != null && HolyShock (Player))
 					return true;
 			}
+			return false;
 		}
 
 		public bool UseHolyLight (double HL)
 		{
-			if (Usable ("Eternal Flame")) {
+			if (Usable ("Holy Light")) {
 				Player = MyGroupAndMe.Where (p => Health (p) <= HL).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Player != null && HolyLight (Player))
 					return true;
@@ -303,6 +304,35 @@ namespace ReBot
 				Player = MyGroupAndMe.Where (p => Range (30, p)).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Player != null && LightofDawn ())
 					return true;
+			}
+			return false;
+		}
+
+		public bool UseHolyRadiance (double HR)
+		{
+			if (Usable ("Holy Radiance")) {
+				Player = MyGroupAndMe.Where (p => Health (p) < HR).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Player != null && HolyRadiance (Player))
+					return true;
+			}
+			return false;
+		}
+
+		public bool GetHolyPower (double HR)
+		{
+			if (HolyPower <= 5 && LowestPlayer != null) {
+				if (LowestPlayerCount (0.8) >= AOECount) {
+					if (Me.HasAura ("Daybreak")) {
+						if (HolyShock (LowestPlayer))
+							return true;
+					} else {
+						if (Health (LowestPlayer) <= HR && HolyRadiance (LowestPlayer))
+							return true;
+					}
+				} else {
+					if (HolyShock (LowestPlayer))
+						return true;
+				}
 			}
 			return false;
 		}
@@ -394,7 +424,7 @@ namespace ReBot
 		public bool HolyShock (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Holy Shock") && Range (40, u) && C ("Holy Shockt", u);
+			return Usable ("Holy Shock") && Range (40, u) && C ("Holy Shock", u);
 		}
 
 		public bool EternalFlame (UnitObject u = null)
@@ -573,6 +603,24 @@ namespace ReBot
 		{
 			u = u ?? Target;
 			return Usable ("Holy Light") && Range (40, u) && C ("Holy Light", u);
+		}
+
+		public bool HandofSacrifice (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Hand of Sacrifice") && Range (40, u) && C ("Hand of Sacrifice", u);
+		}
+
+		public bool HolyRadiance (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Holy Radiance") && Range (40, u) && C ("Holy Radiance", u);
+		}
+
+		public bool Denounce (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Denounce") && Range (40, u) && C ("Denounce", u);
 		}
 
 		// Items

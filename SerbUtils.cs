@@ -445,18 +445,23 @@ namespace ReBot
 			return API.HasItem (i) && API.ItemCooldown (i) <= 0;
 		}
 
-		public bool MeIsBusy ()
-		{
-			if (Me.HasAura ("Feign Death"))
-				return true; 
-			if (Me.IsChanneling)
-				return true;
-			if (Me.IsCasting)
-				return true;
-			if (Me.HasAura ("Drink"))
-				return true;
+		public bool MeIsBusy {
+			get {
+				if (HasGlobalCooldown ())
+					return true;
+				if (Me.IsMounted || Me.IsFlying || Me.IsOnTaxi || Me.IsMoving)
+					return true;
+				if (Me.HasAura ("Drink") || Me.HasAura ("Food"))
+					return true;
+				if (Me.IsChanneling)
+					return true;
+				if (Me.IsCasting)
+					return true;
+				if (Me.HasAura ("Feign Death"))
+					return true; 
 
-			return false;
+				return false;
+			}
 		}
 
 		// Party
@@ -519,6 +524,19 @@ namespace ReBot
 		public PlayerObject LowestPlayer {
 			get {
 				return MyGroupAndMe.OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
+			}
+		}
+
+		public int LowestPlayerCount (double h)
+		{
+			return MyGroupAndMe.Count (p => p.HealthFraction < h);
+		}
+
+		public int AOECount {
+			get {
+				if (MyGroupAndMe.Count > 5)
+					return 6;
+				return 3;
 			}
 		}
 

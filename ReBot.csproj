@@ -79,13 +79,14 @@
     <Compile Include="Paladin\SerbPaladinProtection.cs" />
     <Compile Include="Paladin\SerbPaladinRetribution.cs" />
     <Compile Include="Paladin\SerbPaladinHoly.cs" />
-    <Compile Include="Paladin\Paladine4.cs" />
     <Compile Include="Paladin\PalAlpha.cs" />
     <Compile Include="Monk\JizarHeal.cs" />
     <Compile Include="Paladin\Jizar.cs" />
     <Compile Include="Druid\Pasterke.cs" />
     <Compile Include="SerbUtils.cs" />
     <Compile Include="SerbHashes.cs" />
+    <Compile Include="Paladin\Palatine4stable.cs" />
+    <Compile Include="Paladin\Paladine5.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
