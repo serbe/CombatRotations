@@ -1,5 +1,6 @@
 ﻿using System;
 using ReBot.API;
+using System.Linq;
 
 namespace ReBot
 {
@@ -49,8 +50,18 @@ namespace ReBot
 			//	actions+=/kiljaedens_cunning,if=(talent.cataclysm.enabled&!cooldown.cataclysm.remains)
 			//	actions+=/kiljaedens_cunning,moving=1,if=!talent.cataclysm.enabled
 			//	actions+=/cataclysm
+			if (Cataclysm ())
+				return;
 			//	actions+=/agony,if=remains<=gcd
+			if (Target.AuraTimeRemaining ("Agony", true) < 1.5) {
+				if (Agony ())
+					return;
+			}
 			//	actions+=/corruption,if=remains<=gcd
+			if (Target.AuraTimeRemaining ("Corruption", true) < 1.5) {
+				if (Corruption ())
+					return;
+			}
 			//	actions+=/unstable_affliction,if=remains<=cast_time
 			//	actions+=/soulburn,cycle_targets=1,if=!talent.soulburn_haunt.enabled&active_enemies>2&dot.corruption.remains<=dot.corruption.duration*0.3
 			//	actions+=/seed_of_corruption,cycle_targets=1,if=!talent.soulburn_haunt.enabled&active_enemies>2&!dot.seed_of_corruption.remains&buff.soulburn.remains
@@ -67,6 +78,11 @@ namespace ReBot
 			//	actions+=/life_tap,if=mana.pct<40&buff.dark_soul.down
 			//	actions+=/drain_soul,interrupt=1,chain=1
 			//	actions+=/agony,cycle_targets=1,moving=1,if=mana.pct>50
+			if (Usable ("Agony") && Me.IsMoving && Mana (Me) > 0.5) {
+				Unit = Enemy.Where (u => Range (40, u)).OrderBy (u => u.AuraTimeRemaining ("Agony", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && Agony (Unit))
+					return;
+			}
 			//	actions+=/life_tap
 			if (LifeTap ())
 				return;
@@ -74,45 +90,4 @@ namespace ReBot
 		}
 	}
 }
-
-//	warlock="Warlock_Affliction_T17N"
-//	level=100
-//	race=gnome
-//	role=spell
-//	position=back
-//	talents=0000111
-//	talent_override=grimoire_of_service,if=talent.demonic_servitude.enabled
-//	talent_override=soulburn_haunt,if=enemies=2
-//	talent_override=cataclysm,if=enemies>2
-//	spec=affliction
-//
-//	# This default action priority list is automatically created based on your character.
-//	# It is a attempt to provide you with a action list that is both simple and practicable,
-//	# while resulting in a meaningful and good simulation. It may not result in the absolutely highest possible dps.
-//	# Feel free to edit, adapt and improve it to your own needs.
-//	# SimulationCraft is always looking for updates and improvements to the default action lists.
-//
-//	# Executed before combat begins. Accepts non-harmful actions only.
-//
-
-//
-//	# Executed every time the actor is available.
-//
-
-//
-//	head=shadow_councils_hood,id=115586
-//	neck=gruuls_lip_ring,id=113872,enchant_id=5318
-//	shoulders=hexweave_mantle,id=114809,bonus_id=118/559
-//	back=runefrenzy_greatcloak,id=113937,enchant_id=5311
-//	chest=shadow_councils_robes,id=115588
-//	wrists=hexweave_bracers,id=114814,bonus_id=119/559
-//	hands=shadow_councils_gloves,id=115585
-//	waist=seeking_ember_girdle,id=113941
-//	legs=shadow_councils_leggings,id=115587
-//	feet=hexweave_slippers,id=114815,bonus_id=118/559
-//	finger1=ukuroggs_corrupted_seal,id=113975,enchant_id=5325
-//	finger2=timeless_solium_band_of_the_archmage,id=118296,enchant_id=5325
-//	trinket1=darmacs_unstable_talisman,id=113948
-//	trinket2=blackiron_micro_crucible,id=113984
-//	main_hand=infernoflame_staff,id=113869,enchant_id=5337
-//
+	

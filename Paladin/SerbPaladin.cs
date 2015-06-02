@@ -401,6 +401,8 @@ namespace ReBot
 				Player = MyGroupAndMe.Where (p => Health (p) <= 0.95).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Player != null && HolyShock (Player))
 					return true;
+				if (Tank != null && Tank.InCombat && HolyShock (Tank))
+					return true;
 			}
 			return false;
 		}

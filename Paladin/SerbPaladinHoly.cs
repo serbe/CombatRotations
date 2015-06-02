@@ -63,6 +63,9 @@ namespace ReBot
 					return true;
 			}
 
+			if (Tank != null && Tank.InCombat && HolyShock (Tank))
+				return true;
+
 			return false;
 		}
 
@@ -152,8 +155,14 @@ namespace ReBot
 			if (UseLayonHands ())
 				return;
 
+			if (Usable ("Hammer of Wrath")) {
+				Unit = Enemy.Where (u => Range (30, u) && Health (u) < 0.2).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && HammerofWrath (Unit))
+					return;
+			}
+
 			if (Target != null && !Target.IsDead && Target.IsEnemy) {
-				if (HammerofWrath ())
+				if (Health () < 0.2 && HammerofWrath ())
 					return;
 				if (Judgment ())
 					return;

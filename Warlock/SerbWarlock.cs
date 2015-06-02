@@ -129,6 +129,12 @@ namespace ReBot
 			return Usable ("Grimoire of Service") && Range (40, u) && CS ("Grimoire of Service");
 		}
 
+		public bool Agony (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Agony") && Range (40, u) && C ("Agony", u);
+		}
+
 		public bool SummonDoomguard (UnitObject u = null)
 		{
 			u = u ?? Target;
