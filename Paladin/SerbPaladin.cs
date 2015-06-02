@@ -10,9 +10,48 @@ namespace ReBot
 	{
 		// Consts && Vars
 
+		public enum Menu
+		{
+			EFBlanket,
+			Ultimate,
+			Aggressive,
+			Normal,
+			Conservative,
+			Auto,
+		}
+
+		Menu _choice;
+
 		public UnitObject LastJudgmentTarget;
 
+		public void SetChoice (Menu c = Menu.Normal)
+		{
+			_choice = c;
+		}
+
 		// Get
+
+		public int MaxHolyPower {
+			get {
+				if (HasSpell ("Boundless Conviction"))
+					return 5;
+				return 3;
+			}
+		}
+
+		public Menu Playstyle {
+			get {
+				if (_choice == Menu.Auto) {
+					if (Me.ManaFraction >= 0.85)
+						return Menu.Aggressive;
+					if (Me.ManaFraction >= 0.45)
+						return Menu.Normal;
+					else
+						return Menu.Conservative;
+				}
+				return _choice;
+			}
+		}
 
 		public double TimeToHpg {
 			get {
@@ -28,6 +67,96 @@ namespace ReBot
 					return "Seal of Insight";
 				else
 					return "Seal of Command";
+			}
+		}
+
+		public double FL {
+			get {
+				switch (Playstyle) {
+				case Menu.EFBlanket:
+					return 0;
+				case Menu.Ultimate:
+					return 0.65;
+				case Menu.Aggressive:
+					return 0.55;			 
+				case Menu.Normal:
+				default:
+					return 0.50;
+				case Menu.Conservative:
+					return 0.45;
+				}
+			}
+		}
+
+		public double HL {
+			get {
+				switch (Playstyle) {
+				case Menu.EFBlanket:
+					return 0;
+				case Menu.Ultimate:
+					return 0.95;
+				case Menu.Aggressive:
+					return 0.85;			
+				case Menu.Normal:
+				default:
+					return 0.80;
+				case Menu.Conservative:
+					return 0.75;
+				}
+			}
+		}
+
+		public double HoP {
+			get {
+				switch (Playstyle) {
+				case Menu.EFBlanket:
+					return 0;
+				case Menu.Ultimate:
+					return 0.35;
+				case Menu.Aggressive:
+					return 0.25;			
+				case Menu.Normal:
+				default:
+					return 0.20;
+				case Menu.Conservative:
+					return 0.15;
+				}
+			}
+		}
+
+		public double HoS {
+			get {
+				switch (Playstyle) {
+				case Menu.EFBlanket:
+					return 0;
+				case Menu.Ultimate:
+					return 0.60;
+				case Menu.Aggressive:
+					return 0.50;			
+				case Menu.Normal:
+				default:
+					return 0.45;
+				case Menu.Conservative:
+					return 0.40;
+				}
+			}
+		}
+
+		public double HR {
+			get {
+				switch (Playstyle) {
+				case Menu.EFBlanket:
+					return 0;
+				case Menu.Ultimate:
+					return 0.80;
+				case Menu.Aggressive:
+					return 0.70;		
+				case Menu.Normal:
+				default:
+					return 0.65;
+				case Menu.Conservative:
+					return 0.60;
+				}
 			}
 		}
 
@@ -198,14 +327,16 @@ namespace ReBot
 						if (SacredShield (Tank))
 							return true;
 					}
-				} else if (LowestPlayer != null) {
-					if (!LowestPlayer.HasAura ("Sacred Shield", true)) {
-						if (SacredShield (LowestPlayer))
-							return true;
-					}
 				} else {
 					if (!Me.HasAura ("Sacred Shield", true)) {
 						if (SacredShield (Me))
+							return true;
+					}
+				}
+
+				if (LowestPlayer != null) {
+					if (!LowestPlayer.HasAura ("Sacred Shield", true)) {
+						if (SacredShield (LowestPlayer))
 							return true;
 					}
 				}
@@ -266,7 +397,7 @@ namespace ReBot
 
 		public bool UseHolyShock ()
 		{
-			if (HolyPower < 5 && Usable ("Holy Shock")) {
+			if (HolyPower < MaxHolyPower && Usable ("Holy Shock")) {
 				Player = MyGroupAndMe.Where (p => Health (p) <= 0.95).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Player != null && HolyShock (Player))
 					return true;
@@ -274,7 +405,28 @@ namespace ReBot
 			return false;
 		}
 
-		public bool UseHolyLight (double HL)
+		public bool UseHandOfProtection ()
+		{
+			if (Usable ("Hand of Protection")) {
+				Player = MyGroupAndMe.Where (p => Health (p) <= HoP && Range (40, p) && (!p.IsTank || p == Me || p.IsHealer)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Player != null && HandofProtection (Player))
+					return true;
+			}
+			return false;
+		}
+
+		public bool UseHandofSacrifice ()
+		{
+			if (Me.Focus != null && Usable ("Hand of Sacrifice")) {
+				if (Me.Focus.IsFriendly && Range (40, Me.Focus) && Health (Me.Focus) <= HoS && !Me.Focus.HasAura ("Hand of Sacrifice", true)) {
+					if (HandofSacrifice (Me.Focus))
+						return true;
+				}
+			}
+			return false;
+		}
+
+		public bool UseHolyLight ()
 		{
 			if (Usable ("Holy Light")) {
 				Player = MyGroupAndMe.Where (p => Health (p) <= HL).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
@@ -284,7 +436,7 @@ namespace ReBot
 			return false;
 		}
 
-		public bool UseFlashLight (double HL, double FL)
+		public bool UseFlashLight ()
 		{
 			if (Usable ("Holy Light") && Me.HasAura ("Infusion of Light")) {
 				Player = MyGroupAndMe.Where (p => Health (p) < HL).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
@@ -300,15 +452,15 @@ namespace ReBot
 
 		public bool UseLightofDawn ()
 		{
-			if (HolyPower > 3) {
-				Player = MyGroupAndMe.Where (p => Range (30, p)).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
+			if (HolyPower >= 3) {
+				Player = MyGroupAndMe.Where (p => Range (30, p) && Health (p) < 1).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Player != null && LightofDawn ())
 					return true;
 			}
 			return false;
 		}
 
-		public bool UseHolyRadiance (double HR)
+		public bool UseHolyRadiance ()
 		{
 			if (Usable ("Holy Radiance")) {
 				Player = MyGroupAndMe.Where (p => Health (p) < HR).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
@@ -318,9 +470,32 @@ namespace ReBot
 			return false;
 		}
 
-		public bool GetHolyPower (double HR)
+		public bool  UseHealTarget ()
 		{
-			if (HolyPower <= 5 && LowestPlayer != null) {
+			if (Target.IsFriendly && Range (40) && !Target.IsDead) {
+				if (HolyPower < MaxHolyPower && Health () <= 0.9) {
+					if (HolyShock ())
+						return true;
+				}
+				if (HolyPower >= 3 && Health () <= 0.8) {
+					if (WordofGlory ())
+						return true;
+				}
+				if (Health () <= HL) {
+					if (HolyLight ())
+						return true;
+				}
+				if (Health () <= FL) {
+					if (FlashofLight ())
+						return true;
+				}
+			}
+			return false;
+		}
+
+		public bool GetHolyPower ()
+		{
+			if (HolyPower <= MaxHolyPower && LowestPlayer != null) {
 				if (LowestPlayerCount (0.8) >= AOECount) {
 					if (Me.HasAura ("Daybreak")) {
 						if (HolyShock (LowestPlayer))

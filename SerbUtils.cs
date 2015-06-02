@@ -258,7 +258,7 @@ namespace ReBot
 					API.Print ("--- Cast " + s + " on " + u.Name);
 				return true;
 			}
-			API.Print ("False Cast " + s + " with " + u.CombatRange + " range");
+			API.Print ("False Cast " + s + " with " + u.CombatRange + " range on " + u.Name);
 			return false;
 		}
 
@@ -270,7 +270,7 @@ namespace ReBot
 					API.Print ("--- CastPreventDouble " + s + " on " + u.Name);
 				return true;
 			}
-			API.Print ("False CastPreventDouble " + s + " with " + u.CombatRange + " range " + d + " delay");
+			API.Print ("False CastPreventDouble " + s + " with " + u.CombatRange + " range " + d + " delay on " + u.Name);
 			return false;
 		}
 
@@ -292,7 +292,7 @@ namespace ReBot
 					API.Print ("--- CastSelfPreventDouble " + s + " on self " + d);
 				return true;
 			}
-			API.Print ("False CastSelfPreventDouble " + s + " " + d);
+			API.Print ("False CastSelfPreventDouble " + s + " delay " + d);
 			return false;
 		}
 
@@ -304,7 +304,7 @@ namespace ReBot
 					API.Print ("--- CastOnTerrain " + s + " on " + u.Name);
 				return true;
 			}
-			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range");
+			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range on " + u.Name);
 			return false;
 		}
 
@@ -316,7 +316,7 @@ namespace ReBot
 					API.Print ("--- CastOnTerrainPreventDouble " + s + " on " + u.Name);
 				return true;
 			}
-			API.Print ("False CastOnTerrainPreventDouble " + s + " with " + u.CombatRange + " range");
+			API.Print ("False CastOnTerrainPreventDouble " + s + " with " + u.CombatRange + " range on " + u.Name);
 			return false;
 		}
 
@@ -517,19 +517,19 @@ namespace ReBot
 
 		public List<PlayerObject> MyGroupAndMe {
 			get {
-				return MyGroup.Where (p => p.HealthFraction > 0 && Range (40, p) && !p.IsDead).Concat (new[] { Me }).ToList ();
+				return MyGroup.Where (p => !p.IsDead && Health (p) > 0 && Range (40, p)).Concat (new[] { Me }).ToList ();
 			}
 		}
 
 		public PlayerObject LowestPlayer {
 			get {
-				return MyGroupAndMe.OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
+				return MyGroupAndMe.Where (p => Health (p) < 1).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
 		public int LowestPlayerCount (double h)
 		{
-			return MyGroupAndMe.Count (p => p.HealthFraction < h);
+			return MyGroupAndMe.Count (p => Health (p) < h);
 		}
 
 		public int AOECount {
