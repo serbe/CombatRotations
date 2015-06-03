@@ -1,13 +1,14 @@
 ﻿using System;
-using ReBot.API;
 using System.Collections.Generic;
+using System.Linq;
 using Geometry;
 using Newtonsoft.Json;
-using System.Linq;
+using ReBot;
+using ReBot.API;
 
 namespace ReBot
 {
-	public abstract class SerbUtils : CombatRotation
+	public abstract class SerbUtils : SerbHashes
 	{
 		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
 		public int Ttd = 10;
@@ -409,6 +410,7 @@ namespace ReBot
 		public bool IsInEnrage (UnitObject u = null)
 		{
 			u = u ?? Target;
+//			if (u.Auras.Contains());
 			if (u.HasAura ("Enrage") || u.HasAura ("Berserk") || u.HasAura ("Frenzy"))
 				return true;
 			return false;

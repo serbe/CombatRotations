@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace ReBot
 {
-	[Rotation ("Serb Balance Druid SC", "Serb", WoWClass.Druid, Specialization.DruidBalance, 40)]
+	[Rotation ("Serb Balance Druid SC", "Serb", WoWClass.Druid, Specialization.DruidBalance, 40, 20)]
 
 	public class SerbDruidBalanceSc : SerbDruid
 	{
@@ -18,7 +18,9 @@ namespace ReBot
 				"Mark of the Wild"
 			};
 			PullSpells = new [] {
-				"Moonfire"
+				"Wrath",
+				"Moonfire",
+				"Sunfire"
 			};
 
 			DismountSpell = "Moonkin Form";
@@ -72,7 +74,7 @@ namespace ReBot
 				StartBattle = DateTime.Now;
 			}
 
-			if (Gcd && HasGlobalCooldown ())
+			if (MeIsBusy)
 				return;
 
 			if (!Me.HasAura ("Bear Form")) {

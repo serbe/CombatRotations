@@ -12,15 +12,7 @@ namespace ReBot
 		public string IfInterrupt;
 		public string Spell = "";
 
-		public HashSet<string> PgUnits = new HashSet<string> {
-			"Oto the Protector",
-			"Sooli the Survivalist",
-			"Kavan the Arcanist",
-			"Ki the Assassin"
-		};
-			
 		// Check
-
 
 		// Get
 
@@ -209,9 +201,8 @@ namespace ReBot
 			return Usable ("Desperate Prayer") && C ("Desperate Prayer");
 		}
 
-		public bool PowerInfusion (UnitObject u = null)
+		public bool PowerInfusion ()
 		{
-			u = u ?? Target;
 			return Usable ("Power Infusion") && Danger () && C ("Power Infusion");
 			// GCD = 0
 		}

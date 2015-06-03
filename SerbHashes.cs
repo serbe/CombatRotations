@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.IO.Compression;
+using ReBot.API;
 
 namespace ReBot
 {
-	public class SerbHashes
+	public abstract class SerbHashes : CombatRotation
 	{
 		public HashSet<string> PgUnits = new HashSet<string> {
 			"Oto the Protector",
@@ -45,6 +45,12 @@ namespace ReBot
 
 		public HashSet<string> AoeSkill = new HashSet<string> {
 			"Blizzard"
+		};
+
+		public HashSet<string> EnrageSkill = new HashSet<string> {
+			"Enrage",
+			"Berserk",
+			"Frenzy"
 		};
 	}
 }
