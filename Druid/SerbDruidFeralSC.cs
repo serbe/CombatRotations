@@ -1,13 +1,15 @@
-﻿using System;
+﻿// Need update
+
+using System;
 using System.Linq;
 using Newtonsoft.Json;
 using ReBot.API;
 
 namespace ReBot
 {
-	[Rotation ("Serb Feral Druid SC", "Serb", WoWClass.Druid, Specialization.DruidFeral, 5, 25)]
+	[Rotation ("Serb Feral Druid", "Serb", WoWClass.Druid, Specialization.DruidFeral, 5, 25)]
 
-	public class SerbDruidFeralSc : SerbDruid
+	public class SerbDruidFeral : SerbDruid
 	{
 
 		[JsonProperty ("Party Healing")]
@@ -18,7 +20,7 @@ namespace ReBot
 		public double Sleep;
 		public string Skill;
 
-		public 	SerbDruidFeralSc ()
+		public 	SerbDruidFeral ()
 		{
 			GroupBuffs = new[] {
 				"Mark of the Wild"

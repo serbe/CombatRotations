@@ -5,11 +5,11 @@ using ReBot.API;
 
 namespace ReBot
 {
-	[Rotation ("Serb Shaman Enhancement SC", "ReBot", WoWClass.Shaman, Specialization.ShamanEnhancement, 5, 25)]
+	[Rotation ("Serb Shaman Enhancement", "ReBot", WoWClass.Shaman, Specialization.ShamanEnhancement, 5, 25)]
 
-	public class SerbShamanEnhancementSc : SerbShaman
+	public class SerbShamanEnhancement : SerbShaman
 	{
-		public SerbShamanEnhancementSc ()
+		public SerbShamanEnhancement ()
 		{
 			PullSpells = new[] {
 				"Lightning Bolt"

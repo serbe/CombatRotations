@@ -55,7 +55,6 @@
     <Compile Include="Hunter\SerbHunter.cs" />
     <Compile Include="Warlock\SerbWarlock.cs" />
     <Compile Include="Shaman\SerbShaman.cs" />
-    <Compile Include="Shaman\SerbShamanEnhancementSC.cs" />
     <Compile Include="DeathKnight\SerbDeathKnightBlood.cs" />
     <Compile Include="Priest\SerbPriest.cs" />
     <Compile Include="Priest\SerbPriestDiscipline.cs" />
@@ -67,7 +66,6 @@
     <Compile Include="DeathKnight\SerbDeathknightFrost.cs" />
     <Compile Include="Priest\SerbPriestShadowIV.cs" />
     <Compile Include="Paladin\SerbPaladin.cs" />
-    <Compile Include="Shaman\SerbShamanElementalistSC.cs" />
     <Compile Include="Warrior\SerbWarriorFury.cs" />
     <Compile Include="Monk\SerbMonkMistweaver.cs" />
     <Compile Include="Warlock\SerbWarlockAffliction.cs" />
@@ -87,6 +85,8 @@
     <Compile Include="SerbHashes.cs" />
     <Compile Include="Paladin\Paladin4stable.cs" />
     <Compile Include="Paladin\Paladin5.cs" />
+    <Compile Include="Shaman\SerbShamanElemental.cs" />
+    <Compile Include="Shaman\SerbShamanEnhancement.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -1,5 +1,12 @@
-﻿
-//  NEED UPDATE FROM CS
+﻿//	shaman="Shaman_Elemental_T17N"
+//	level=100
+//	race=dwarf
+//	role=spell
+//	position=back
+//	professions=blacksmithing=600/engineering=600
+//	talents=0003011
+//	glyphs=chain_lightning
+//	spec=elemental
 
 using System;
 using System.Linq;
@@ -7,11 +14,11 @@ using ReBot.API;
 
 namespace ReBot
 {
-	[Rotation ("Serb Shaman Elemental SC", "ReBot", WoWClass.Shaman, Specialization.ShamanElemental, 5, 25)]
+	[Rotation ("Serb Shaman Elemental", "ReBot", WoWClass.Shaman, Specialization.ShamanElemental, 40, 25)]
 
-	public class SerbShamanElementalSc : SerbShaman
+	public class SerbShamanElemental : SerbShaman
 	{
-		public SerbShamanElementalSc ()
+		public SerbShamanElemental ()
 		{
 			PullSpells = new[] {
 				"Lightning Bolt"
@@ -64,24 +71,9 @@ namespace ReBot
 				StartBattle = DateTime.Now;
 			}
 
-			if (HasGlobalCooldown ())
+			if (MeIsBusy)
 				return;
-//			if (Me.IsChanneling)
-//				return;
-//			if (Me.IsCasting)
-//				return;
-//			if (Me.HasAura ("Drink"))
-//				return;
-//			if (Me.HasAura ("Shadowmeld"))
-//				return;
-//			if (Me.HasAura ("Refreshment"))
-//				return;
-//
-//
-//
 
-			//	actions=wind_shear
-			Interrupt ();
 
 			//Heal - Support
 			if (Health (Me) < 0.9) {
@@ -99,58 +91,49 @@ namespace ReBot
 //				return;
 
 
-			//	# Bloodlust casting behavior mirrors the simulator settings for proxy bloodlust. See options 'bloodlust_percent', and 'bloodlust_time'.
+
+			//	actions=wind_shear
+			if (Interrupt ())
+				return;
+			//	# Bloodlust casting behavior mirrors the simulator settings for proxy bloodlust. See options 'bloodlust_percent', and 'bloodlust_time'. 
 			//	actions+=/bloodlust,if=target.health.pct<25|time>0.500
-			if (Health () < 0.25 || Time > 0.5) {
-				if (Bloodlust ())
-					API.PrintInfo ("27");
-			}
+			if (Health () < 0.25 || Time > 0.5)
+				Bloodlust ();
 			//	# In-combat potion is preferentially linked to Ascendance, unless combat will end shortly
 			//	actions+=/potion,name=draenic_intellect,if=buff.ascendance.up|target.time_to_die<=30
+			if (InRaid && (Me.HasAura ("Ascendance") || TimeToDie () <= 30)) {
+				if (DraenicIntellect ())
+					return;
+			}
 			//	actions+=/berserking,if=!buff.bloodlust.up&!buff.elemental_mastery.up&(set_bonus.tier15_4pc_caster=1|(buff.ascendance.cooldown_remains=0&(dot.flame_shock.remains>buff.ascendance.duration|level<87)))
-			if (!Me.HasAura ("Bloodlust") && !Me.HasAura ("Elemental Mastery") && (HasSpell (138144) || (Cooldown ("Ascendance") == 0 && (Target.AuraTimeRemaining ("Flame Shock") > 15 || Me.Level < 87)))) {
-				if (Berserking ())
-					API.PrintInfo ("28");
-			}
+			if (!Me.HasAura ("Bloodlust") && !Me.HasAura ("Elemental Mastery") && (HasSpell (138144) || (Cooldown ("Ascendance") == 0 && (Target.AuraTimeRemaining ("Flame Shock") > 15 || Me.Level < 87))))
+				Berserking ();
 			//	actions+=/blood_fury,if=buff.bloodlust.up|buff.ascendance.up|((cooldown.ascendance.remains>10|level<87)&cooldown.fire_elemental_totem.remains>10)
-			if (Me.HasAura ("Bloodlust") || Me.HasAura ("Ascendance") || ((Cooldown ("Ascendance") > 10 || Me.Level < 87) && Cooldown ("Fire Elemental Totem") > 10)) {
-				if (BloodFury ())
-					API.PrintInfo ("29");
-			}
+			if (Me.HasAura ("Bloodlust") || Me.HasAura ("Ascendance") || ((Cooldown ("Ascendance") > 10 || Me.Level < 87) && Cooldown ("Fire Elemental Totem") > 10))
+				BloodFury ();
 			//	actions+=/arcane_torrent
-			if (ArcaneTorrent ())
-				API.PrintInfo ("30");
+			ArcaneTorrent ();
 			//	actions+=/elemental_mastery,if=action.lava_burst.cast_time>=1.2
-			if (CastTime (51505) > 1.2) {
-				if (ElementalMastery ())
-					API.PrintInfo ("1");
-			}
+			if (CastTime (51505) > 1.2)
+				ElementalMastery ();
 			//	actions+=/ancestral_swiftness,if=!buff.ascendance.up
-			if (!Me.HasAura ("Ascendance")) {
+			if (!Me.HasAura ("Ascendance"))
 				AncestralSwiftness ();
-			}
 			//	actions+=/storm_elemental_totem
-			if (StormElementalTotem ()) {
-				API.PrintInfo ("3");
+			if (StormElementalTotem ())
 				return;
-			}
 			//	actions+=/fire_elemental_totem,if=!active
 			if (!HasActiveFireElementalTotem) {
-				if (FireElementalTotem ()) {
+				if (FireElementalTotem ())
 					return;
-				}
 			}
 			//	actions+=/ascendance,if=active_enemies>1|(dot.flame_shock.remains>buff.ascendance.duration&(target.time_to_die<20|buff.bloodlust.up|time>=60)&cooldown.lava_burst.remains>0)
-			if (ActiveEnemies (40) > 1 || (Target.AuraTimeRemaining ("Flame Shock") > 15 && (TimeToDie () < 20 || Me.HasAura ("Bloodlust") || Time >= 60) && Cooldown ("Lava Burst") > 0)) {
-				if (Ascendance ())
-					API.PrintInfo ("5");
-			}
+			if (ActiveEnemies (40) > 1 || (Target.AuraTimeRemaining ("Flame Shock", true) > 15 && (TimeToDie () < 20 || Me.HasAura ("Bloodlust") || Time >= 60) && Cooldown ("Lava Burst") > 0))
+				Ascendance ();
 			//	actions+=/liquid_magma,if=pet.searing_totem.remains>=15|pet.fire_elemental_totem.remains>=15
 			if (TotemRemainTime ("Searing Totem") > 15 || TotemRemainTime ("Fire Elemental Totem") >= 15) {
-				if (LiquidMagma ()) {
-					API.PrintInfo ("6");
+				if (LiquidMagma ())
 					return;
-				}
 			}
 			//	# If one or two enemies, priority follows the 'single' action list.
 			//	actions+=/call_action_list,name=single,if=active_enemies<3
@@ -167,21 +150,21 @@ namespace ReBot
 		{
 			//	actions.single=unleash_flame,moving=1
 			if (Me.IsMoving) {
-				if (UnleashFlame ()) {
-					API.PrintInfo ("7");
+				if (UnleashFlame ())
 					return;
-				}
 			}
 			//	actions.single+=/spiritwalkers_grace,moving=1,if=buff.ascendance.up
-			if (Me.IsMoving && Me.HasAura ("Ascendance")) {
-				if (SpiritwalkersGrace ())
-					API.PrintInfo ("8");
-			}
+			if (Me.IsMoving && Me.HasAura ("Ascendance"))
+				SpiritwalkersGrace ();
 			//	actions.single+=/earth_shock,if=buff.lightning_shield.react=buff.lightning_shield.max_stack
 			if (AuraStackCount ("Lightning Shield") == MaxLightningShieldCharges) {
-				if (EarthShock ()) {
+				if (EarthShock ())
 					return;
-				}
+			}
+			//	actions.single+=/flame_shock,if=(talent.elemental_fusion.enabled&buff.elemental_fusion.stack=2&buff.unleash_flame.up&dot.flame_shock.remains<(dot.flame_shock.duration*0.3))
+			if (HasSpell ("Elemental Fusion") && AuraStackCount ("Elemental Fusion") == 2 && Me.HasAura ("Unleash Flame") && Target.AuraTimeRemaining ("Flame Shock", true) <= 1.8) {
+				if (FlameShock ())
+					return;
 			}
 			//	actions.single+=/lava_burst,if=dot.flame_shock.remains>cast_time&(buff.ascendance.up|cooldown_react)
 			if (Target.AuraTimeRemaining ("Flame Shock") > CastTime (51505) && (Me.HasAura ("Ascendance") || Cooldown ("Lava Burst") == 0)) {
@@ -189,97 +172,69 @@ namespace ReBot
 					return;
 				}
 			}
-			//	actions.single+=/earth_shock,if=(set_bonus.tier17_4pc&buff.lightning_shield.react>=12&!buff.lava_surge.up)|(!set_bonus.tier17_4pc&buff.lightning_shield.react>15)
-			if ((HasSpell (165580) && AuraStackCount ("Lightning Shield") >= 12 && !Me.HasAura ("Lava Surge")) || (!HasSpell (165580) && AuraStackCount ("Lightning Shield") > 15)) {
-				if (EarthShock ()) {
-					API.PrintInfo ("11");
+			//	actions.single+=/earth_shock,if=(set_bonus.tier17_4pc&buff.lightning_shield.react>=12&!buff.lava_surge.up)|(set_bonus.tier18_4pc&buff.lightning_shield.react>=14)|(!set_bonus.tier17_4pc&!set_bonus.tier18_4pc&buff.lightning_shield.react>15)
+			if ((HasSpell (165580) && AuraStackCount ("Lightning Shield") >= 12 && !Me.HasAura ("Lava Surge")) || (HasSpell (165580) && AuraStackCount ("Lightning Shield") >= 14) || (!HasSpell (165580) && !HasSpell (165580) && AuraStackCount ("Lightning Shield") > 15)) {
+				if (EarthShock ())
 					return;
-				}
 			}
 			//	actions.single+=/flame_shock,if=dot.flame_shock.remains<=9
 			if (Target.AuraTimeRemaining ("Flame Shock") <= 9) {
-				if (FlameShock ()) {
+				if (FlameShock ())
 					return;
-				}
 			}
 			//	actions.single+=/elemental_blast
-			if (ElementalBlast ()) {
-				API.PrintInfo ("13");
+			if (ElementalBlast ())
 				return;
-			}
 			//	# After the initial Ascendance, use Flame Shock pre-emptively just before Ascendance to guarantee Flame Shock staying up for the full duration of the Ascendance buff
 			//	actions.single+=/flame_shock,if=time>60&remains<=buff.ascendance.duration&cooldown.ascendance.remains+buff.ascendance.duration<duration
 			if (Time > 60 && Target.AuraTimeRemaining ("Flame Shock") <= 15 && Cooldown ("Ascendance") + 15 < 30) {
-				if (FlameShock ()) {
-					API.PrintInfo ("14");
+				if (FlameShock ())
 					return;
-				}
 			}
 			//	# Keep Searing Totem up, unless Fire Elemental Totem is coming off cooldown in the next 20 seconds
 			//	actions.single+=/searing_totem,if=(!talent.liquid_magma.enabled&(!totem.fire.active|(pet.searing_totem.remains<=10&!pet.fire_elemental_totem.active&talent.unleashed_fury.enabled)))|(talent.liquid_magma.enabled&pet.searing_totem.remains<=20&!pet.fire_elemental_totem.active&!buff.liquid_magma.up)
 			if ((!HasSpell ("Liquid Magma") && (!(HasActiveFireElementalTotem || HasActiveSearingTotem) || (TotemRemainTime ("Searing Totem") <= 10 && !HasActiveFireElementalTotem && HasSpell ("Unleashed Fury")))) || (HasSpell ("Liquid Magma") && TotemRemainTime ("Searing Totem") <= 20 && !HasActiveFireElementalTotem && !Me.HasAura ("Liquid Magma"))) {
-				if (SearingTotem ()) {
-//					API.PrintInfo ("15");
+				if (SearingTotem ())
 					return;
-				}
 			}
-			//	actions.single+=/unleash_flame,if=talent.unleashed_fury.enabled&!buff.ascendance.up
-			if (HasSpell ("Unleashed Fury") && !Me.HasAura ("Ascendance")) {
-				if (UnleashFlame ()) {
-					API.PrintInfo ("16");
+			//	actions.single+=/unleash_flame,if=talent.unleashed_fury.enabled&!buff.ascendance.up|(talent.elemental_fusion.enabled&buff.elemental_fusion.stack=2&(dot.flame_shock.remains)<(dot.flame_shock.duration*0.3)&cooldown.flame_shock.remains=0)
+			if (HasSpell ("Unleashed Fury") && !Me.HasAura ("Ascendance") || (HasSpell ("Elemental Fusion") && AuraStackCount ("Elemental Fusion") == 2 && (Target.AuraTimeRemaining ("Flame Shock", true) <= 1.8) && Cooldown ("Flame Shock") == 0)) {
+				if (UnleashFlame ())
 					return;
-				}
 			}
 			//	actions.single+=/spiritwalkers_grace,moving=1,if=((talent.elemental_blast.enabled&cooldown.elemental_blast.remains=0)|(cooldown.lava_burst.remains=0&!buff.lava_surge.react))
-			if (Me.IsMoving && ((HasSpell ("Elemental Blast") && Cooldown ("Elemental Blast") == 0) || (Cooldown ("Lava Burst") == 0 && !Me.HasAura ("Lava Surge")))) {
-				if (SpiritwalkersGrace ())
-					API.PrintInfo ("17");
-			}
+			if (Me.IsMoving && ((HasSpell ("Elemental Blast") && Cooldown ("Elemental Blast") == 0) || (Cooldown ("Lava Burst") == 0 && !Me.HasAura ("Lava Surge"))))
+				SpiritwalkersGrace ();
 			//	actions.single+=/lightning_bolt
-			if (LightningBolt ()) {
-//				API.PrintInfo ("18");
+			if (LightningBolt ())
 				return;
-			}
 		}
 
 		void ActionAoe ()
 		{
-			var targets = Adds;
-			targets.Add (Target);
-
 			//	actions.aoe=earthquake,cycle_targets=1,if=!ticking&(buff.enhanced_chain_lightning.up|level<=90)&active_enemies>=2
 			if ((Me.HasAura ("Enhanced Chain Lightning") || Me.Level <= 90) && ActiveEnemies (40) >= 2) {
-				Unit = targets.Where (u => !u.HasAura ("Earthquake") && !u.IsMoving && Range (35, u)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Unit != null && Earthquake (Unit)) {
-//						API.PrintInfo ("19");
+				Unit = Enemy.Where (u => !u.HasAura ("Earthquake") && !u.IsMoving && Range (35, u)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && Earthquake (Unit))
 					return;
-				}
 			}
 			//	actions.aoe+=/lava_beam
-			if (LavaBeam ()) {
-				API.PrintInfo ("20");
+			if (LavaBeam ())
 				return;
-			}
 			//	actions.aoe+=/earth_shock,if=buff.lightning_shield.react=buff.lightning_shield.max_stack
 			if (AuraStackCount ("Lightning Shield") == MaxLightningShieldCharges) {
-				if (EarthShock ()) {
-//					API.PrintInfo ("21");
+				if (EarthShock ())
 					return;
-				}
 			}
 			//	actions.aoe+=/thunderstorm,if=active_enemies>=10
 			if (ActiveEnemies (10) >= 10) {
-				if (Thunderstorm ()) {
-					API.PrintInfo ("22");
+				if (Thunderstorm ())
 					return;
-				}
 			}
 			//	actions.aoe+=/searing_totem,if=(!talent.liquid_magma.enabled&!totem.fire.active)|(talent.liquid_magma.enabled&pet.searing_totem.remains<=20&!pet.fire_elemental_totem.active&!buff.liquid_magma.up)
 			if ((!HasSpell ("Liquid Magma") && !Me.TotemExist (TotemType.Fire_M1_DeathKnightGhoul)) || (HasSpell ("Liquid Magma") && TotemRemainTime ("Searing Totem") <= 20 && !HasActiveFireElementalTotem && !Me.HasAura ("Liquid Magma"))) {
-				if (SearingTotem ()) {
-//					API.PrintInfo ("23");
+				if (SearingTotem ())
 					return;
-				}
 			}
 			//	actions.aoe+=/chain_lightning,if=active_enemies>=2
 			if (ActiveEnemies (30) >= 2) {
@@ -287,10 +242,8 @@ namespace ReBot
 					return;
 			}
 			//	actions.aoe+=/lightning_bolt
-			if (LightningBolt ()) {
-//				API.PrintInfo ("24");
+			if (LightningBolt ())
 				return;
-			}
 		}
 
 		public bool Heal ()
@@ -332,5 +285,3 @@ namespace ReBot
 		}
 	}
 }
-
-
