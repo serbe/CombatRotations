@@ -6,11 +6,11 @@ using System;
 
 namespace ReBot
 {
-	[Rotation ("Serb Druid Guardian SC", "Serb", WoWClass.Druid, Specialization.DruidGuardian, 5, 25)]
+	[Rotation ("Serb Druid Guardian", "Serb", WoWClass.Druid, Specialization.DruidGuardian, 5, 25)]
 
-	public class SerbDruidGuardianSC : SerbDruid
+	public class SerbDruidGuardian : SerbDruid
 	{
-		public 	SerbDruidGuardianSC ()
+		public 	SerbDruidGuardian ()
 		{
 			GroupBuffs = new[] {
 				"Mark of the Wild"
