@@ -410,10 +410,7 @@ namespace ReBot
 		public bool IsInEnrage (UnitObject u = null)
 		{
 			u = u ?? Target;
-			// if (u.HasAura ("Enrage") || u.HasAura ("Berserk") || u.HasAura ("Frenzy"))
-			if (u.Auras.Any (a => a.Contains (EnrageSkill)))
-				return true;
-			return false;
+			return u.Auras.Any (a => EnrageSkill.Contains (a.Name));
 		}
 
 		public bool IsNotForDamage (UnitObject o = null)

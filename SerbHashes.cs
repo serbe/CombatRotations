@@ -52,6 +52,16 @@ namespace ReBot
 			"Berserk",
 			"Frenzy"
 		};
+
+		public HashSet<string> SheepSkill = new HashSet<string> {
+			"Fear",
+			"Polymorph",
+			"Gouge",
+			"Paralysis",
+			"Blind",
+			"Hex"
+		};
+
 	}
 }
 
