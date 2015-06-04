@@ -8,14 +8,14 @@ using Newtonsoft.Json;
 
 namespace ReBot
 {
-	[Rotation ("SC Paladin Retribution", "Serb", WoWClass.Paladin, Specialization.PaladinRetribution, 5, 25)]
+	[Rotation ("Serb Paladin Retribution", "Serb", WoWClass.Paladin, Specialization.PaladinRetribution, 5, 25)]
 
-	public class SerbPaladinRetributionSC : SerbPaladin
+	public class SerbPaladinRetribution : SerbPaladin
 	{
 		[JsonProperty ("Use GCD")]
 		public bool Gcd = true;
 
-		public SerbPaladinRetributionSC ()
+		public SerbPaladinRetribution ()
 		{
 			GroupBuffs = new[] { "Blessing of Kings" };
 			PullSpells = new[] { "Judgment" };
