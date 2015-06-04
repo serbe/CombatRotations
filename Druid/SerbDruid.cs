@@ -167,11 +167,11 @@ namespace ReBot
 		public bool HealPartyMember ()
 		{
 			if (InArena && InInstance) {
-				Player = Group.GetGroupMemberObjects ().Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingPercent && !x.HasAura ("Rejuvenation", true) && !x.HasAura ("Cenarion Ward", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				Player = Group.GetGroupMemberObjects ().Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingPercent && !x.HasAura ("Rejuvenation", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Player != null && Rejuvenation (Player, true))
 					return true;
 				if (Me.HasAura ("Predatory Swiftness")) {
-					Player = Group.GetGroupMemberObjects ().Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingPercent && Health (x) < Health (Me) && !x.HasAura ("Cenarion Ward", true)).DefaultIfEmpty (null).FirstOrDefault ();
+					Player = Group.GetGroupMemberObjects ().Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingPercent && Health (x) < Health (Me)).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Player != null && HealingTouch (Player, true))
 						return true;
 				}				
@@ -198,7 +198,7 @@ namespace ReBot
 				if (Barkskin ())
 					return true;
 			}
-			if (Me.HasAura ("Predatory Swiftness") && Health (Me) < HealingPercent && !Me.HasAura ("Cenarion Ward", true)) {
+			if (Me.HasAura ("Predatory Swiftness") && Health (Me) < HealingPercent) {
 				if (HealingTouch (Me))
 					return true;
 			}
@@ -206,7 +206,7 @@ namespace ReBot
 				if (CenarionWard (Me))
 					return true;
 			}
-			if (Health (Me) <= HealingPercent && !Me.HasAura ("Rejuvenation", true) && !Me.HasAura ("Cenarion Ward", true)) {
+			if (Health (Me) <= HealingPercent && !Me.HasAura ("Rejuvenation", true)) {
 				if (Rejuvenation (Me))
 					return true;
 			}
