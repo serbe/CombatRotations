@@ -410,7 +410,7 @@ namespace ReBot
 		public bool IsInEnrage (UnitObject u = null)
 		{
 			u = u ?? Target;
-//			if (u.Auras.Contains());
+//			if (u.Auras.Contains(EnrageSkill));
 			if (u.HasAura ("Enrage") || u.HasAura ("Berserk") || u.HasAura ("Frenzy"))
 				return true;
 			return false;
@@ -495,30 +495,21 @@ namespace ReBot
 			}
 		}
 
-		//		public List<PlayerObject> GroupMembers {
-		//			get {
-		//				if (InPG) {
-		//					var pgGroup = new List<PlayerObject> ();
-		//					var t = API.Units.Where (p => p != null && !p.IsDead && p.IsValid).ToList ();
-		//					if (t.Any ()) {
-		//						foreach (var unit in t) {
-		//							if (PgUnits.Contains (unit.Name)) {
-		//								pgGroup.Add ((PlayerObject)unit);
-		//							}
-		//						}
-		//					}
-		//					pgGroup.Add (Me);
-		//					return pgGroup;
-		//				} else {
-		//					var allGroup = Group.GetGroupMemberObjects ();
-		//					allGroup.Add (Me);
-		//					return allGroup;
-		//				}
-		//			}
-		//		}
-
 		public List<PlayerObject> MyGroupAndMe {
 			get {
+				if (InPG) {
+					var pgGroup = new List<PlayerObject> ();
+					var t = API.Units.Where (p => p != null && !p.IsDead && p.IsValid).ToList ();
+					if (t.Any ()) {
+						foreach (var unit in t) {
+							if (PgUnits.Contains (unit.Name)) {
+								pgGroup.Add ((PlayerObject)unit);
+							}
+						}
+					}
+					pgGroup.Add (Me);
+					return pgGroup;
+				}
 				return MyGroup.Where (p => !p.IsDead && Health (p) > 0 && Range (40, p)).Concat (new[] { Me }).ToList ();
 			}
 		}

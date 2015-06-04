@@ -16,60 +16,21 @@ namespace ReBot
 
 		// Get
 
-		public GUID AutoTarget {
-			get {
-				if (GroupMembers.Count > 0) {
-					if (Tank != null)
-						return Tank.GUID;
-					Player = GroupMembers.Where (u => !u.IsDead).DefaultIfEmpty (null).FirstOrDefault ();
-					if (Player != null)
-						return Player.GUID;
-				}
-				Unit = API.CollectUnits (40).Where (u => u.IsEnemy && !u.IsDead && u.IsInLoS && u.IsAttackable && u.InCombat && Range (40, u)).OrderBy (u => u.CombatRange).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Unit != null)
-					return Unit.GUID;
-				return Me.GUID;
-			}
-		}
-
-		public void SetTarget ()
-		{
-			if (Tank != null) {
-				Me.SetTarget (Tank);
-			}
-			if (Target == null && HealTarget != null) {
-				Me.SetTarget (HealTarget);
-			}
-		}
-
-
-		public List<PlayerObject> GroupMembers {
-			get {
-				if (InPG) {
-					var pgGroup = new List<PlayerObject> ();
-					var t = API.Units.Where (p => p != null && !p.IsDead && p.IsValid).ToList ();
-					if (t.Any ()) {
-						foreach (var unit in t) {
-							if (PgUnits.Contains (unit.Name)) {
-								pgGroup.Add ((PlayerObject)unit);
-							}
-						}
-					}
-					pgGroup.Add (Me);
-					return pgGroup;
-				} else {
-					var allGroup = Group.GetGroupMemberObjects ();
-					allGroup.Add (Me);
-					return allGroup;
-				}
-			}
-		}
-
-		public PlayerObject HealTarget {
-			get {
-				return GroupMembers.Where (u => !u.IsDead && u.HealthFraction <= 0.9 && u.IsInLoS && Range (40, u)).OrderBy (u => u.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
-			}
-		}
+		//		public GUID AutoTarget {
+		//			get {
+		//				if (GroupMembers.Count > 0) {
+		//					if (Tank != null)
+		//						return Tank.GUID;
+		//					Player = GroupMembers.Where (u => !u.IsDead).DefaultIfEmpty (null).FirstOrDefault ();
+		//					if (Player != null)
+		//						return Player.GUID;
+		//				}
+		//				Unit = API.CollectUnits (40).Where (u => u.IsEnemy && !u.IsDead && u.IsInLoS && u.IsAttackable && u.InCombat && Range (40, u)).OrderBy (u => u.CombatRange).DefaultIfEmpty (null).FirstOrDefault ();
+		//				if (Unit != null)
+		//					return Unit.GUID;
+		//				return Me.GUID;
+		//			}
+		//		}
 
 		public int ShadowApparitions {
 			get {
@@ -344,7 +305,7 @@ namespace ReBot
 		public bool SetShieldAll ()
 		{
 			if (InArena) {
-				Unit = GroupMembers.Where (u => !u.IsDead && Range (40, u) && !u.HasAura ("Power Word: Shield")).DefaultIfEmpty (null).FirstOrDefault ();
+				Unit = MyGroup.Where (u => !u.IsDead && Range (40, u) && !u.HasAura ("Power Word: Shield")).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && PowerWordShield (Unit))
 					return true;
 			}
@@ -410,13 +371,13 @@ namespace ReBot
 
 		public bool DispelAll ()
 		{
-			var AllForDispel = GroupMembers.Where (u => u.IsInLoS && Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic,Disease".Contains (a.DebuffType)));
+			var AllForDispel = MyGroupAndMe.Where (u => u.IsInLoS && Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic,Disease".Contains (a.DebuffType)));
 			Unit = AllForDispel.DefaultIfEmpty (null).FirstOrDefault ();
-			if (Unit != null && AllForDispel.ToList ().Count > 3) {
+			if (Unit != null && AllForDispel.Count () > 3) {
 				if (MassDispel (Unit))
 					return true;
 			}
-			Unit = GroupMembers.Where (u => u.IsInLoS && Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic,Disease".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault (); 
+			Unit = MyGroupAndMe.Where (u => u.IsInLoS && Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic,Disease".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault (); 
 			if (Unit != null && Purify (Unit))
 				return true;
 			return false;
@@ -449,13 +410,13 @@ namespace ReBot
 		public UnitObject CascadeTarget {
 			get {
 				List<PlayerObject> CascadeCounts;
-				if (GroupMembers.Count < 6) {
-					CascadeCounts = GroupMembers.Where (u => !u.IsDead && Range (40, u) && Health (u) <= 0.85).ToList ();
+				if (MyGroupAndMe.Count < 6) {
+					CascadeCounts = MyGroupAndMe.Where (u => !u.IsDead && Range (40, u) && Health (u) <= 0.85).ToList ();
 					if (CascadeCounts.Count () >= 2)
 						return CascadeCounts.FirstOrDefault ();
 				}
-				if (GroupMembers.Count > 5) {
-					CascadeCounts = GroupMembers.Where (u => !u.IsDead && Range (40, u) && Health (u) <= 0.8).ToList ();
+				if (MyGroupAndMe.Count > 5) {
+					CascadeCounts = MyGroupAndMe.Where (u => !u.IsDead && Range (40, u) && Health (u) <= 0.8).ToList ();
 					if (CascadeCounts.Count () >= 5)
 						return CascadeCounts.FirstOrDefault ();
 				}
@@ -466,13 +427,13 @@ namespace ReBot
 		public UnitObject HaloTarget {
 			get {
 				List<PlayerObject> HaloCounts;
-				if (GroupMembers.Count < 6) {
-					HaloCounts = GroupMembers.Where (u => !u.IsDead && Range (30, u) && Health (u) <= 0.85).ToList ();
+				if (MyGroupAndMe.Count < 6) {
+					HaloCounts = MyGroupAndMe.Where (u => !u.IsDead && Range (30, u) && Health (u) <= 0.85).ToList ();
 					if (HaloCounts.Count () >= 2)
 						return HaloCounts.FirstOrDefault ();
 				}
-				if (GroupMembers.Count > 5) {
-					HaloCounts = GroupMembers.Where (u => !u.IsDead && Range (30, u) && Health (u) <= 0.8).ToList ();
+				if (MyGroupAndMe.Count > 5) {
+					HaloCounts = MyGroupAndMe.Where (u => !u.IsDead && Range (30, u) && Health (u) <= 0.8).ToList ();
 					if (HaloCounts.Count () >= 5)
 						return HaloCounts.FirstOrDefault ();
 				}
