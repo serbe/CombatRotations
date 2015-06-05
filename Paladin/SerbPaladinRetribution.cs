@@ -98,15 +98,29 @@ namespace ReBot
 				if (Judgment ())
 					return;
 			}
-			//	actions+=/execution_sentence
-			if (Danger () && ExecutionSentence ())
-				return;
-			//	actions+=/lights_hammer
-			if (Danger () && LightsHammer ())
-				return;
+			//	actions+=/execution_sentence,if=!talent.seraphim.enabled
+			if (!HasSpell ("Seraphim") && Danger ()) {
+				if (ExecutionSentence ())
+					return;
+			}
+			//	actions+=/execution_sentence,sync=seraphim,if=talent.seraphim.enabled
+			if (HasSpell ("Seraphim") && Me.HasAura ("Seraphim") && Danger ()) {
+				if (ExecutionSentence ())
+					return;
+			}
+			//	actions+=/lights_hammer,if=!talent.seraphim.enabled
+			if (!HasSpell ("Seraphim") && Danger ()) {
+				if (LightsHammer ())
+					return;
+			}
+			//	actions+=/lights_hammer,sync=seraphim,if=talent.seraphim.enabled
+			if (HasSpell ("Seraphim") && Me.HasAura ("Seraphim") && Danger ()) {
+				if (LightsHammer ())
+					return;
+			}
 			//	actions+=/use_item,name=vial_of_convulsive_shadows,if=buff.avenging_wrath.up
 			//	actions+=/avenging_wrath,sync=seraphim,if=talent.seraphim.enabled
-			if (Me.HasAura ("Seraphim") && HasSpell ("Seraphim")) {
+			if (HasSpell ("Seraphim") && Me.HasAura ("Seraphim")) {
 				if (AvengingWrath ())
 					return;
 			}
@@ -124,13 +138,19 @@ namespace ReBot
 
 //	actions+=/avenging_wrath,if=prev.lights_hammer&set_bonus.tier18_4pc=1&talent.lights_hammer.enabled&!talent.seraphim.enabled
 
+
+			//	actions+=/holy_avenger,sync=avenging_wrath,if=!talent.seraphim.enabled
+			if (!HasSpell ("Seraphim") && Me.HasAura ("Avenging Wrath") && Danger ()) {
+				if (HolyAvenger ())
+					return;
+			}		
 			//	actions+=/holy_avenger,sync=seraphim,if=talent.seraphim.enabled
-			if (Me.HasAura ("Seraphim")) {
+			if (Me.HasAura ("Seraphim") && Danger ()) {
 				if (HolyAvenger ())
 					return;
 			}
 			//	actions+=/holy_avenger,if=holy_power<=2&!talent.seraphim.enabled
-			if (HolyPower <= 2 && !HasSpell ("Seraphim")) {
+			if (HolyPower <= 2 && !HasSpell ("Seraphim") && Danger ()) {
 				if (HolyAvenger ())
 					return;
 			}
@@ -208,50 +228,14 @@ namespace ReBot
 				if (FinalVerdict ())
 					return;
 			}
+//	actions.single+=/crusader_strike,if=t18_class_trinket=1&buff.focus_of_vengeance.remains<gcd.max*2
+
 			//	actions.single+=/hammer_of_wrath
 			if (HammerofWrath ())
 				return;
-//	actions.single+=/crusader_strike,if=t18_class_trinket=1&buff.focus_of_vengeance.remains<gcd.max*2
-
-			//	actions.single+=/judgment,if=talent.empowered_seals.enabled&seal.truth&buff.maraads_truth.remains<cooldown.judgment.duration
-			if (HasSpell ("Empowered Seals") && IsInShapeshiftForm ("Seal of Truth") && Me.AuraTimeRemaining ("Maraad's Truth") < 6) {
-				if (Judgment ()) {
-					LastJudgmentTarget = Target;
-					return;
-				}
-			}
-			//	actions.single+=/judgment,if=talent.empowered_seals.enabled&seal.righteousness&buff.liadrins_righteousness.remains<cooldown.judgment.duration
-			if (HasSpell ("Empowered Seals") && IsInShapeshiftForm ("Seal of Righteousness") && Me.AuraTimeRemaining ("Liadrin's Righteousness") < 6) {
-				if (Judgment ()) {
-					LastJudgmentTarget = Target;
-					return;
-				}
-			}
-			//	actions.single+=/judgment,if=talent.empowered_seals.enabled&seal.righteousness&cooldown.avenging_wrath.remains<cooldown.judgment.duration
-			if (HasSpell ("Empowered Seals") && IsInShapeshiftForm ("Seal of Righteousness") && Cooldown ("Avenging Wrath") < 6) {
-				if (Judgment ()) {
-					LastJudgmentTarget = Target;
-					return;
-				}
-			}
 			//	actions.single+=/exorcism,if=buff.blazing_contempt.up&holy_power<=2&buff.holy_avenger.down
 			if (Me.HasAura ("Blazing Contempt") && HolyPower <= 2 && !Me.HasAura ("Holy Avenger")) {
 				if (Exorcism ())
-					return;
-			}
-			//	actions.single+=/seal_of_truth,if=talent.empowered_seals.enabled&buff.maraads_truth.down
-			if (HasSpell ("Empowered Seals") && !Me.HasAura ("Maraad's Truth")) {
-				if (SealofTruth ())
-					return;
-			}
-			//	actions.single+=/seal_of_truth,if=talent.empowered_seals.enabled&cooldown.avenging_wrath.remains<cooldown.judgment.duration&buff.liadrins_righteousness.remains>cooldown.judgment.duration
-			if (HasSpell ("Empowered Seals") && Cooldown ("Avenging Wrath") < 6 && Me.AuraTimeRemaining ("Liadrin Righteousness") > 6) {
-				if (SealofTruth ())
-					return;
-			}
-			//	actions.single+=/seal_of_righteousness,if=talent.empowered_seals.enabled&buff.maraads_truth.remains>cooldown.judgment.duration&buff.liadrins_righteousness.down&!buff.avenging_wrath.up&!buff.bloodlust.up
-			if (HasSpell ("Empowered Seals") && Me.AuraTimeRemaining ("Maraad Truth") > 6 && !Me.HasAura ("Liadrin Righteousness") && !Me.HasAura ("Avenging Wrath") && !Me.HasAura ("Bloodlust")) {
-				if (SealofRighteousness ())
 					return;
 			}
 			//	actions.single+=/divine_storm,if=buff.divine_crusader.react&buff.final_verdict.up&(buff.avenging_wrath.up|target.health.pct<35)
@@ -273,6 +257,20 @@ namespace ReBot
 			if (Me.HasAura ("Divine Crusader") && ActiveEnemies (8) == 2 && (HasAura ("Avenging Wrath") || Health () <= 0.35) && !HasSpell ("Final Verdict")) {
 				if (DivineStorm ())
 					return;
+			}
+			//	actions.single+=/judgment,if=talent.empowered_seals.enabled&seal.truth&buff.maraads_truth.remains<cooldown.judgment.duration
+			if (HasSpell ("Empowered Seals") && IsInShapeshiftForm ("Seal of Truth") && Me.AuraTimeRemaining ("Maraad's Truth") < 6) {
+				if (Judgment ()) {
+					LastJudgmentTarget = Target;
+					return;
+				}
+			}
+			//	actions.single+=/judgment,if=talent.empowered_seals.enabled&seal.righteousness&buff.liadrins_righteousness.remains<cooldown.judgment.duration
+			if (HasSpell ("Empowered Seals") && IsInShapeshiftForm ("Seal of Righteousness") && Me.AuraTimeRemaining ("Liadrin's Righteousness") < 6) {
+				if (Judgment ()) {
+					LastJudgmentTarget = Target;
+					return;
+				}
 			}
 			//	actions.single+=/templars_verdict,if=holy_power=5&(buff.avenging_wrath.up|target.health.pct<35)&(!talent.seraphim.enabled|cooldown.seraphim.remains>gcd*3)
 			if (HolyPower == 5 && (Me.HasAura ("Avenging Wrath") || Health () <= 0.35) && (!HasSpell ("Seraphim") || Me.AuraTimeRemaining ("Seraphim") > 4.5)) {
@@ -297,6 +295,17 @@ namespace ReBot
 			//	actions.single+=/crusader_strike,if=holy_power<=3|(holy_power=4&target.health.pct>=35&buff.avenging_wrath.down)
 			if (HolyPower <= 3 || (HolyPower == 4 && Health () >= 0.35 && !Me.HasAura ("Avenging Wrath"))) {
 				if (CrusaderStrike ())
+					return;
+			}
+
+			//	actions.single+=/seal_of_truth,if=talent.empowered_seals.enabled&buff.maraads_truth.remains<(cooldown.judgment.duration*1.5|buff.maraads_truth.down)&(buff.avenging_wrath.up|target.health.pct<35)&!buff.wings_of_liberty.up
+			if (HasSpell ("Empowered Seals") && (Me.AuraTimeRemaining ("Maraad Truth") < 9 || !Me.HasAura ("Maraad Truth")) && (Me.HasAura ("Avenging Wrath") || Health () < 0.35) && !Me.HasAura ("Wings of Liberty")) {
+				if (SealofTruth ())
+					return;
+			}
+			//	actions.single+=/seal_of_righteousness,if=talent.empowered_seals.enabled&buff.liadrins_righteousness.remains<cooldown.judgment.duration*1.5&buff.maraads_truth.remains>cooldown.judgment.duration*1.5&target.health.pct<35&!buff.wings_of_liberty.up&!buff.bloodlust.up
+			if (HasSpell ("Empowered Seals") && Me.AuraTimeRemaining ("Liadrin Righteousness") < 9 && Me.AuraTimeRemaining ("Maraad Truth") > 9 && Health () < 0.35 && !Me.HasAura ("Wings of Liberty") && !Me.HasAura ("Bloodlust")) {
+				if (SealofRighteousness ())
 					return;
 			}
 			//	actions.single+=/divine_storm,if=buff.divine_crusader.react&(buff.avenging_wrath.up|target.health.pct<35)&!talent.final_verdict.enabled
@@ -339,6 +348,16 @@ namespace ReBot
 			//	actions.single+=/divine_storm,if=active_enemies=2&holy_power>=4&buff.final_verdict.up
 			if (ActiveEnemies (8) == 2 && HolyPower >= 4 && Me.HasAura ("Final Verdict")) {
 				if (DivineStorm ())
+					return;
+			}
+			//	actions.single+=/seal_of_truth,if=talent.empowered_seals.enabled&buff.maraads_truth.remains<cooldown.judgment.duration*1.5&buff.liadrins_righteousness.remains>cooldown.judgment.duration*1.5
+			if (HasSpell ("Empowered Seals") && Me.AuraTimeRemaining ("Maraad Truth") < 9 && Me.AuraTimeRemaining ("Liadrin Righteousness") > 9) {
+				if (SealofTruth ())
+					return;
+			}
+			//	actions.single+=/seal_of_righteousness,if=talent.empowered_seals.enabled&buff.liadrins_righteousness.remains<cooldown.judgment.duration*1.5&buff.maraads_truth.remains>cooldown.judgment.duration*1.5&!buff.bloodlust.up
+			if (HasSpell ("Empowered Seals") && Me.AuraTimeRemaining ("Liadrin Righteousness") < 9 && Me.AuraTimeRemaining ("Maraad Truth") > 9 && !Me.HasAura ("Bloodlust")) {
+				if (SealofRighteousness ())
 					return;
 			}
 			//	actions.single+=/final_verdict,if=buff.divine_purpose.react

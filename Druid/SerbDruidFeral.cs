@@ -112,7 +112,7 @@ namespace ReBot
 					return;
 			}
 
-			if (!Me.HasAura ("Prowl") && !Me.HasAura ("Shadowmeld") && PartyHealing) {
+			if (!Me.HasAura ("Prowl") && !Me.HasAura ("Shadowmeld") && (InArena || (InInstance && PartyHealing))) {
 				if (HealPartyMember ())
 					return;
 			}

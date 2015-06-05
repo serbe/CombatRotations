@@ -11,8 +11,10 @@ namespace ReBot
 	{
 		[JsonProperty ("Maximum Energy")] 
 		public int EnergyMax = 100;
-		[JsonProperty ("Healing %/100")]
-		public double HealingPercent = 0.8;
+		[JsonProperty ("Healing Me %/100")]
+		public double HealingMe = 0.8;
+		[JsonProperty ("Healing Party %/100")]
+		public double HealingParty = 0.8;
 		[JsonProperty ("Run to enemy")]
 		public bool Run;
 		[JsonProperty ("Use multitarget")]
@@ -188,15 +190,13 @@ namespace ReBot
 
 		public bool HealPartyMember ()
 		{
-			if (InArena && InInstance) {
-				Player = Group.GetGroupMemberObjects ().Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingPercent && !x.HasAura ("Rejuvenation", true)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Player != null && Rejuvenation (Player, true))
+			Player = MyGroup.Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingParty && !x.HasAura ("Rejuvenation", true)).DefaultIfEmpty (null).FirstOrDefault ();
+			if (Player != null && Rejuvenation (Player, true))
+				return true;
+			if (Me.HasAura ("Predatory Swiftness")) {
+				Player = MyGroup.Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingParty && Health (x) < Health (Me)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Player != null && HealingTouch (Player, true))
 					return true;
-				if (Me.HasAura ("Predatory Swiftness")) {
-					Player = Group.GetGroupMemberObjects ().Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingPercent && Health (x) < Health (Me)).DefaultIfEmpty (null).FirstOrDefault ();
-					if (Player != null && HealingTouch (Player, true))
-						return true;
-				}				
 			}
 
 			return false;
@@ -220,15 +220,15 @@ namespace ReBot
 				if (Barkskin ())
 					return true;
 			}
-			if (Me.HasAura ("Predatory Swiftness") && Health (Me) < HealingPercent) {
+			if (Me.HasAura ("Predatory Swiftness") && Health (Me) < HealingMe) {
 				if (HealingTouch (Me))
 					return true;
 			}
-			if (Health (Me) <= HealingPercent) {
+			if (Health (Me) <= HealingMe) {
 				if (CenarionWard (Me))
 					return true;
 			}
-			if (Health (Me) <= HealingPercent && !Me.HasAura ("Rejuvenation", true)) {
+			if (Health (Me) <= HealingMe && !Me.HasAura ("Rejuvenation", true)) {
 				if (Rejuvenation (Me))
 					return true;
 			}

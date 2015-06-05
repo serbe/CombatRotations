@@ -555,7 +555,7 @@ namespace ReBot
 
 		public bool HolyAvenger ()
 		{
-			return Usable ("Holy Avenger") && Danger () && CS ("Holy Avenger");
+			return Usable ("Holy Avenger") && CS ("Holy Avenger");
 		}
 
 		public bool AvengingWrath ()
