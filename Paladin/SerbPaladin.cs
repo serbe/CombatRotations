@@ -576,12 +576,12 @@ namespace ReBot
 		public bool GuardianofAncientKings (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Guardian of Ancient Kings") && Range (30, u) && C ("Guardian of Ancient Kings", u);
+			return Usable ("Guardian of Ancient Kings") && Range (30, u) && DangerBoss (u) && C ("Guardian of Ancient Kings", u);
 		}
 
 		public bool ArdentDefender ()
 		{
-			return Usable ("Ardent Defender") && CS ("Ardent Defender");
+			return Usable ("Ardent Defender") && DangerBoss () && CS ("Ardent Defender");
 		}
 
 		public bool FlashofLight (UnitObject u = null)

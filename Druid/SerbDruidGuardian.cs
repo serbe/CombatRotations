@@ -1,8 +1,7 @@
-﻿// Need update
-
-using ReBot.API;
+﻿using ReBot.API;
 using System.Linq;
 using System;
+using Newtonsoft.Json;
 
 namespace ReBot
 {
@@ -10,6 +9,9 @@ namespace ReBot
 
 	public class SerbDruidGuardian : SerbDruid
 	{
+		[JsonProperty ("Use SC rotation")]
+		public bool UseSC = true;
+
 		public 	SerbDruidGuardian ()
 		{
 			GroupBuffs = new[] {
@@ -67,10 +69,14 @@ namespace ReBot
 			if (Health (Me) < 0.9)
 				HealTank ();
 
-			if (ActiveEnemies (8) == 1)
-				SingleTarget ();
-			else
-				MultiTarget ();
+			if (UseSC) {
+				SC ();
+			} else {
+				if (ActiveEnemies (8) == 1)
+					SingleTarget ();
+				else
+					MultiTarget ();
+			}
 
 		}
 
@@ -142,8 +148,8 @@ namespace ReBot
 			//	actions+=/maul,if=buff.tooth_and_claw.react&incoming_damage_1s
 			if (Me.HasAura ("Tooth and Claw") && DamageTaken (1000) > 0)
 				Maul ();
-			//	actions+=/berserk,if=buff.pulverize.remains>10
-			if (Me.AuraTimeRemaining ("Pulverize") > 10)
+			//	actions+=/berserk,if=(buff.pulverize.remains>10|!talent.pulverize.enabled)&buff.incarnation.down
+			if ((Me.AuraTimeRemaining ("Pulverize") > 10 || !HasSpell ("Pulverize")) && !Me.HasAura ("Incarnation: Son of Ursoc"))
 				Berserk ();
 			//	actions+=/frenzied_regeneration,if=rage>=80
 			if (Health (Me) < 0.5 && Rage >= 80)
@@ -179,9 +185,11 @@ namespace ReBot
 				if (Lacerate ())
 					return;
 			}
-			//	actions+=/incarnation
-			if (IncarnationSonofUrsoc ())
-				return;
+			//	actions+=/incarnation,if=buff.berserk.down
+			if (!Me.HasAura ("Berserk")) {
+				if (IncarnationSonofUrsoc ())
+					return;
+			}
 			//	actions+=/lacerate,if=!ticking
 			if (!Target.HasAura ("Lacerate")) {
 				if (Lacerate ())
