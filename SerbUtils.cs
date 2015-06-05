@@ -29,6 +29,8 @@ namespace ReBot
 		public double TimeToDie (UnitObject u = null)
 		{
 			u = u ?? Target;
+			if (InGroup)
+				return u.Health / (Ttd * PlayerFigthWithTarget (u));
 			return u.Health / Ttd;
 		}
 
@@ -38,6 +40,17 @@ namespace ReBot
 				targets.Add (Target);
 				return targets;
 			}
+		}
+
+		public int PlayerFigthWithTarget (UnitObject u)
+		{
+			int x = 0;
+			foreach (PlayerObject p in MyGroupAndMe) {
+				if (!p.IsDead && u.IsPlayer && !p.IsHealer && p.Target == u) {
+					x++;
+				}
+			}
+			return x;
 		}
 
 		public int ActiveEnemies (int range)
@@ -339,8 +352,8 @@ namespace ReBot
 		{
 			u = u ?? Target;
 			if (r != 0)
-				return Range (r, u) && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e || Health (Me) < 0.3);
-			return u.IsInCombatRangeAndLoS && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e || Health (Me) < 0.3);
+				return Range (r, u) && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e || Health (Me) < 0.4);
+			return u.IsInCombatRangeAndLoS && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e || Health (Me) < 0.4);
 		}
 
 		public bool DangerBoss (UnitObject u = null, int r = 0, int e = 6)
@@ -483,6 +496,12 @@ namespace ReBot
 		public bool InGroup {
 			get {
 				return MyGroup.Count > 0;
+			}
+		}
+
+		public int GroupMemberCount {
+			get {
+				return Group.GetNumGroupMembers ();
 			}
 		}
 

@@ -141,13 +141,13 @@ namespace ReBot
 
 			if (InBearForm && Usable ("Faerie Fire") && HasGlyph (114237)) {
 				if (ActiveEnemies (35) > 1 && Multitarget) {
-					Unit = Enemy.Where (x => Range (35, x) && x.IsCastingAndInterruptible && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					Unit = Enemy.Where (x => Range (35, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						if (FaerieFire (Unit))
 							return true;
 					} 
 				} else {
-					if (Range (35) && Target.IsCastingAndInterruptible && Target.RemainingCastTime > 0) {
+					if (Range (35) && Target.IsCastingAndInterruptible () && Target.RemainingCastTime > 0) {
 						if (FaerieFire ())
 							return true;
 					}
