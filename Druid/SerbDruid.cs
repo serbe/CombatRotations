@@ -132,6 +132,28 @@ namespace ReBot
 					}
 				}
 			}
+
+//			if (Cast ("Incapacitating Roar", () => Target.IsCastingAndInterruptible ()))
+//				return; // 30 sec Cooldown
+
+			if (Cast ("Typhoon", () => Target.IsCastingAndInterruptible ()))
+				return true; // 30 sec Cooldown
+
+			if (InBearForm && Usable ("Faerie Fire") && HasGlyph (114237)) {
+				if (ActiveEnemies (35) > 1 && Multitarget) {
+					Unit = Enemy.Where (x => Range (35, x) && x.IsCastingAndInterruptible && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null) {
+						if (FaerieFire (Unit))
+							return true;
+					} 
+				} else {
+					if (Range (35) && Target.IsCastingAndInterruptible && Target.RemainingCastTime > 0) {
+						if (FaerieFire ())
+							return true;
+					}
+				}
+			}
+
 			return false;
 		}
 
@@ -142,11 +164,11 @@ namespace ReBot
 				if (Dash ())
 					return true;
 			}
-			// // if (CastSelfPreventDouble("Stealth", () => !Me.InCombat && !HasAura("Stealth"))) return;
-			// if (Cast("Shadowstep", () => !HasAura("Sprint") && HasSpell("Shadowstep"))) return;
-			// // if (CastSelf("Sprint", () => !HasAura("Sprint") && !HasAura("Burst of Speed"))) return;
-			// // if (CastSelf("Burst of Speed", () => !HasAura("Sprint") && !HasAura("Burst of Speed") && HasSpell("Burst of Speed") && Energy > 20)) return;
-			// if (Cast(RangedAtk, () => Energy >= 40 && !HasAura("Stealth") && Target.IsInLoS)) return;
+			// // if (CastSelfPreventDouble("Stealth", () => !Me.InCombat && !Me.HasAura("Stealth"))) return;
+			// if (Cast("Shadowstep", () => !Me.HasAura("Sprint") && HasSpell("Shadowstep"))) return;
+			// // if (CastSelf("Sprint", () => !Me.HasAura("Sprint") && !Me.HasAura("Burst of Speed"))) return;
+			// // if (CastSelf("Burst of Speed", () => !Me.HasAura("Sprint") && !Me.HasAura("Burst of Speed") && HasSpell("Burst of Speed") && Energy > 20)) return;
+			// if (Cast(RangedAtk, () => Energy >= 40 && !Me.HasAura("Stealth") && Target.IsInLoS)) return;
 			return false;
 		}
 
@@ -210,6 +232,44 @@ namespace ReBot
 				if (Rejuvenation (Me))
 					return true;
 			}
+
+			return false;
+		}
+
+		public bool HealTank ()
+		{
+			if (HasSpell ("Dream of Cenarius") && Me.HasAura ("Dream of Cenarius") && Health (Me) < 0.85) {
+				if (HealingTouch (Me))
+					return true;
+			}
+			if (InBearForm && Rage > 60 && Health (Me) < 0.4) {
+				if (FrenziedRegeneration ())
+					return true;
+			}
+			if (Rage > 60 && !Me.HasAura ("Savage Defense") && Health (Me) < 0.45) {
+				if (SavageDefense ())
+					return true;
+			}
+			if (!Me.HasAura ("Survival Instincts") && Health (Me) < 0.25) {
+				if (SurvivalInstincts ())
+					return true;
+			}
+			if (Health (Me) < 0.65) {
+				if (Barkskin ())
+					return true;
+			}
+			if (!Me.HasAura ("Cenarion Ward") && Health (Me) < 0.8) {
+				if (CenarionWard (Me))
+					return true;
+			}
+			if (HasSpell ("Bristling Fur") && Health (Me) < 0.3) {
+				if (BristlingFur ())
+					return true;
+			}
+			if (Health (Me) < 0.3)
+				Renewal ();
+			if (Health (Me) < 0.5)
+				HeartoftheWild ();
 
 			return false;
 		}

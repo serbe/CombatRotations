@@ -17,9 +17,9 @@ namespace ReBot
 			};
 			PullSpells = new[] {
 				"Maul",
-				"Mangle",
-				"Faerie Swarm",
-				"Faerie Fire"
+				"Mangle"
+//				"Faerie Swarm",
+//				"Faerie Fire"
 			};
 		}
 
@@ -63,6 +63,58 @@ namespace ReBot
 
 			if (BearForm ())
 				return;
+
+			if (Health (Me) < 0.9)
+				HealTank ();
+
+			if (ActiveEnemies (8) == 1)
+				SingleTarget ();
+			else
+				MultiTarget ();
+
+		}
+
+		public void SingleTarget ()
+		{
+			if (Mangle ())
+				return;
+			if (!Target.HasAura ("Pulverize") && !Target.HasAura ("Lacerate", true, 3)) {
+				if (Lacerate ())
+					return;
+			}
+			if (Target.HasAura ("Lacerate", true, 3)) {
+				if (Pulverize ())
+					return;
+			}
+			if (!Target.HasAura ("Thrash")) {
+				if (Thrash ())
+					return;
+			}
+			if (Me.HasAura ("Tooth and Claw") || Rage > MaxPower - 20 || DamageTaken (1000) > 0)
+				Maul ();
+		}
+
+		public void MultiTarget ()
+		{
+			if (Usable ("Thrash")) {
+				Unit = Enemy.Where (u => Range (8, u) && !u.HasAura ("Thrash")).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && Thrash ())
+					return;
+			}
+			if (!Target.HasAura ("Pulverize") && !Target.HasAura ("Lacerate", true, 3)) {
+				if (Lacerate ())
+					return;
+			}
+			if (Target.HasAura ("Lacerate", true, 3)) {
+				if (Pulverize ())
+					return;
+			}
+			if (Mangle ())
+				return;
+		}
+
+		public void SC ()
+		{
 			//	actions=auto_attack
 			//	actions+=/skull_bash
 			if (Target.CombatRange > 6) {
@@ -157,7 +209,7 @@ namespace ReBot
 			//	actions+=/lacerate
 			if (Lacerate ())
 				return;
-
 		}
+
 	}
 }
