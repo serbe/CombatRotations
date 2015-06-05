@@ -14,6 +14,8 @@ namespace ReBot
 	{
 		[JsonProperty ("Use GCD")]
 		public bool Gcd = true;
+		[JsonProperty ("Heal party in instance")]
+		public bool PartyHeal = true;
 
 		public SerbPaladinRetribution ()
 		{
@@ -66,9 +68,24 @@ namespace ReBot
 			if (Heal ())
 				return;
 
+			if (AuraStackCount ("Selfless Healer") >= 3 && ((InInstance && PartyHeal) || InArena)) {
+				if (LowestPlayer != null && Health (LowestPlayer) < 0.7) {
+					if (FlashofLight (LowestPlayer))
+						return;
+				}
+			}
+
 			//	actions=rebuke
 			if (Interrupt ())
 				return;
+
+			if (!HasSpell ("Empowered Seals")) {
+				if (ActiveEnemies (8) < 2)
+					SealofTruth ();
+				else
+					SealofRighteousness ();
+			}
+
 			//	actions+=/potion,name=draenic_strength,if=(buff.bloodlust.react|buff.avenging_wrath.up|target.time_to_die<=40)
 			//	actions+=/auto_attack
 			//	actions+=/speed_of_light,if=movement.distance>5

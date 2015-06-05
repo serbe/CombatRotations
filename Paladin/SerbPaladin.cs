@@ -224,10 +224,10 @@ namespace ReBot
 			}
 //			if (CastSelf ("Flash of Light", () => Health <= 0.6 && Me.HasAura ("Divine Shield") && TargetHealth >= 0.15))
 //				return;
-			if (Me.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType))) {
-				if (Cleanse (Me))
-					return true;
-			}
+//			if (Me.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType))) {
+//				if (Cleanse (Me))
+//					return true;
+//			}
 			if (Health (Me) <= 0.3 && !Me.HasAura ("Immunity")) {
 				if (DivineShield ())
 					return true;
@@ -242,14 +242,6 @@ namespace ReBot
 			}
 			if (Health (Me) <= 0.15 && !Me.HasAura ("Immunity") && Cooldown ("Lay on Hands") > 1 && Cooldown ("Divine Shield") > 1) {
 				if (HandofProtection (Me))
-					return true;
-			}
-
-			// Party
-
-			if (InInstance) {
-				Player = Group.GetGroupMemberObjects ().Where (p => !p.IsDead && p.IsHealer && Health (p) < 0.2 && !p.HasAura ("Immunity") && Range (40, p)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Player != null && HandofProtection (Player))
 					return true;
 			}
 
@@ -732,7 +724,7 @@ namespace ReBot
 		public bool Cleanse (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Cleanse") && Range (40, u) && C ("Cleanse", u);
+			return Usable ("Cleanse") && Range (40, u) && CPD ("Cleanse", u, 2000);
 		}
 
 		public bool RighteousFury ()
