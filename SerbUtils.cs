@@ -29,8 +29,12 @@ namespace ReBot
 		public double TimeToDie (UnitObject u = null)
 		{
 			u = u ?? Target;
-			if (InGroup)
-				return u.Health / (Ttd * PlayerFigthWithTarget (u));
+			if (InGroup) {
+				if (PlayerFigthWithTarget (u) == 0)
+					return u.Health / Ttd;
+				else
+					return u.Health / (Ttd * PlayerFigthWithTarget (u));
+			}
 			return u.Health / Ttd;
 		}
 
