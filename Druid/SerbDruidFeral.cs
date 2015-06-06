@@ -275,6 +275,11 @@ namespace ReBot
 			}
 
 			Sleep = 0;
+
+			if (UseHealingTouch && Health (Me) < 0.5 && !Me.IsMoving) {
+				if (HealingTouch (Me))
+					return;
+			}
 		}
 
 		public bool Finishers ()

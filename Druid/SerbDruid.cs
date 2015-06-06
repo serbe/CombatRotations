@@ -23,6 +23,8 @@ namespace ReBot
 		public bool Aoe = true;
 		[JsonProperty ("Use GCD")]
 		public bool Gcd = true;
+		[JsonProperty ("Use healing touch in combat")]
+		public bool UseHealingTouch = true;
 
 		// Check
 
@@ -198,7 +200,11 @@ namespace ReBot
 				if (Player != null && HealingTouch (Player, true))
 					return true;
 			}
-
+			if (UseHealingTouch && !Me.IsMoving && MyGroupAndMe.Count > 1) {
+				Unit = Enemy.Where (p => p.IsPlayer && p.Target == Me && p.CanParticipateInCombat && Range (40, p)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit == null && LowestPlayer != null && Health (LowestPlayer) < 0.5 && HealingTouch (LowestPlayer))
+					return true;
+			}
 			return false;
 		}
 
