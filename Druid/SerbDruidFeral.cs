@@ -107,13 +107,13 @@ namespace ReBot
 			if (Me.CanNotParticipateInCombat ())
 				return;
 
-			if (Health (Me) < 0.9) {
-				if (Heal ())
+			if (!Me.HasAura ("Prowl") && !Me.HasAura ("Shadowmeld") && (InArena || (InInstance && PartyHealing))) {
+				if (HealPartyMember ())
 					return;
 			}
 
-			if (!Me.HasAura ("Prowl") && !Me.HasAura ("Shadowmeld") && (InArena || (InInstance && PartyHealing))) {
-				if (HealPartyMember ())
+			if (Health (Me) < 0.9) {
+				if (Heal ())
 					return;
 			}
 

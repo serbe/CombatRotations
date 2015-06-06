@@ -155,7 +155,7 @@ namespace ReBot
 			if (InRaid || InInstance)
 				TricksoftheTrade ();
 
-			if (!Me.HasAura ("Blade Flurry") && !InRaid && Multitarget) {
+			if (!InRaid && Multitarget) {
 				if (Cc ())
 					return;
 			}

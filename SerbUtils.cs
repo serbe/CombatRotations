@@ -30,10 +30,9 @@ namespace ReBot
 		{
 			u = u ?? Target;
 			if (InGroup) {
-				if (PlayerFigthWithTarget (u) == 0)
+				if (Ttd * PlayerFigthWithTarget (u) == 0)
 					return u.Health / Ttd;
-				else
-					return u.Health / (Ttd * PlayerFigthWithTarget (u));
+				return u.Health / (Ttd * PlayerFigthWithTarget (u));
 			}
 			return u.Health / Ttd;
 		}
