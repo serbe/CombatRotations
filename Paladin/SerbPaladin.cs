@@ -753,7 +753,7 @@ namespace ReBot
 		public bool Redemption (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Redemption") && Range (40, u) && u.IsDead && C ("Redemption", u);
+			return Usable ("Redemption") && Range (40, u) && u.IsDead && CPD ("Redemption", u, 2000);
 		}
 
 		public bool BeaconofLight (UnitObject u = null)

@@ -69,7 +69,7 @@ namespace ReBot
 			// Heal
 
 			if (Health (Me) <= 0.8) {
-				if (Heal ())
+				if (FlashofLight (Me))
 					return true;
 			}
 
