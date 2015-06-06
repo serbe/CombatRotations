@@ -87,6 +87,12 @@ namespace ReBot
 			return x;
 		}
 
+		public IEnumerable<UnitObject> EnemyPlayerTargetToMe {
+			get {
+				return Enemy.Where (p => p.IsPlayer && p.Target == Me && p.CanParticipateInCombat && Range (40, p)).DefaultIfEmpty (null);
+			}
+		}
+
 		public int MaxPower {
 			get {
 				return API.ExecuteLua <int> ("return UnitPowerMax(\"player\");");

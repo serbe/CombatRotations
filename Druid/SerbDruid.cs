@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using Geometry;
 using Newtonsoft.Json;
 using ReBot.API;
 
@@ -200,9 +198,8 @@ namespace ReBot
 				if (Player != null && HealingTouch (Player, true))
 					return true;
 			}
-			if (UseHealingTouch && !Me.IsMoving && MyGroupAndMe.Count > 1) {
-				Unit = Enemy.Where (p => p.IsPlayer && p.Target == Me && p.CanParticipateInCombat && Range (40, p)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Unit == null && LowestPlayer != null && Health (LowestPlayer) < 0.5 && HealingTouch (LowestPlayer))
+			if (InArena && UseHealingTouch && !Me.IsMoving && MyGroupAndMe.Count > 1) {
+				if (EnemyPlayerTargetToMe == null && LowestPlayer != null && Health (LowestPlayer) < 0.5 && HealingTouch (LowestPlayer))
 					return true;
 			}
 			return false;
