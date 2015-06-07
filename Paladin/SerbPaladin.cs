@@ -518,15 +518,15 @@ namespace ReBot
 
 		public bool GetHolyPower ()
 		{
+			if (Me.HasAura ("Daybreak")) {
+				Unit = BestAOEPlayer (40, 10, AOECount, 0.9);
+				if (Unit != null && HolyShock (Unit))
+					return true;
+			}
 			if (HolyPower <= MaxHolyPower && LowestPlayer != null) {
 				if (LowestPlayerCount (0.8) >= AOECount) {
-					if (Me.HasAura ("Daybreak")) {
-						if (HolyShock (LowestPlayer))
-							return true;
-					} else {
-						if (Health (LowestPlayer) <= HR && HolyRadiance (LowestPlayer))
-							return true;
-					}
+					if (Health (LowestPlayer) <= HR && HolyRadiance (LowestPlayer))
+						return true;
 				} else {
 					if (HolyShock (LowestPlayer))
 						return true;

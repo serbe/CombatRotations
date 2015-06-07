@@ -40,19 +40,6 @@ namespace ReBot
 			}
 		}
 
-		public UnitObject BestTarget (int spellRange, int aoeRange, int minCount)
-		{
-			var targets = Adds;
-			targets.Add (Target);
-
-			var bestTarget = targets.Where (u => u.IsInLoS && u.CombatRange <= spellRange).OrderByDescending (u => targets.Count (o => Vector3.Distance (u.Position, o.Position) <= aoeRange)).DefaultIfEmpty (null).FirstOrDefault ();
-			if (bestTarget != null) {
-				if (targets.Where (u => Vector3.Distance (u.Position, bestTarget.Position) <= aoeRange).ToList ().Count >= minCount)
-					return bestTarget;
-			}
-			return null;
-		}
-
 		// Combo
 
 		public bool Interrupt ()

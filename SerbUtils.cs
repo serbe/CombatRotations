@@ -271,6 +271,25 @@ namespace ReBot
 			return damage / 10 * (t / 1000);
 		}
 
+		public UnitObject BestAOETarget (int spellRange, int aoeRange, int minCount)
+		{
+			Unit = Enemy.Where (u => Range (spellRange, u)).OrderByDescending (u => Enemy.Count (o => Vector3.Distance (u.Position, o.Position) <= aoeRange)).DefaultIfEmpty (null).FirstOrDefault ();
+			if (Unit != null) {
+				if (Enemy.Where (u => Vector3.Distance (u.Position, Unit.Position) <= aoeRange).ToList ().Count >= minCount)
+					return Unit;
+			}
+			return null;
+		}
+
+		public UnitObject BestAOEPlayer (int spellRange, int aoeRange, int minCount, double minHealth = 1)
+		{
+			Unit = MyGroupAndMe.Where (u => Range (spellRange, u) && Health (u) <= minHealth).OrderByDescending (u => MyGroupAndMe.Count (o => Vector3.Distance (u.Position, o.Position) <= aoeRange)).DefaultIfEmpty (null).FirstOrDefault ();
+			if (Unit != null) {
+				if (Enemy.Where (u => Vector3.Distance (u.Position, Unit.Position) <= aoeRange).ToList ().Count >= minCount)
+					return Unit;
+			}
+			return null;
+		}
 		// Checkers
 
 		public bool C (string s, UnitObject u = null, bool t = false)
@@ -424,14 +443,6 @@ namespace ReBot
 			u = u ?? Target;	
 			return u.IsElite ();
 		}
-
-		//		public bool IsInEnrage (UnitObject o = null)
-		//		{
-		//			o = o ?? Target;
-		//			if (o.HasAura ("Enrage") || o.HasAura ("Berserker Rage") || o.HasAura ("Demonic Enrage") || o.HasAura ("Aspect of Thekal") || o.HasAura ("Charge Rage") || o.HasAura ("Electric Spur") || o.HasAura ("Cornered and Enraged!") || o.HasAura ("Draconic Rage") || o.HasAura ("Brood Rage") || o.HasAura ("Determination") || o.HasAura ("Charged Fists") || o.HasAura ("Beatdown") || o.HasAura ("Consuming Bite") || o.HasAura ("Delirious") || o.HasAura ("Angry") || o.HasAura ("Blood Rage") || o.HasAura ("Berserking Howl") || o.HasAura ("Bloody Rage") || o.HasAura ("Brewrific") || o.HasAura ("Desperate Rage") || o.HasAura ("Blood Crazed") || o.HasAura ("Combat Momentum") || o.HasAura ("Dire Rage") || o.HasAura ("Dominate Slave") || o.HasAura ("Blackrock Rabies") || o.HasAura ("Burning Rage") || o.HasAura ("Bloodletting Howl"))
-		//				return true;
-		//			return false;
-		//		}
 
 		public bool IsInEnrage (UnitObject u = null)
 		{

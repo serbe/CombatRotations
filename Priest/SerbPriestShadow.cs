@@ -299,22 +299,22 @@ namespace ReBot
 			}
 			//	actions.main+=/searing_insanity,if=buff.insanity.remains<0.5*gcd&active_enemies>=3&cooldown.mind_blast.remains>0.5*gcd,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Me.HasAura ("Insanity") && Me.AuraTimeRemaining ("Insanity") < 0.5 * 1.5 && ActiveEnemies (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
-				var bestTarget = BestTarget (40, 10, 3);
-				if (bestTarget != null) {
-					if (SearingInsanity (bestTarget)) {
+				Unit = BestAOETarget (40, 10, 3);
+				if (Unit != null) {
+					if (SearingInsanity (Unit)) {
 						IfInterrupt = "ChainMS";
-						InterruptTarget = bestTarget;
+						InterruptTarget = Unit;
 						return true;
 					}
 				}
 			}
 			//	actions.main+=/searing_insanity,if=active_enemies>=3&cooldown.mind_blast.remains>0.5*gcd,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Me.HasAura ("Insanity") && ActiveEnemies (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
-				var bestTarget = BestTarget (40, 10, 3);
-				if (bestTarget != null) {
-					if (SearingInsanity (bestTarget)) {
+				Unit = BestAOETarget (40, 10, 3);
+				if (Unit != null) {
+					if (SearingInsanity (Unit)) {
 						IfInterrupt = "ChainMS";
-						InterruptTarget = bestTarget;
+						InterruptTarget = Unit;
 						return true;
 					}
 				}
@@ -419,11 +419,11 @@ namespace ReBot
 			}
 			//	actions.main+=/mind_sear,chain=1,if=active_enemies>=4,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1|shadow_orb=5)
 			if (ActiveEnemies (40) >= 4) {
-				var bestTarget = BestTarget (40, 10, 4);
-				if (bestTarget != null) {
-					if (MindSear (bestTarget)) {
+				Unit = BestAOETarget (40, 10, 4);
+				if (Unit != null) {
+					if (MindSear (Unit)) {
 						IfInterrupt = "ChainMSO";
-						InterruptTarget = bestTarget;
+						InterruptTarget = Unit;
 						return true;
 					}
 				}
@@ -612,22 +612,22 @@ namespace ReBot
 			}
 			//	actions.vent+=/searing_insanity,if=buff.insanity.remains<0.5*gcd&active_enemies>=3&cooldown.mind_blast.remains>0.5*gcd,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Me.HasAura ("Insanity") && Me.AuraTimeRemaining ("Insanity") < 0.5 * 1.5 && ActiveEnemies (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
-				var bestTarget = BestTarget (40, 10, 3);
-				if (bestTarget != null) {
-					if (SearingInsanity (bestTarget)) {
+				Unit = BestAOETarget (40, 10, 3);
+				if (Unit != null) {
+					if (SearingInsanity (Unit)) {
 						IfInterrupt = "ChainMS";
-						InterruptTarget = bestTarget;
+						InterruptTarget = Unit;
 						return true;
 					}
 				}
 			}
 			//	actions.vent+=/searing_insanity,if=active_enemies>=3&cooldown.mind_blast.remains>0.5*gcd,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Me.HasAura ("Insanity") && ActiveEnemies (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
-				var bestTarget = BestTarget (40, 10, 3);
-				if (bestTarget != null) {
-					if (SearingInsanity (bestTarget)) {
+				Unit = BestAOETarget (40, 10, 3);
+				if (Unit != null) {
+					if (SearingInsanity (Unit)) {
 						IfInterrupt = "ChainMS";
-						InterruptTarget = bestTarget;
+						InterruptTarget = Unit;
 						return true;
 					}
 				}
@@ -702,11 +702,11 @@ namespace ReBot
 			}
 			//	actions.vent+=/mind_sear,chain=1,if=active_enemies>=3&cooldown.mind_blast.remains>0.5*gcd,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (ActiveEnemies (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5 && Usable ("Mind Sear")) {
-				var bestTarget = BestTarget (40, 10, 3);
-				if (bestTarget != null) {
-					if (MindSear (bestTarget)) {
+				Unit = BestAOETarget (40, 10, 3);
+				if (Unit != null) {
+					if (MindSear (Unit)) {
 						IfInterrupt = "ChainMS";
-						InterruptTarget = bestTarget;
+						InterruptTarget = Unit;
 						return true;
 					}
 				}
@@ -809,22 +809,22 @@ namespace ReBot
 			}
 			//	actions.cop_dotweave+=/searing_insanity,if=buff.insanity.remains<0.5*gcd&active_enemies>=3&cooldown.mind_blast.remains>0.5*gcd,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Me.HasAura ("Insanity") && Me.AuraTimeRemaining ("Insanity") < 0.5 * 1.5 && ActiveEnemies (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
-				var bestTarget = BestTarget (40, 10, 3);
-				if (bestTarget != null) {
-					if (SearingInsanity (bestTarget)) {
+				Unit = BestAOETarget (40, 10, 3);
+				if (Unit != null) {
+					if (SearingInsanity (Unit)) {
 						IfInterrupt = "ChainMS";
-						InterruptTarget = bestTarget;
+						InterruptTarget = Unit;
 						return true;
 					}
 				}
 			}
 			//	actions.cop_dotweave+=/searing_insanity,if=active_enemies>=3&cooldown.mind_blast.remains>0.5*gcd,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Me.HasAura ("Insanity") && ActiveEnemies (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
-				var bestTarget = BestTarget (40, 10, 3);
-				if (bestTarget != null) {
-					if (SearingInsanity (bestTarget)) {
+				Unit = BestAOETarget (40, 10, 3);
+				if (Unit != null) {
+					if (SearingInsanity (Unit)) {
 						IfInterrupt = "ChainMS";
-						InterruptTarget = bestTarget;
+						InterruptTarget = Unit;
 						return true;
 					}
 				}
@@ -934,11 +934,11 @@ namespace ReBot
 			}
 			//	actions.cop_dotweave+=/mind_sear,if=active_enemies>=8,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Usable ("Mind Sear") && ActiveEnemies (40) >= 8) {
-				var bestTarget = BestTarget (40, 10, 8);
-				if (bestTarget != null) {
-					if (MindSear (bestTarget)) {
+				Unit = BestAOETarget (40, 10, 8);
+				if (Unit != null) {
+					if (MindSear (Unit)) {
 						IfInterrupt = "ChainMS";
-						InterruptTarget = bestTarget;
+						InterruptTarget = Unit;
 						return true;
 					}
 				}
@@ -1053,22 +1053,22 @@ namespace ReBot
 			}
 			//	actions.cop_insanity+=/searing_insanity,if=buff.insanity.remains<0.5*gcd&active_enemies>=3&cooldown.mind_blast.remains>0.5*gcd,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Me.HasAura ("Insanity") && Me.AuraTimeRemaining ("Insanity") < 0.5 * 1.5 && ActiveEnemies (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
-				var bestTarget = BestTarget (40, 10, 3);
-				if (bestTarget != null) {
-					if (SearingInsanity (bestTarget)) {
+				Unit = BestAOETarget (40, 10, 3);
+				if (Unit != null) {
+					if (SearingInsanity (Unit)) {
 						IfInterrupt = "ChainMS";
-						InterruptTarget = bestTarget;
+						InterruptTarget = Unit;
 						return true;
 					}
 				}
 			}
 			//	actions.cop_insanity+=/searing_insanity,if=active_enemies>=5,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Usable ("Mind Sear") && Me.HasAura ("Insanity") && ActiveEnemies (40) >= 5) {
-				var bestTarget = BestTarget (40, 10, 5);
-				if (bestTarget != null) {
-					if (SearingInsanity (bestTarget)) {
+				Unit = BestAOETarget (40, 10, 5);
+				if (Unit != null) {
+					if (SearingInsanity (Unit)) {
 						IfInterrupt = "ChainMS";
-						InterruptTarget = bestTarget;
+						InterruptTarget = Unit;
 						return true;
 					}
 				}
@@ -1132,11 +1132,11 @@ namespace ReBot
 			}
 			//	actions.cop_insanity+=/mind_sear,if=active_enemies>=8,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Usable ("Mind Sear") && ActiveEnemies (40) >= 8) {
-				var bestTarget = BestTarget (40, 10, 8);
-				if (bestTarget != null) {
-					if (MindSear (bestTarget)) {
+				Unit = BestAOETarget (40, 10, 8);
+				if (Unit != null) {
+					if (MindSear (Unit)) {
 						IfInterrupt = "ChainMS";
-						InterruptTarget = bestTarget;
+						InterruptTarget = Unit;
 						return true;
 					}
 				}
@@ -1364,11 +1364,11 @@ namespace ReBot
 			}
 			//	actions.cop+=/mind_sear,if=active_enemies>=8,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (ActiveEnemies (40) >= 8) {
-				var bestTarget = BestTarget (40, 10, 3);
-				if (bestTarget != null) {
-					if (MindSear (bestTarget)) {
+				Unit = BestAOETarget (40, 10, 3);
+				if (Unit != null) {
+					if (MindSear (Unit)) {
 						IfInterrupt = "ChainMS";
-						InterruptTarget = bestTarget;
+						InterruptTarget = Unit;
 						return true;
 					}
 				}
