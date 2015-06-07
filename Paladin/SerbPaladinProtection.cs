@@ -120,6 +120,9 @@ namespace ReBot
 				return;
 			}
 
+			if (MeIsBusy)
+				return;
+
 			if (Interrupt ())
 				return;
 
@@ -170,14 +173,20 @@ namespace ReBot
 			//	actions+=/seraphim
 			Seraphim ();
 			//	actions+=/divine_protection,if=time<5|!talent.seraphim.enabled|(buff.seraphim.down&cooldown.seraphim.remains>5&cooldown.seraphim.remains<9)
-			if (Time < 5 || !HasSpell ("Seraphim") || (!Me.HasAura ("Seraphim") && Cooldown ("Seraphim") > 5 && Cooldown ("Seraphim") < 9))
-				DivineProtection ();
+			if (Time < 5 || !HasSpell ("Seraphim") || (!Me.HasAura ("Seraphim") && Cooldown ("Seraphim") > 5 && Cooldown ("Seraphim") < 9)) {
+				if (NeedDivineProtection)
+					DivineProtection ();
+			}
 			//	actions+=/guardian_of_ancient_kings,if=time<5|(buff.holy_avenger.down&buff.shield_of_the_righteous.down&buff.divine_protection.down)
-			if (Time < 5 || (!Me.HasAura ("Holy Avenger") && !Me.HasAura ("Shield of the Righteous") && !Me.HasAura ("Divine Protection")))
-				GuardianofAncientKings ();
+			if (Time < 5 || (!Me.HasAura ("Holy Avenger") && !Me.HasAura ("Shield of the Righteous") && !Me.HasAura ("Divine Protection") && !Me.HasAura ("Ardent Defender"))) {
+				if (Health (Me) <= 0.4)
+					GuardianofAncientKings ();
+			}
 			//	actions+=/ardent_defender,if=time<5|(buff.holy_avenger.down&buff.shield_of_the_righteous.down&buff.divine_protection.down&buff.guardian_of_ancient_kings.down)
-			if (Time < 5 || (!Me.HasAura ("Holy Avenger") && !Me.HasAura ("Shield of the Righteous") && !Me.HasAura ("Divine Protection") && !Me.HasAura ("Guardian of Ancient Kings")))
-				ArdentDefender ();
+			if (Time < 5 || (!Me.HasAura ("Holy Avenger") && !Me.HasAura ("Shield of the Righteous") && !Me.HasAura ("Divine Protection") && !Me.HasAura ("Guardian of Ancient Kings"))) {
+				if (Health (Me) <= 0.2)
+					ArdentDefender ();
+			}
 			//	actions+=/eternal_flame,if=buff.eternal_flame.remains<2&buff.bastion_of_glory.react>2&(holy_power>=3|buff.divine_purpose.react|buff.bastion_of_power.react)
 			if (Me.AuraTimeRemaining ("Eternal Flame") < 2 && AuraStackCount ("Bastion of Glory") > 2 && (HolyPower >= 3 || Me.HasAura ("Divine Purpose") || Me.HasAura ("Bastion of Power"))) {
 				if (EternalFlame ())
@@ -202,8 +211,7 @@ namespace ReBot
 					return true;
 			}
 			//	# GCD-bound spells
-			if (HasGlobalCooldown () && Gcd)
-				return true;
+
 			//	actions+=/seal_of_insight,if=talent.empowered_seals.enabled&!seal.insight&buff.uthers_insight.remains<cooldown.judgment.remains
 			if (HasSpell ("Empowered Seals") && !IsInShapeshiftForm ("Seal of Insight") && Me.AuraTimeRemaining ("Uther's Insight") < Cooldown ("Judgment")) {
 				if (SealofInsight ())
@@ -372,8 +380,7 @@ namespace ReBot
 					return true;
 			}
 			//	# GCD-bound spells
-			if (HasGlobalCooldown () && Gcd)
-				return true;
+
 			//	actions.max_dps+=/avengers_shield,if=buff.grand_crusader.react&active_enemies>1&!glyph.focused_shield.enabled
 			if (Me.HasAura ("Grand Crusader") && ActiveEnemies (30) > 1 && !HasGlyph (54930)) {
 				if (AvengersShield ())
@@ -507,26 +514,28 @@ namespace ReBot
 			//	actions.max_survival+=/arcane_torrent
 			ArcaneTorrent ();
 			//	# Off-GCD spells.
-			if (HasGlobalCooldown () && Gcd)
-				return true;
+
 			//	actions.max_survival+=/holy_avenger
 			HolyAvenger ();
 			//	actions.max_survival+=/potion,name=draenic_armor,if=buff.shield_of_the_righteous.down&buff.seraphim.down&buff.divine_protection.down&buff.guardian_of_ancient_kings.down&buff.ardent_defender.down
 			//	actions.max_survival+=/divine_protection,if=time<5|!talent.seraphim.enabled|(buff.seraphim.down&cooldown.seraphim.remains>5&cooldown.seraphim.remains<9)
 			if (Time < 5 || !HasSpell ("Seraphim") || (!Me.HasAura ("Seraphim") && Cooldown ("Seraphim") > 5 && Cooldown ("Seraphim") < 9)) {
-				DivineProtection ();
+				if (NeedDivineProtection)
+					DivineProtection ();
 			}
 			//	actions.max_survival+=/seraphim,if=buff.divine_protection.down&cooldown.divine_protection.remains>0
 			if (!Me.HasAura ("Divine Protection") && Me.AuraTimeRemaining ("Divine Protection") > 0) {
 				Seraphim ();
 			}
 			//	actions.max_survival+=/guardian_of_ancient_kings,if=buff.holy_avenger.down&buff.shield_of_the_righteous.down&buff.divine_protection.down
-			if (!Me.HasAura ("Holy Avenger") && !Me.HasAura ("Shield of the Righteous") && !Me.HasAura ("Divine Protection")) {
-				GuardianofAncientKings ();
+			if (!Me.HasAura ("Holy Avenger") && !Me.HasAura ("Shield of the Righteous") && !Me.HasAura ("Divine Protection") && !Me.HasAura ("Ardent Defender")) {
+				if (Health (Me) <= 0.4)
+					GuardianofAncientKings ();
 			}
 			//	actions.max_survival+=/ardent_defender,if=buff.holy_avenger.down&buff.shield_of_the_righteous.down&buff.divine_protection.down&buff.guardian_of_ancient_kings.down
 			if (!Me.HasAura ("Holy Avenger") && !Me.HasAura ("Shield of the Righteous") && !Me.HasAura ("Divine Protection") && !Me.HasAura ("Guardian of Ancient Kings")) {
-				ArdentDefender ();
+				if (Health (Me) <= 0.2)
+					ArdentDefender ();
 			}
 			//	actions.max_survival+=/eternal_flame,if=buff.eternal_flame.remains<2&buff.bastion_of_glory.react>2&(holy_power>=3|buff.divine_purpose.react|buff.bastion_of_power.react)
 			if (Me.AuraTimeRemaining ("Eternal Flame") < 2 && AuraStackCount ("Bastion of Glory") > 2 && (HolyPower >= 3 || Me.HasAura ("Divine Purpose") || Me.HasAura ("Bastion of Power"))) {

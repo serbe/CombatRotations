@@ -96,6 +96,9 @@ namespace ReBot
 				}
 			}
 
+			if (UseLayonHands ())
+				return;
+			
 			if (UseSacredShield ())
 				return;
 
@@ -103,9 +106,6 @@ namespace ReBot
 				if (DivineShield ())
 					return;
 			}
-
-			if (UseLayonHands ())
-				return;
 
 			if (LowestPlayerCount (0.5) >= AOECount) {
 				if (AvengingWrath ())

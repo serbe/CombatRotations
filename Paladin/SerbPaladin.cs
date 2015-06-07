@@ -165,6 +165,15 @@ namespace ReBot
 			return u.HasAura ("Blessing of Kings") || u.HasAura ("Legacy of the Emperor") || u.HasAura ("Mark of the Wild");
 		}
 
+		public bool NeedDivineProtection {
+			get {
+				Unit = Enemy.Where (u => u.IsCasting && u.CastingTime > 0 && u.CastingTime < 2).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && (Health (Me) < 0.7 || IsBoss (Unit)))
+					return true;
+				return false;
+			}
+		}
+
 		// Combo
 
 		public bool Clean (UnitObject u = null)
@@ -556,6 +565,7 @@ namespace ReBot
 			return Usable ("Holy Avenger") && Danger () && CS ("Holy Avenger");
 		}
 
+		// Гнев карателя
 		public bool AvengingWrath ()
 		{
 			return Usable ("Avenging Wrath") && Danger () && CS ("Avenging Wrath");
@@ -566,17 +576,20 @@ namespace ReBot
 			return Usable ("Seraphim") && Range (8) && HolyPower == 5 && CS ("Seraphim");
 		}
 
+		// Божественная защита
 		public bool DivineProtection ()
 		{
 			return Usable ("Divine Protection") && CS ("Divine Protection");
 		}
 
+		// Защитник древних королей
 		public bool GuardianofAncientKings (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return Usable ("Guardian of Ancient Kings") && Range (30, u) && DangerBoss (u) && C ("Guardian of Ancient Kings", u);
 		}
 
+		// Ревностный защитник
 		public bool ArdentDefender ()
 		{
 			return Usable ("Ardent Defender") && DangerBoss () && CS ("Ardent Defender");
@@ -742,6 +755,7 @@ namespace ReBot
 			return Usable ("Fist of Justice") && Range (20, u) && C ("Fist of Justice", u);
 		}
 
+		// Возложение рук
 		public bool LayonHands (UnitObject u = null)
 		{
 			u = u ?? Target;
