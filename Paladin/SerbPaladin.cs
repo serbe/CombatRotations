@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Geometry;
+﻿using System.Linq;
 using ReBot.API;
 
 namespace ReBot
@@ -553,9 +550,10 @@ namespace ReBot
 			return Usable ("Speed of Light") && CS ("Speed of Light");
 		}
 
+		// Святой каратель
 		public bool HolyAvenger ()
 		{
-			return Usable ("Holy Avenger") && CS ("Holy Avenger");
+			return Usable ("Holy Avenger") && Danger () && CS ("Holy Avenger");
 		}
 
 		public bool AvengingWrath ()
