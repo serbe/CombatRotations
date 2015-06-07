@@ -98,14 +98,14 @@ namespace ReBot
 
 			if (UseLayonHands ())
 				return;
-			
-			if (UseSacredShield ())
-				return;
 
 			if (Health (Me) <= 0.25) {
 				if (DivineShield ())
 					return;
 			}
+
+			if (UseSacredShield ())
+				return;
 
 			if (LowestPlayerCount (0.5) >= AOECount) {
 				if (AvengingWrath ())
@@ -131,6 +131,8 @@ namespace ReBot
 					return;
 			}
 
+			if (UseWarningHeal ())
+				return;
 
 			if (LowestPlayerCount (0.83) >= AOECount) {
 
@@ -172,6 +174,23 @@ namespace ReBot
 					return;
 				if (Denounce ())
 					return;
+			}
+
+			if (Mana (Me) > 0.6) {
+				if (Me.Focus != null)
+					Unit = Me.Focus;
+				else if (Tank != null)
+					Unit = Tank;
+				if (Enemy.Where (u => u.Target == Unit).DefaultIfEmpty (null).FirstOrDefault () != null) {
+					if (Usable ("Holy Shock")) {
+						if (HolyShock (Unit))
+							return;
+					}
+					if (Usable ("Holy Light")) {
+						if (HolyLight (Unit))
+							return;
+					}
+				}
 			}
 		}
 	}

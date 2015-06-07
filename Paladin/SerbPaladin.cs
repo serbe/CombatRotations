@@ -393,6 +393,29 @@ namespace ReBot
 			return false;
 		}
 
+		public bool UseWarningHeal ()
+		{
+			if (Usable ("Flash of Light")) {
+				if (Me.Focus != null) {
+					if (Health (Me.Focus) <= 0.5) {
+						if (FlashofLight (Me.Focus))
+							return true;
+					}
+				} else if (Tank != null) {
+					if (Health (Tank) <= 0.5) {
+						if (FlashofLight (Tank))
+							return true;
+					}
+				} else {
+					if (Health (Me) <= 0.5) {
+						if (FlashofLight (Me))
+							return true;
+					}
+				}
+			}
+			return false;
+		}
+
 		public bool UseHolyShock ()
 		{
 			if (HolyPower < MaxHolyPower && Usable ("Holy Shock")) {
@@ -473,7 +496,7 @@ namespace ReBot
 		public bool  UseHealTarget ()
 		{
 			if (Target.IsFriendly && Range (40) && !Target.IsDead) {
-				if (HolyPower < MaxHolyPower && Health () <= 0.9) {
+				if (HolyPower < MaxHolyPower && Health () < 1) {
 					if (HolyShock ())
 						return true;
 				}
@@ -539,6 +562,7 @@ namespace ReBot
 			return Usable ("Hand of Protection") && Range (40, u) && !u.HasAura ("Forbearance") && C ("Hand of Protection", u);
 		}
 
+		// Божественный щит
 		public bool DivineShield ()
 		{
 			return Usable ("Divine Shield") && !Me.HasAura ("Forbearance") && CS ("Divine Shield");
@@ -662,12 +686,14 @@ namespace ReBot
 			return Usable ("Seal of Righteousness") && CS ("Seal of Righteousness");
 		}
 
+		// Щит мстителя
 		public bool AvengersShield (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return Usable ("Avenger's Shield") && Range (30, u) && C ("Avenger's Shield", u);
 		}
 
+		// Священный щит
 		public bool SacredShield (UnitObject u = null)
 		{
 			u = u ?? Target;

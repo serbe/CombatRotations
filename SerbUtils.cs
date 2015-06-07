@@ -360,6 +360,8 @@ namespace ReBot
 		public bool Danger (UnitObject u = null, int r = 0, int e = 2)
 		{
 			u = u ?? Target;
+			if (Me.IsHealer)
+				return true;
 			if (r != 0)
 				return Range (r, u) && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e || Health (Me) < 0.4);
 			return u.IsInCombatRangeAndLoS && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e || Health (Me) < 0.4);
@@ -368,6 +370,8 @@ namespace ReBot
 		public bool DangerBoss (UnitObject u = null, int r = 0, int e = 6)
 		{
 			u = u ?? Target;
+			if (Me.IsHealer)
+				return true;
 			if (r != 0)
 				return Range (r, u) && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e || Health (Me) < 0.2);
 			return u.IsInCombatRangeAndLoS && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e || Health (Me) < 0.2);
