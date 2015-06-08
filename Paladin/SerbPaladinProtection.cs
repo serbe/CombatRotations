@@ -304,7 +304,7 @@ namespace ReBot
 			}
 			//	actions+=/execution_sentence,if=!talent.seraphim.enabled|buff.seraphim.up|time<12
 			if (!HasSpell ("Seraphim") || Me.HasAura ("Seraphim") || Time < 12) {
-				if (ExecutionSentence ())
+				if (Health (Me) < 0.4 && ExecutionSentence (Me))
 					return true;
 			}
 			//	actions+=/hammer_of_wrath
@@ -628,7 +628,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.max_survival+=/execution_sentence
-			if (ExecutionSentence ())
+			if (Health (Me) < 0.4 && ExecutionSentence (Me))
 				return true;
 			//	actions.max_survival+=/flash_of_light,if=talent.selfless_healer.enabled&buff.selfless_healer.stack>=3
 			if (HasSpell ("Selfless Healer") && AuraStackCount ("Selfless Healer") >= 3) {

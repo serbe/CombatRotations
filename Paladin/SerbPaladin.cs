@@ -610,7 +610,7 @@ namespace ReBot
 		public bool GuardianofAncientKings (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Guardian of Ancient Kings") && Range (30, u) && DangerBoss (u) && C ("Guardian of Ancient Kings", u);
+			return Usable ("Guardian of Ancient Kings") && DangerBoss (u, 30) && C ("Guardian of Ancient Kings", u);
 		}
 
 		// Ревностный защитник
@@ -706,6 +706,7 @@ namespace ReBot
 			return Usable ("Holy Prism") && Range (40, u) && C ("Holy Prism", u);
 		}
 
+		// Смертный приговор
 		public bool ExecutionSentence (UnitObject u = null)
 		{
 			u = u ?? Target;
