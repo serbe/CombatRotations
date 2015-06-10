@@ -99,12 +99,12 @@ namespace ReBot
 					return;
 			}
 			//	actions+=/execution_sentence,if=!talent.seraphim.enabled
-			if (!HasSpell ("Seraphim") && Danger ()) {
+			if (!InArena && !HasSpell ("Seraphim") && Danger ()) {
 				if (ExecutionSentence ())
 					return;
 			}
 			//	actions+=/execution_sentence,sync=seraphim,if=talent.seraphim.enabled
-			if (HasSpell ("Seraphim") && Me.HasAura ("Seraphim") && Danger ()) {
+			if (!InArena && HasSpell ("Seraphim") && Me.HasAura ("Seraphim")) {
 				if (ExecutionSentence ())
 					return;
 			}

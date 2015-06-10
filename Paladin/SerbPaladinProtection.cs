@@ -50,8 +50,8 @@ namespace ReBot
 			//	actions.precombat+=/food,type=pickled_eel,if=role.attack|using_apl.max_dps
 			//	actions.precombat+=/blessing_of_kings,if=(!aura.str_agi_int.up)&(aura.mastery.up)
 			//	actions.precombat+=/blessing_of_might,if=!aura.mastery.up
-			if (Buff (Me))
-				return true;
+//			if (Buff (Me))
+//				return true;
 			//	actions.precombat+=/seal_of_insight
 			//	actions.precombat+=/seal_of_righteousness,if=role.attack|using_apl.max_dps
 			//	actions.precombat+=/sacred_shield

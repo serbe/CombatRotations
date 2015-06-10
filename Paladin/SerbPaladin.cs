@@ -208,7 +208,27 @@ namespace ReBot
 
 		public bool Heal ()
 		{
-			if (Health (Me) <= 0.5 && AuraStackCount ("Selfless Healer") >= 3) {
+			if (Health (Me) <= 0.15 && !Me.HasAura ("Immunity") && Cooldown ("Lay on Hands") > 1 && Cooldown ("Divine Shield") > 1) {
+				if (HandofProtection (Me))
+					return true;
+			}
+			if (Health (Me) <= 0.2 && !Me.HasAura ("Divine Shield") && !Me.HasAura ("Immunity")) {
+				if (LayonHands (Me))
+					return true;
+			}
+			if (Health (Me) <= 0.3 && !Me.HasAura ("Immunity")) {
+				if (DivineShield ())
+					return true;
+			}
+			if (Health (Me) <= 0.3 && HolyPower >= 1) {
+				if (WordofGlory (Me))
+					return true;
+			}
+			if (Health (Me) <= 0.4) {
+				if (ExecutionSentence (Me))
+					return true;
+			}
+			if (Health (Me) <= 0.7 && AuraStackCount ("Selfless Healer") >= 3) {
 				if (FlashofLight (Me))
 					return true;
 			}
@@ -224,30 +244,14 @@ namespace ReBot
 				if (WordofGlory (Me))
 					return true;
 			}
-			if (Health (Me) <= 0.3 && HolyPower >= 1) {
-				if (WordofGlory (Me))
-					return true;
-			}
 //			if (CastSelf ("Flash of Light", () => Health <= 0.6 && Me.HasAura ("Divine Shield") && TargetHealth >= 0.15))
 //				return;
 //			if (Me.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType))) {
 //				if (Cleanse (Me))
 //					return true;
 //			}
-			if (Health (Me) <= 0.3 && !Me.HasAura ("Immunity")) {
-				if (DivineShield ())
-					return true;
-			}
-			if (Health (Me) <= 0.2 && !Me.HasAura ("Divine Shield") && !Me.HasAura ("Immunity")) {
-				if (LayonHands (Me))
-					return true;
-			}
 			if (Health (Me) <= 0.6 && Target.IsCasting && !Me.HasAura ("Divine Shield")) {
 				if (DivineProtection ())
-					return true;
-			}
-			if (Health (Me) <= 0.15 && !Me.HasAura ("Immunity") && Cooldown ("Lay on Hands") > 1 && Cooldown ("Divine Shield") > 1) {
-				if (HandofProtection (Me))
 					return true;
 			}
 
