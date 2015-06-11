@@ -22,93 +22,17 @@ namespace ReBot
 
 		// Get
 
-		public List<PlayerObject> Members {
-			get {
-				return Group.GetGroupMemberObjects ();
-			}
-		}
-
-		public PlayerObject[] GrWMe {
-			get {
-				return Group.GetGroupMemberObjects ().Concat (new[] { Me }).ToArray ();
-			}
-		}
-
-		public PlayerObject LowHp {
-			get {
-				return GrWMe.OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ((p => p.Health > 0));
-			}
-		}
-
-		public double EnergyRegen {
-			get {
-				string activeRegen = API.ExecuteLua<string> ("inactiveRegen, activeRegen = GetPowerRegen(); return activeRegen");
-				return Convert.ToDouble (activeRegen);
-			}
-		}
-
-		public double TimeToMaxEnergy {
-			get {
-				return (MaxEnergy - Energy) / EnergyRegen;
-			}
-		}
-
-		public double Health (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.HealthFraction;
-		}
-
-		public double Mana (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.ManaFraction;
-		}
-
-		public int Chi {
-			get { return Me.GetPower (WoWPowerType.MonkLightForceChi); }
-		}
-
-		public int ChiMax {
-			get {
-				int Max = 4;
-				if (HasSpell ("Ascension"))
-					Max = Max + 1;
-				if (HasSpell ("Empowered Chi"))
-					Max = Max + 1;
-				return Max;
-			}
-		}
-
-		public double Cooldown (string s)
-		{ 
-			return SpellCooldown (s) > 0 ? SpellCooldown (s) : 0;
-		}
-
-		public int Energy { 
-			get {
-				return Me.GetPower (WoWPowerType.Energy);
-			}
-		}
-
-		public double Time {
-			get {
-				TimeSpan CombatTime = DateTime.Now.Subtract (StartBattle);
-				return CombatTime.TotalSeconds;
-			}
-		}
+		//		public double TimeToMaxEnergy {
+		//			get {
+		//				return (MaxEnergy - Energy) / EnergyRegen;
+		//			}
+		//		}
 
 		public double TimeRun {
 			get {
 				TimeSpan RunTime = DateTime.Now.Subtract (StartRun);
 				return RunTime.TotalSeconds;
 			}
-		}
-
-		public double TimeToDie (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.Health / Ttd;
 		}
 
 		public double DamageTaken (float t)
@@ -133,49 +57,6 @@ namespace ReBot
 			}
 		}
 
-		public List<UnitObject> Enemy {
-			get {
-				var targets = Adds;
-				targets.Add (Target);
-				return targets;
-			}
-		}
-
-		public int ActiveEnemies (int r)
-		{
-			int x = 0;
-			foreach (UnitObject u in API.CollectUnits(r)) {
-				if ((u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable && u.InCombat) {
-					x++;
-				}
-			}
-			return x;
-		}
-
-		public int ActiveEnemiesWithTarget (int r, UnitObject t = null)
-		{
-			t = t ?? Target;
-			int x = 0;
-			foreach (UnitObject u in API.CollectUnits(45)) {
-				if (Vector3.Distance (t.Position, u.Position) <= r && (u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable) {
-					x++;
-				}
-			}
-			return x;
-		}
-
-		public PlayerObject Healer {
-			get {
-				return Group.GetGroupMemberObjects ().Where (p => !p.IsDead && p.IsHealer).DefaultIfEmpty (null).FirstOrDefault ();
-			}
-		}
-
-		public PlayerObject Tank {
-			get {
-				return Group.GetGroupMemberObjects ().Where (p => !p.IsDead && p.IsTank).DefaultIfEmpty (null).FirstOrDefault ();
-			}
-		}
-
 		public UnitObject ZenSphereTarget {
 			get {
 				if (Me.Focus != null) {
@@ -194,118 +75,6 @@ namespace ReBot
 
 		// Check
 
-		public bool C (string s, UnitObject u = null)
-		{
-			u = u ?? Target;
-			if (Cast (s, u))
-				return true;
-			API.Print ("False Cast " + s + " with " + u.CombatRange + " range");
-			return false;
-		}
-
-		public bool CS (string s)
-		{
-			if (CastSelf (s))
-				return true;
-			API.Print ("False CastSelf " + s);
-			return false;
-		}
-
-		public bool COT (string s, UnitObject u = null)
-		{
-			u = u ?? Target;
-			if (CastOnTerrain (s, u.Position))
-				return true;
-			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range");
-			return false;
-		}
-
-		public bool COTPD (string s, UnitObject u = null, int p = 800)
-		{
-			u = u ?? Target;
-			if (CastOnTerrainPreventDouble (s, u.Position, null, p))
-				return true;
-			API.Print ("False CastOnTerrain " + s + " with " + u.CombatRange + " range");
-			return false;
-		}
-
-		public bool IsBoss (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return(u.MaxHealth >= Me.MaxHealth * (BossHealthPercentage / 100f)) || u.Level >= Me.Level + BossLevelIncrease;
-		}
-
-		public bool IsPlayer (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.IsPlayer;
-		}
-
-		public bool IsElite (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.IsElite ();
-		}
-
-		public bool Usable (string s)
-		{ 
-			return HasSpell (s) && Cooldown (s) == 0;
-		}
-
-		public bool InRaid {
-			get {
-				return API.MapInfo.Type == MapType.Raid;
-			}
-		}
-
-		public bool InInstance {
-			get {
-				return API.MapInfo.Type == MapType.Instance;
-			}
-		}
-
-		public bool InArena {
-			get {
-				return API.MapInfo.Type == MapType.Arena;
-			}
-		}
-
-		public bool InBg {
-			get {
-				return API.MapInfo.Type == MapType.PvP;
-			}
-		}
-
-		public bool Range (int r, UnitObject u = null, int l = 0)
-		{
-			u = u ?? Target;
-			if (l != 0)
-				return u.IsInLoS && u.CombatRange <= r && u.CombatRange >= l;
-			return u.IsInLoS && u.CombatRange <= r;
-		}
-
-		public bool Range (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return u.IsInCombatRangeAndLoS;
-		}
-
-
-		public bool Danger (UnitObject u = null, int r = 0, int e = 2)
-		{
-			u = u ?? Target;
-			if (r != 0)
-				return Range (r, u) && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-			return u.IsInCombatRangeAndLoS && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-		}
-
-		public bool DangerBoss (UnitObject u = null, int r = 0, int e = 6)
-		{
-			u = u ?? Target;
-			if (r != 0)
-				return Range (r, u) && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-			return u.IsInCombatRangeAndLoS && (IsBoss (u) || IsPlayer (u) || ActiveEnemies (10) > e);
-		}
 
 		// Combo
 

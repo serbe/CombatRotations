@@ -227,6 +227,21 @@ namespace ReBot
 			}
 		}
 
+		public int Chi {
+			get { return Me.GetPower (WoWPowerType.MonkLightForceChi); }
+		}
+
+		public int ChiMax {
+			get {
+				int Max = 4;
+				if (HasSpell ("Ascension"))
+					Max = Max + 1;
+				if (HasSpell ("Empowered Chi"))
+					Max = Max + 1;
+				return Max;
+			}
+		}
+
 		public double RegenPower {
 			get {
 				string activeRegen = API.ExecuteLua<string> ("inactiveRegen, activeRegen = GetPowerRegen(); return activeRegen");
