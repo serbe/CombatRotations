@@ -212,7 +212,7 @@ namespace ReBot
 				if (HandofProtection (Me))
 					return true;
 			}
-			if (Health (Me) <= 0.2 && !Me.HasAura ("Divine Shield") && !Me.HasAura ("Immunity")) {
+			if (!InArena && Health (Me) <= 0.2 && !Me.HasAura ("Divine Shield") && !Me.HasAura ("Immunity")) {
 				if (LayonHands (Me))
 					return true;
 			}
