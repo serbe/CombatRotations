@@ -232,6 +232,10 @@ namespace ReBot
 				if (ExecutionSentence (Me))
 					return true;
 			}
+			if (Health (Me) <= 0.4) {
+				if (Healthstone ())
+					return true;
+			}
 			if (Health (Me) <= 0.5 && !Me.HasAura ("Immunity")) {
 				if (DivineShield ())
 					return true;

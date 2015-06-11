@@ -7,27 +7,17 @@ using ReBot.API;
 
 namespace ReBot
 {
-	public abstract class SerbMonk : CombatRotation
+	public abstract class SerbMonk : SerbUtils
 	{
 		// Vars Consts
 
 		[JsonProperty ("Maximum Energy")] 
 		public int MaxEnergy = 100;
-		[JsonProperty ("TimeToDie (MaxHealth / TTD)")]
-		public int Ttd = 10;
 		[JsonProperty ("Time run to use Tiger Lust")]
 		public double TTL = 1;
 
-		public int BossHealthPercentage = 500;
-		public int BossLevelIncrease = 5;
-		public Int32 OraliusWhisperingCrystalID = 118922;
-		public Int32 CrystalOfInsanityID = 86569;
-		public DateTime StartBattle;
 		public DateTime StartRun;
 		public bool InRun;
-		public bool InCombat;
-		public UnitObject Unit;
-		public PlayerObject Player;
 		Random Rnd = new Random ();
 
 		// Get
@@ -640,25 +630,5 @@ namespace ReBot
 
 		// Items
 
-		public bool Healthstone ()
-		{
-			if (API.HasItem (5512) && API.ItemCooldown (5512) == 0)
-				return API.UseItem (5512);
-			return false;
-		}
-
-		public bool CrystalOfInsanity ()
-		{
-			if (!InArena && API.HasItem (CrystalOfInsanityID) && !HasAura ("Visions of Insanity") && API.ItemCooldown (CrystalOfInsanityID) == 0)
-				return API.UseItem (CrystalOfInsanityID);
-			return false;
-		}
-
-		public bool OraliusWhisperingCrystal ()
-		{
-			if (API.HasItem (OraliusWhisperingCrystalID) && !HasAura ("Whispers of Insanity") && API.ItemCooldown (OraliusWhisperingCrystalID) == 0)
-				return API.UseItem (OraliusWhisperingCrystalID);
-			return false;
-		}
 	}
 }

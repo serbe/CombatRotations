@@ -25,10 +25,14 @@ namespace ReBot
 
 		public override bool OutOfCombat ()
 		{
+			if (MeIsBusy)
+				return true;
+
 			//	actions.precombat=flask,type=greater_draenic_strength_flask
 			//	actions.precombat+=/food,type=sleeper_sushi
 			//	actions.precombat+=/blessing_of_kings,if=!aura.str_agi_int.up
 			//	actions.precombat+=/blessing_of_might,if=!aura.mastery.up
+
 			if (Buff (Me))
 				return true;
 			//	actions.precombat+=/seal_of_truth,if=active_enemies<2
@@ -71,6 +75,9 @@ namespace ReBot
 				if (Emancipate ())
 					return;
 			}
+
+			if (MeIsBusy)
+				return;
 
 			if (Heal ())
 				return;
