@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 
 namespace ReBot
 {
-	[Rotation ("Serb Paladin Retribution", "Serb", WoWClass.Paladin, Specialization.PaladinRetribution, 5, 25)]
+	[Rotation ("SC Paladin Retribution", "Serb", WoWClass.Paladin, Specialization.PaladinRetribution, 5, 25)]
 
 	public class SerbPaladinRetribution : SerbPaladin
 	{
@@ -68,7 +68,12 @@ namespace ReBot
 			if (Heal ())
 				return;
 
-			if (AuraStackCount ("Selfless Healer") >= 3 && ((InInstance && PartyHeal) || InArena)) {
+			if (InArena && LowestPlayer != null) {
+				if (ArenaHeal (LowestPlayer))
+					return;
+			}
+
+			if (InInstance && PartyHeal && AuraStackCount ("Selfless Healer") >= 3) {
 				if (LowestPlayer != null && Health (LowestPlayer) < 0.7) {
 					if (FlashofLight (LowestPlayer))
 						return;

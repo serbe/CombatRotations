@@ -24,6 +24,14 @@ namespace ReBot
 		public IEnumerable<UnitObject> MaxCycle;
 		public String RangedAttack = "Throw";
 
+		public enum Keys
+		{
+			Shift,
+			Ctrl,
+			Alt,
+			None
+		}
+
 		// Getters
 
 		public double TimeToDie (UnitObject u = null)

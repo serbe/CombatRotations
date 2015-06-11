@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using ReBot.API;
+using Newtonsoft.Json;
 
 namespace ReBot
 {
@@ -16,6 +17,9 @@ namespace ReBot
 			Conservative,
 			Auto,
 		}
+
+		[JsonProperty ("Mili Range")]
+		public int MRange = 5;
 
 		Menu _choice;
 
@@ -208,16 +212,16 @@ namespace ReBot
 
 		public bool Heal ()
 		{
-			if (Health (Me) <= 0.15 && !Me.HasAura ("Immunity") && Cooldown ("Lay on Hands") > 1 && Cooldown ("Divine Shield") > 1) {
+			if (Health (Me) <= 0.9 && Me.HasAura ("Hand of Protection")) {
+				if (FlashofLight (Me))
+					return true;
+			}
+			if (Health (Me) <= 0.2 && !Me.HasAura ("Immunity") && Cooldown ("Lay on Hands") > 1 && Cooldown ("Divine Shield") > 1) {
 				if (HandofProtection (Me))
 					return true;
 			}
-			if (!InArena && Health (Me) <= 0.2 && !Me.HasAura ("Divine Shield") && !Me.HasAura ("Immunity")) {
+			if (!InArena && Health (Me) <= 0.15 && !Me.HasAura ("Divine Shield") && !Me.HasAura ("Immunity")) {
 				if (LayonHands (Me))
-					return true;
-			}
-			if (Health (Me) <= 0.3 && !Me.HasAura ("Immunity")) {
-				if (DivineShield ())
 					return true;
 			}
 			if (Health (Me) <= 0.3 && HolyPower >= 1) {
@@ -228,19 +232,23 @@ namespace ReBot
 				if (ExecutionSentence (Me))
 					return true;
 			}
+			if (Health (Me) <= 0.5 && !Me.HasAura ("Immunity")) {
+				if (DivineShield ())
+					return true;
+			}
+			if (Health (Me) <= 0.55 && HolyPower >= 2) {
+				if (WordofGlory (Me))
+					return true;
+			}
+			if (Health (Me) <= 0.6 && Target.IsCasting && !Me.HasAura ("Divine Shield")) {
+				if (DivineProtection ())
+					return true;
+			}
 			if (Health (Me) <= 0.7 && AuraStackCount ("Selfless Healer") >= 3) {
 				if (FlashofLight (Me))
 					return true;
 			}
-			if (Health (Me) <= 0.9 && Me.HasAura ("Hand of Protection")) {
-				if (FlashofLight (Me))
-					return true;
-			}
 			if (Health (Me) <= 0.8 && HolyPower >= 3) {
-				if (WordofGlory (Me))
-					return true;
-			}
-			if (Health (Me) <= 0.55 && HolyPower >= 2) {
 				if (WordofGlory (Me))
 					return true;
 			}
@@ -250,11 +258,35 @@ namespace ReBot
 //				if (Cleanse (Me))
 //					return true;
 //			}
-			if (Health (Me) <= 0.6 && Target.IsCasting && !Me.HasAura ("Divine Shield")) {
-				if (DivineProtection ())
+			return false;
+		}
+
+		public bool ArenaHeal (UnitObject u)
+		{
+			if (Health (u) <= 0.2 && !u.HasAura ("Immunity")) {
+				if (HandofProtection (u))
 					return true;
 			}
-
+			if (Health (u) <= 0.3 && HolyPower >= 1) {
+				if (WordofGlory (u))
+					return true;
+			}
+			if (Health (u) <= 0.4) {
+				if (ExecutionSentence (u))
+					return true;
+			}
+			if (Health (u) <= 0.55 && HolyPower >= 2) {
+				if (WordofGlory (u))
+					return true;
+			}
+			if (Health (u) <= 0.7 && AuraStackCount ("Selfless Healer") >= 3) {
+				if (FlashofLight (u))
+					return true;
+			}
+			if (Health (u) <= 0.8 && HolyPower >= 3) {
+				if (WordofGlory (u))
+					return true;
+			}
 			return false;
 		}
 
@@ -560,6 +592,7 @@ namespace ReBot
 
 		// Spell
 
+		// Длань защиты
 		public bool HandofProtection (UnitObject u = null)
 		{
 			u = u ?? Target;
@@ -641,6 +674,7 @@ namespace ReBot
 			return Usable ("Eternal Flame") && HolyPower >= 1 && Range (40, u) && C ("Eternal Flame", u);
 		}
 
+		// Торжество
 		public bool WordofGlory (UnitObject u = null)
 		{
 			u = u ?? Target;
@@ -650,13 +684,13 @@ namespace ReBot
 		public bool ShieldoftheRighteous (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Shield of the Righteous") && (HolyPower >= 3 || Me.HasAura ("Divine Purpose")) && Range (5, u) && C ("Shield of the Righteous", u);
+			return Usable ("Shield of the Righteous") && (HolyPower >= 3 || Me.HasAura ("Divine Purpose")) && Range (MRange, u) && C ("Shield of the Righteous", u);
 		}
 
 		public bool TemplarsVerdict (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Templar's Verdict") && (HolyPower >= 3 || Me.HasAura ("Divine Purpose")) && Range (5, u) && C ("Templar's Verdict", u);
+			return Usable ("Templar's Verdict") && (HolyPower >= 3 || Me.HasAura ("Divine Purpose")) && Range (MRange, u) && C ("Templar's Verdict", u);
 		}
 
 		public bool LightofDawn ()
@@ -667,12 +701,12 @@ namespace ReBot
 		public bool FinalVerdict (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Final Verdict") && (HolyPower >= 3 || Me.HasAura ("Divine Purpose")) && Range (5, u) && C ("Final Verdict", u);
+			return Usable ("Final Verdict") && (HolyPower >= 3 || Me.HasAura ("Divine Purpose")) && Range (MRange, u) && C ("Final Verdict", u);
 		}
 
 		public bool DivineStorm ()
 		{
-			return Usable ("Divine Storm") && (HolyPower >= 3 || Me.HasAura ("Divine Purpose")) && Range (5) && CS ("Divine Storm");
+			return Usable ("Divine Storm") && (HolyPower >= 3 || Me.HasAura ("Divine Purpose")) && Range (MRange) && CS ("Divine Storm");
 		}
 
 		public bool SealofInsight ()
@@ -682,7 +716,7 @@ namespace ReBot
 
 		public bool Consecration ()
 		{
-			return Usable ("Consecration") && Range (5) && CS ("Consecration");
+			return Usable ("Consecration") && Range (MRange) && CS ("Consecration");
 		}
 
 		public bool SealofRighteousness ()
@@ -720,19 +754,19 @@ namespace ReBot
 		public bool HammeroftheRighteous (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Hammer of the Righteous") && Range (5, u) && C ("Hammer of the Righteous", u);
+			return Usable ("Hammer of the Righteous") && Range (MRange, u) && C ("Hammer of the Righteous", u);
 		}
 
 		public bool CrusaderStrike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Crusader Strike") && Range (5, u) && C ("Crusader Strike", u);
+			return Usable ("Crusader Strike") && Range (MRange, u) && C ("Crusader Strike", u);
 		}
 
 		public bool Exorcism (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Exorcism") && ((HasGlyph (122028) && Range (5, u)) || Range (30, u)) && C ("Exorcism", u);
+			return Usable ("Exorcism") && ((HasGlyph (122028) && Range (MRange, u)) || Range (30, u)) && C ("Exorcism", u);
 		}
 
 		public bool LightsHammer (UnitObject u = null)
@@ -777,7 +811,7 @@ namespace ReBot
 		public bool Rebuke (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Rebuke") && Range (5, u) && C ("Rebuke", u);
+			return Usable ("Rebuke") && Range (MRange, u) && C ("Rebuke", u);
 		}
 
 		public bool FistofJustice (UnitObject u = null)
