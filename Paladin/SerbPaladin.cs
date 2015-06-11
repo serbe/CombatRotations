@@ -869,6 +869,11 @@ namespace ReBot
 			return Usable ("Denounce") && Range (40, u) && C ("Denounce", u);
 		}
 
+		public bool Emancipate ()
+		{
+			return Usable ("Emancipate") && CS ("Emancipate");
+		}
+
 		// Items
 
 

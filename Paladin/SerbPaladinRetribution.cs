@@ -62,9 +62,16 @@ namespace ReBot
 				StartBattle = DateTime.Now;
 			}
 
-			if (Me.CanNotParticipateInCombat ())
-				Freedom ();
-			
+			if (Me.CanNotParticipateInCombat ()) {
+				if (HandofFreedom (Me) || Freedom ())
+					return;
+			}
+
+			if (Me.CanParticipateInCombat && !Target.IsInCombatRange && Me.MovementSpeed > 0 && Me.MovementSpeed < MovementSpeed.NormalRunning) {
+				if (Emancipate ())
+					return;
+			}
+
 			if (Heal ())
 				return;
 
