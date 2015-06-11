@@ -84,8 +84,14 @@ namespace ReBot
 				StartBattle = DateTime.Now;
 			}
 
-			if (Freedom ())
-				return;
+			if (Me.CanNotParticipateInCombat ()) {
+				if (TigersLust ())
+					return;
+				if (NimbleBrew ())
+					return;
+				if (Freedom ())
+					return;
+			}
 
 			if (Interrupt ())
 				return;
@@ -240,17 +246,17 @@ namespace ReBot
 					return;
 			}
 			//	actions.st+=/chi_burst,if=energy.time_to_max>2&buff.serenity.down
-			if (TimeToMaxEnergy > 2 && !Me.HasAura ("Serenity")) {
+			if (EnergyTimeToMax > 2 && !Me.HasAura ("Serenity")) {
 				if (ChiBurst ())
 					return;
 			}
 			//	actions.st+=/chi_wave,if=energy.time_to_max>2&buff.serenity.down
-			if (TimeToMaxEnergy > 2 && !Me.HasAura ("Serenity")) {
+			if (EnergyTimeToMax > 2 && !Me.HasAura ("Serenity")) {
 				if (ChiWave ())
 					return;
 			}
 			//	actions.st+=/zen_sphere,cycle_targets=1,if=!dot.zen_sphere.ticking&energy.time_to_max>2&buff.serenity.down
-			if (TimeToMaxEnergy > 2 && !Me.HasAura ("Serenity")) {
+			if (EnergyTimeToMax > 2 && !Me.HasAura ("Serenity")) {
 				var players = Group.GetGroupMemberObjects ();
 				Unit = players.Where (p => !p.IsDead && Range (40, p) && !p.HasAura ("Zen Sphere", true) && Health (p) < 0.95).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && ZenSphere (Unit))
@@ -266,12 +272,12 @@ namespace ReBot
 					return;
 			}
 			//	actions.st+=/expel_harm,if=chi.max-chi>=1&cooldown.keg_smash.remains>=gcd&(energy+(energy.regen*(cooldown.keg_smash.remains)))>=80
-			if (ChiMax - Chi >= 1 && Cooldown ("Keg Smash") >= 1.5 && (Energy + (EnergyRegen * Cooldown ("Keg Smash"))) >= 80) {
+			if (ChiMax - Chi >= 1 && Cooldown ("Keg Smash") >= 1.5 && (Energy + (RegenPower * Cooldown ("Keg Smash"))) >= 80) {
 				if (ExpelHarm ())
 					return;
 			}
 			//	actions.st+=/jab,if=chi.max-chi>=1&cooldown.keg_smash.remains>=gcd&cooldown.expel_harm.remains>=gcd&(energy+(energy.regen*(cooldown.keg_smash.remains)))>=80
-			if (ChiMax - Chi >= 1 && Cooldown ("Keg Smash") >= 1.5 && Cooldown ("Expel Harm") >= 1.5 && (Energy + (EnergyRegen * Cooldown ("Keg Smash"))) >= 80) {
+			if (ChiMax - Chi >= 1 && Cooldown ("Keg Smash") >= 1.5 && Cooldown ("Expel Harm") >= 1.5 && (Energy + (RegenPower * Cooldown ("Keg Smash"))) >= 80) {
 				if (Jab ())
 					return;
 			}
@@ -339,17 +345,17 @@ namespace ReBot
 					return;
 			}
 			//	actions.aoe+=/chi_burst,if=energy.time_to_max>2&buff.serenity.down
-			if (TimeToMaxEnergy > 2 && !Me.HasAura ("Serenity")) {
+			if (EnergyTimeToMax > 2 && !Me.HasAura ("Serenity")) {
 				if (ChiBurst ())
 					return;
 			}
 			//	actions.aoe+=/chi_wave,if=energy.time_to_max>2&buff.serenity.down
-			if (TimeToMaxEnergy > 2 && !Me.HasAura ("Serenity")) {
+			if (EnergyTimeToMax > 2 && !Me.HasAura ("Serenity")) {
 				if (ChiWave ())
 					return;
 			}
 			//	actions.aoe+=/zen_sphere,cycle_targets=1,if=!dot.zen_sphere.ticking&energy.time_to_max>2&buff.serenity.down
-			if (TimeToMaxEnergy > 2 && !Me.HasAura ("Serenity")) {
+			if (EnergyTimeToMax > 2 && !Me.HasAura ("Serenity")) {
 				var players = Group.GetGroupMemberObjects ();
 				Unit = players.Where (p => !p.IsDead && Range (40, p) && !p.HasAura ("Zen Sphere", true) && Health (p) < 0.95).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && ZenSphere (Unit))
@@ -365,12 +371,12 @@ namespace ReBot
 					return;
 			}
 			//	actions.aoe+=/expel_harm,if=chi.max-chi>=1&cooldown.keg_smash.remains>=gcd&(energy+(energy.regen*(cooldown.keg_smash.remains)))>=80
-			if (ChiMax - Chi >= 1 && Cooldown ("Keg Smash") >= 1.5 && (Energy + (EnergyRegen * Cooldown ("Keg Smash"))) >= 80) {
+			if (ChiMax - Chi >= 1 && Cooldown ("Keg Smash") >= 1.5 && (Energy + (RegenPower * Cooldown ("Keg Smash"))) >= 80) {
 				if (ExpelHarm ())
 					return;
 			}
 			//	actions.aoe+=/jab,if=chi.max-chi>=1&cooldown.keg_smash.remains>=gcd&cooldown.expel_harm.remains>=gcd&(energy+(energy.regen*(cooldown.keg_smash.remains)))>=80
-			if (ChiMax - Chi >= 1 && Cooldown ("Keg Smash") >= 1.5 && Cooldown ("Expel Harm") >= 1.5 && (Energy + (EnergyRegen * Cooldown ("Keg Smash"))) >= 80) {
+			if (ChiMax - Chi >= 1 && Cooldown ("Keg Smash") >= 1.5 && Cooldown ("Expel Harm") >= 1.5 && (Energy + (RegenPower * Cooldown ("Keg Smash"))) >= 80) {
 				if (Jab ())
 					return;
 			}

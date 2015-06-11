@@ -110,7 +110,7 @@ namespace ReBot
 					return;
 			}
 			if (Me.HasAura ("Vital Mists", true, 5)) {
-				if (LowHp != null && SurgingMist (LowHp))
+				if (LowestPlayer != null && SurgingMist (LowestPlayer))
 					return;
 			}
 
@@ -181,9 +181,9 @@ namespace ReBot
 			/// Revival with Option for some boss fights
 			if (Revival) {
 				int revivalLimit = 3;
-				if (GrWMe.Length > 5)
+				if (MyGroupAndMe.Count > 5)
 					revivalLimit = 5;
-				var lowPlayerCount = GrWMe.Count (p => p.HealthFraction <= RHeal);
+				var lowPlayerCount = MyGroupAndMe.Count (p => p.HealthFraction <= RHeal);
 				if (lowPlayerCount >= revivalLimit) {
 					var revCD = SpellCooldown ("Revival");
 //					API.Print ("{0} players have low hp: Casting Revival! (Cooldown={1:0.0})", lowPlayerCount, revCD);

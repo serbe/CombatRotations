@@ -17,6 +17,7 @@ namespace ReBot
 		const int BossLevelIncrease = 5;
 		public DateTime StartBattle;
 		public DateTime StartSleepTime;
+		public DateTime StartRun;
 		public bool InCombat;
 		public UnitObject Unit;
 		public UnitObject InterruptTarget;
@@ -33,6 +34,13 @@ namespace ReBot
 		}
 
 		// Getters
+
+		public double TimeRun {
+			get {
+				TimeSpan RunTime = DateTime.Now.Subtract (StartRun);
+				return RunTime.TotalSeconds;
+			}
+		}
 
 		public double TimeToDie (UnitObject u = null)
 		{

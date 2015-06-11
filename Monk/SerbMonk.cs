@@ -11,41 +11,13 @@ namespace ReBot
 	{
 		// Vars Consts
 
-		[JsonProperty ("Maximum Energy")] 
-		public int MaxEnergy = 100;
 		[JsonProperty ("Time run to use Tiger Lust")]
 		public double TTL = 1;
 
-		public DateTime StartRun;
 		public bool InRun;
 		Random Rnd = new Random ();
 
 		// Get
-
-		//		public double TimeToMaxEnergy {
-		//			get {
-		//				return (MaxEnergy - Energy) / EnergyRegen;
-		//			}
-		//		}
-
-		public double TimeRun {
-			get {
-				TimeSpan RunTime = DateTime.Now.Subtract (StartRun);
-				return RunTime.TotalSeconds;
-			}
-		}
-
-		public double DamageTaken (float t)
-		{
-			var damage = API.ExecuteLua<double> ("local ResolveName = GetSpellInfo(158300);local n,_,_,_,_,dur,expi,_,_,_,id,_,_,_,val1,val2,val3 = UnitAura(\"player\", ResolveName, nil, \"HELPFUL\");return val2");
-			if (Time < 10) {
-				if (Time < t / 1000)
-					return damage;
-				return damage / Time * (t / 1000);
-			}
-
-			return damage / 10 * (t / 1000);
-		}
 
 		public int ElusiveBrewStacks {
 			get {
@@ -80,8 +52,8 @@ namespace ReBot
 
 		public bool MassDispel ()
 		{
-			if (Members.Count > 0) {
-				foreach (PlayerObject p in Members) {
+			if (MyGroup.Count > 0) {
+				foreach (PlayerObject p in MyGroup) {
 					if (p.Auras.Any (x => x.IsDebuff && "Magic,Poison,Disease".Contains (x.DebuffType)) && Detox (p))
 						return true;
 				}
@@ -93,8 +65,8 @@ namespace ReBot
 
 		public bool MassResurect ()
 		{
-			if (CurrentBotName == "Combat" && Members.Count > 0) {
-				Player = Members.FirstOrDefault (u => Range (40, u) && u.IsDead);
+			if (CurrentBotName == "Combat" && MyGroup.Count > 0) {
+				Player = MyGroup.FirstOrDefault (u => Range (40, u) && u.IsDead);
 				if (Player != null && Resuscitate (Player))
 					return true;
 			}
@@ -112,21 +84,6 @@ namespace ReBot
 				if (Range (40, u) && u.AuraTimeRemaining ("Legacy of the White Tiger") < 300 && u.AuraTimeRemaining ("Blessing of Kings") < 300 && C ("Legacy of the White Tiger", u))
 					return true;
 			}	
-			return false;
-		}
-
-		public bool Freedom ()
-		{
-			if (!Me.CanParticipateInCombat) {
-				if (TigersLust ())
-					return true;
-				if (NimbleBrew ())
-					return true;
-				if (WilloftheForsaken ())
-					return true;
-				if (EveryManforHimself ())
-					return true;
-			}
 			return false;
 		}
 
@@ -152,14 +109,14 @@ namespace ReBot
 
 		public bool HealStatue ()
 		{
-			if (!GrWMe.Any (p => p.InCombat))
+			if (!MyGroupAndMe.Any (p => p.InCombat))
 				return false;
 		
 			const int StatueEntryID = 60849;
 		
 			var statue = API.Units.FirstOrDefault (u => u.EntryID == StatueEntryID && u.CreatedByMe);
 			if (statue == null || statue.Distance > 35) {
-				foreach (var u in GrWMe.Where(p => p.IsTank || p == Me)) {
+				foreach (var u in MyGroupAndMe.Where(p => p.IsTank || p == Me)) {
 					if (u != null && u.Distance < 20) {
 						var pos = u.Position;
 						for (int i = 0; i < 8; i++) {
@@ -228,34 +185,9 @@ namespace ReBot
 			return Usable ("Chi Brew") && ChiMax - Chi >= 2 && CS ("Chi Brew");
 		}
 
-		public bool BloodFury ()
-		{
-			return Usable ("Blood Fury") && Danger () && CS ("BloodFury");
-		}
-
-		public bool Berserking ()
-		{
-			return Usable ("Berserking") && Danger () && CS ("Berserking");
-		}
-
-		public bool ArcaneTorrent ()
-		{
-			return Usable ("Arcane Torrent") && Danger () && CS ("Arcane Torrent");
-		}
-
 		public bool NimbleBrew ()
 		{
 			return Usable ("Nimble Brew") && CS ("Nimble Brew");
-		}
-
-		public bool WilloftheForsaken ()
-		{
-			return Usable ("Will of the Forsaken") && CS ("Will of the Forsaken");
-		}
-
-		public bool EveryManforHimself ()
-		{
-			return Usable ("Every Man for Himself") && CS ("Every Man for Himself");
 		}
 
 		public bool OxStance ()
