@@ -33,6 +33,13 @@ namespace ReBot
 			None
 		}
 
+		public enum Facing
+		{
+			Off,
+			CurrentTarget,
+			TargetAndSelect
+		}
+
 		// Getters
 
 		public double TimeRun {
@@ -624,6 +631,21 @@ namespace ReBot
 			return WilloftheForsaken () || EveryManforHimself ();
 		}
 
+		public void CheckTargetFacing (Facing autoFacing, int r)
+		{
+			if (API.CombatSettings.RotationOnly && autoFacing != Facing.Off) {
+				if (Me.Target != null)
+					API.SetFacing (Me.Target);
+				else if (autoFacing == Facing.TargetAndSelect) {
+					Unit = API.CollectUnits (u => u.IsAttackable && Range (r, u) && u.IsTargetingMeOrPets && u.CanParticipateInCombat && u.InCombat).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null) {
+						Me.SetTarget (Unit);
+						API.SetFacing (Unit);
+					}
+				}
+			}
+		}
+
 		// Spells
 
 		public bool WilloftheForsaken ()
@@ -686,8 +708,7 @@ namespace ReBot
 		{
 			return UsableItem (122668) && API.UseItem (122668);
 		}
-
-
+			
 	}
 }
 

@@ -127,10 +127,10 @@ namespace ReBot
 					return;
 			}
 			//	actions+=/heroic_leap,if=(raid_event.movement.distance>25&raid_event.movement.in>45)|!raid_event.movement.exists
-			//	actions+=/use_item,name=vial_of_convulsive_shadows,if=(active_enemies>1|!raid_event.adds.exists)&((talent.bladestorm.enabled&cooldown.bladestorm.remains=0)|buff.recklessness.up|target.time_to_die<25|!talent.anger_management.enabled)
+			//	actions+=/use_item,name=vial_of_convulsive_shadows,if=(spell_targets.whirlwind>1|!raid_event.adds.exists)&((talent.bladestorm.enabled&cooldown.bladestorm.remains=0)|buff.recklessness.up|target.time_to_die<25|!talent.anger_management.enabled)
 			//	actions+=/potion,name=draenic_strength,if=(target.health.pct<20&buff.recklessness.up)|target.time_to_die<=25
 			//	# Skip cooldown usage if we can line them up with bladestorm on a large set of adds, or if movement is coming soon.
-			//	actions+=/run_action_list,name=single_target,if=(raid_event.adds.cooldown<60&raid_event.adds.count>2&active_enemies=1)|raid_event.movement.cooldown<5
+			//	actions+=/run_action_list,name=single_target,if=(raid_event.adds.cooldown<60&raid_event.adds.count>2&spell_targets.whirlwind=1)|raid_event.movement.cooldown<5
 			//	# This incredibly long line (Due to differing talent choices) says 'Use recklessness on cooldown, unless the boss will die before the ability is usable again, and then use it with execute.'
 			//	actions+=/recklessness,if=(((target.time_to_die>190|target.health.pct<20)&(buff.bloodbath.up|!talent.bloodbath.enabled))|target.time_to_die<=12|talent.anger_management.enabled)&((talent.bladestorm.enabled&(!raid_event.adds.exists|enemies=1))|!talent.bladestorm.enabled)
 			if ((((TimeToDie () > 190 || Health () < 0.2) && (Me.HasAura ("Bloodbath") || !HasSpell ("Bloodbath"))) || TimeToDie () <= 12 || HasSpell ("Anger Management"))) {
@@ -151,27 +151,25 @@ namespace ReBot
 			//	actions+=/arcane_torrent,if=rage<rage.max-40
 			if (Rage < MaxPower - 40)
 				ArcaneTorrent ();
-			//	actions+=/call_action_list,name=single_target,if=active_enemies=1
-			if (ActiveEnemies (10) == 1) {
-				if (SingleTarget ())
-					return;
-			}
-			//	actions+=/call_action_list,name=two_targets,if=active_enemies=2
-			if (ActiveEnemies (10) == 2) {
+
+			//	actions+=/call_action_list,name=two_targets,if=spell_targets.whirlwind=2
+			if (ActiveEnemies (8) == 2) {
 				if (TwoTargets ())
 					return;
 			}
-			//	actions+=/call_action_list,name=three_targets,if=active_enemies=3
-			if (ActiveEnemies (10) == 3) {
+			//	actions+=/call_action_list,name=three_targets,if=spell_targets.whirlwind=3
+			if (ActiveEnemies (8) == 3) {
 				if (ThreeTargets ())
 					return;
 			}
-			//	actions+=/call_action_list,name=aoe,if=active_enemies>3
-			if (ActiveEnemies (10) > 3) {
+			//	actions+=/call_action_list,name=aoe,if=spell_targets.whirlwind>3
+			if (ActiveEnemies (8) > 3) {
 				if (Aoe ())
 					return;
 			}
-
+			//	actions+=/call_action_list,name=single_target
+			if (SingleTarget ())
+				return;
 		}
 
 		public bool SingleTarget ()
@@ -474,6 +472,10 @@ namespace ReBot
 
 		public bool ActionBladestorm ()
 		{
+			//	actions.bladestorm=recklessness,sync=bladestorm,if=buff.enrage.remains>6&((talent.anger_management.enabled&raid_event.adds.in>45)|(!talent.anger_management.enabled&raid_event.adds.in>60)|!raid_event.adds.exists|spell_targets.bladestorm_mh>desired_targets)
+			//	actions.bladestorm+=/bladestorm,if=buff.enrage.remains>6&((talent.anger_management.enabled&raid_event.adds.in>45)|(!talent.anger_management.enabled&raid_event.adds.in>60)|!raid_event.adds.exists|spell_targets.bladestorm_mh>desired_targets)
+
+
 			//	actions.bladestorm=recklessness,sync=bladestorm,if=buff.enrage.remains>6&((talent.anger_management.enabled&raid_event.adds.in>45)|(!talent.anger_management.enabled&raid_event.adds.in>60)|!raid_event.adds.exists|active_enemies>desired_targets)
 //			if (Me.AuraTimeRemaining("Enrage") > 6 && ((HasSpell("Anger Management")) || (!HasSpell("Anger Management")) || ActiveEnemies(10) == 1))
 			//	actions.bladestorm+=/bladestorm,if=buff.enrage.remains>6&((talent.anger_management.enabled&raid_event.adds.in>45)|(!talent.anger_management.enabled&raid_event.adds.in>60)|!raid_event.adds.exists|active_enemies>desired_targets)

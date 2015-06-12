@@ -191,12 +191,12 @@ namespace ReBot
 			if (!Me.HasAura ("Blade Flurry")) {
 				if (InArena || InBg) {
 					if (Usable ("Blind")) {
-						Unit = Enemy.Where (u => u.CanParticipateInCombat && u.IsPlayer && Range (15, u, 8) && u != Target && (HasGlyph (91299) || HasSpell ("Dirty Tricks") || !u.Auras.Any (x => x.IsDebuff && x.DebuffType.Contains ("Poison")))).DefaultIfEmpty (null).FirstOrDefault ();
+						Unit = API.CollectUnits (u => u.IsAttackable && u.CanParticipateInCombat && u.InCombat && u.IsPlayer && Range (15, u, 8) && u != Target && (HasGlyph (91299) || HasSpell ("Dirty Tricks") || !u.Auras.Any (x => x.IsDebuff && x.DebuffType.Contains ("Poison")))).DefaultIfEmpty (null).FirstOrDefault ();
 						if (Unit != null && Blind (Unit))
 							return true;
 					}
 					if (Usable ("Gouge")) {
-						Unit = Enemy.Where (u => u.CanParticipateInCombat && u.IsPlayer && Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+						Unit = API.CollectUnits (u => u.IsAttackable && u.CanParticipateInCombat && u.InCombat && u.IsPlayer && Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
 						if (Unit != null && Gouge (Unit))
 							return true;
 					}

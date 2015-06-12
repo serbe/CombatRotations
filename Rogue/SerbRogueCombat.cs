@@ -25,6 +25,9 @@ namespace ReBot
 		public bool UseBurstOfSpeed = true;
 		[JsonProperty ("Use GCD")]
 		public bool Gcd = true;
+		[JsonProperty ("Auto Face Your Target")]
+		public Facing AutoFacing = Facing.Off;
+
 
 
 		public SerbRogueCombatSc ()
@@ -125,6 +128,9 @@ namespace ReBot
 				InCombat = true;
 				StartBattle = DateTime.Now;
 			}
+
+			if (AutoFacing != Facing.Off)
+				CheckTargetFacing (AutoFacing, 7);
 
 			if (HasGlobalCooldown () && Gcd)
 				return;
