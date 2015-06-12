@@ -67,12 +67,7 @@ namespace ReBot
 			}
 
 			if (Me.CanNotParticipateInCombat ()) {
-				if (HandofFreedom (Me) || Freedom ())
-					return;
-			}
-
-			if (Me.CanParticipateInCombat && !Target.IsInCombatRange && Me.MovementSpeed > 0 && Me.MovementSpeed < MovementSpeed.NormalRunning) {
-				if (Emancipate ())
+				if (PaladinFreedom ())
 					return;
 			}
 
@@ -118,12 +113,12 @@ namespace ReBot
 					return;
 			}
 			//	actions+=/execution_sentence,if=!talent.seraphim.enabled
-			if (!InArena && !HasSpell ("Seraphim") && Danger ()) {
+			if (!InArena && !InBg && !HasSpell ("Seraphim") && Danger ()) {
 				if (ExecutionSentence ())
 					return;
 			}
 			//	actions+=/execution_sentence,sync=seraphim,if=talent.seraphim.enabled
-			if (!InArena && HasSpell ("Seraphim") && Me.HasAura ("Seraphim")) {
+			if (!InArena && !InBg && HasSpell ("Seraphim") && Me.HasAura ("Seraphim")) {
 				if (ExecutionSentence ())
 					return;
 			}

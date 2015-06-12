@@ -180,6 +180,18 @@ namespace ReBot
 
 		// Combo
 
+		public bool PaladinFreedom ()
+		{
+			if (HandofFreedom (Me) || Freedom ())
+				return true;
+		
+			if (!Target.IsInCombatRange && Me.MovementSpeed > 0 && Me.MovementSpeed < MovementSpeed.NormalRunning) {
+				if (Emancipate ())
+					return true;
+			}
+			return false;
+		}
+
 		public bool Clean (UnitObject u = null)
 		{
 			u = u ?? Me;
@@ -212,6 +224,10 @@ namespace ReBot
 
 		public bool Heal ()
 		{
+			if (Health (Me) <= 0.7 && AuraStackCount ("Selfless Healer") >= 3) {
+				if (FlashofLight (Me))
+					return true;
+			}
 			if (Health (Me) <= 0.9 && Me.HasAura ("Hand of Protection")) {
 				if (FlashofLight (Me))
 					return true;
@@ -224,7 +240,7 @@ namespace ReBot
 				if (LayonHands (Me))
 					return true;
 			}
-			if (Health (Me) <= 0.3 && HolyPower >= 1) {
+			if (InArena && Health (Me) <= 0.3 && HolyPower >= 1) {
 				if (WordofGlory (Me))
 					return true;
 			}
@@ -240,20 +256,16 @@ namespace ReBot
 				if (DivineShield ())
 					return true;
 			}
-			if (Health (Me) <= 0.55 && HolyPower >= 2) {
+			if (InArena && Health (Me) <= 0.45 && HolyPower >= 2) {
+				if (WordofGlory (Me))
+					return true;
+			}
+			if (InArena && Health (Me) <= 0.6 && HolyPower >= 3) {
 				if (WordofGlory (Me))
 					return true;
 			}
 			if (Health (Me) <= 0.6 && Target.IsCasting && !Me.HasAura ("Divine Shield")) {
 				if (DivineProtection ())
-					return true;
-			}
-			if (Health (Me) <= 0.7 && AuraStackCount ("Selfless Healer") >= 3) {
-				if (FlashofLight (Me))
-					return true;
-			}
-			if (Health (Me) <= 0.8 && HolyPower >= 3) {
-				if (WordofGlory (Me))
 					return true;
 			}
 //			if (CastSelf ("Flash of Light", () => Health <= 0.6 && Me.HasAura ("Divine Shield") && TargetHealth >= 0.15))
@@ -267,6 +279,10 @@ namespace ReBot
 
 		public bool ArenaHeal (UnitObject u)
 		{
+			if (Health (u) <= 0.7 && AuraStackCount ("Selfless Healer") >= 3) {
+				if (FlashofLight (u))
+					return true;
+			}
 			if (Health (u) <= 0.2 && !u.HasAura ("Immunity")) {
 				if (HandofProtection (u))
 					return true;
@@ -279,15 +295,11 @@ namespace ReBot
 				if (ExecutionSentence (u))
 					return true;
 			}
-			if (Health (u) <= 0.55 && HolyPower >= 2) {
+			if (Health (u) <= 0.5 && HolyPower >= 2) {
 				if (WordofGlory (u))
 					return true;
 			}
-			if (Health (u) <= 0.7 && AuraStackCount ("Selfless Healer") >= 3) {
-				if (FlashofLight (u))
-					return true;
-			}
-			if (Health (u) <= 0.8 && HolyPower >= 3) {
+			if (Health (u) <= 0.7 && HolyPower >= 3) {
 				if (WordofGlory (u))
 					return true;
 			}

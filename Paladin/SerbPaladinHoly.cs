@@ -63,6 +63,9 @@ namespace ReBot
 					return true;
 			}
 
+			if (InArena && LowestPlayer != null && HolyShock (LowestPlayer))
+				return true;
+
 			if (Tank != null && Tank.InCombat && HolyShock (Tank))
 				return true;
 
@@ -79,15 +82,13 @@ namespace ReBot
 //				OverrideCombatRole = CombatRole.Healer;
 //			}
 				
+			if (Me.CanNotParticipateInCombat ()) {
+				if (PaladinFreedom ())
+					return;
+			}
 
 			if (MeIsBusy)
 				return;
-
-			if (Me.CanNotParticipateInCombat ()) {
-				if (HandofFreedom (Me) || Freedom ())
-					return;
-				return;
-			}
 
 			if (Target != null) {
 				if (Target.IsEnemy && Target.IsInCombatRange) {
