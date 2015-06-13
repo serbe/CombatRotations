@@ -173,6 +173,11 @@ namespace ReBot
 					return;
 			}
 
+			if (Me.IsMoving && (Target == null || (Target.Distance >= 8))) {
+				if (BurstofSpeed ())
+					return;
+			}
+
 			if (InArena) {
 				if (UnBurst ())
 					return;
@@ -269,11 +274,6 @@ namespace ReBot
 			// run to enemy
 			if (Target.CombatRange > 10 && Me.IsMoving && Run) {
 				if (ActionRun ())
-					return;
-			}
-
-			if (Me.IsMoving && (Target == null || (Target.Distance >= 8))) {
-				if (BurstofSpeed ())
 					return;
 			}
 
