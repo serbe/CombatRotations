@@ -52,7 +52,20 @@ namespace ReBot
 			// actions.precombat=flask,type=greater_draenic_agility_flask
 			// actions.precombat+=/food,type=buttered_sturgeon
 			// actions.precombat+=/apply_poison,lethal=deadly
-			if (Me.Level < 92) {
+			if (Mh == PoisonMaindHand.DeadlyPoison) {
+				if (!HasSpell ("Swift Poison")) {
+					if (MainHandPoison (Mh))
+						return true;
+				}
+				//				 else {
+				//					if (!Me.HasAura ((int)Mh) || Me.AuraTimeRemaining ((int)Mh) < 300) {
+				//						API.Print ("/s 'Смертоносный Яд'");
+				//						API.ExecuteMacro ("/cast Смертоносный яд");
+				////						API.ExecuteMacro ("/s 'Смертоносный Яд'");
+				//						return true;
+				//					}
+				//				}
+			} else {
 				if (MainHandPoison (Mh))
 					return true;
 			}
