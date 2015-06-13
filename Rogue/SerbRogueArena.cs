@@ -6,9 +6,9 @@ using ReBot.API;
 
 namespace ReBot
 {
-	[Rotation ("SC Combat Rogue", "Serb", WoWClass.Rogue, Specialization.RogueCombat, 5, 25)]
+	[Rotation ("Combat Rogue Arena", "Serb", WoWClass.Rogue, Specialization.RogueCombat, 5, 25)]
 
-	public class SerbRogueCombatSc : SerbRogue
+	public class SerbRogueCombatArena : SerbRogue
 	{
 
 		[JsonProperty ("MainHand Poison"), JsonConverter (typeof(StringEnumConverter))]
@@ -23,47 +23,26 @@ namespace ReBot
 		public bool Aoe = true;
 		[JsonProperty ("Use Burst Of Speed in no combat")]
 		public bool UseBurstOfSpeed = true;
-		[JsonProperty ("Use GCD")]
-		public bool Gcd = true;
 		[JsonProperty ("Auto Face Your Target")]
 		public Facing AutoFacing = Facing.Off;
 
-
-
-		public SerbRogueCombatSc ()
+		public SerbRogueCombatArena ()
 		{
-			RangedAttack = "Throw";
-			if (CurrentBotName == "Quest") {
-				PullSpells = new[] {
-					"Stealth",
-					"Pick Pocket",
-					"Ambush",
-					"Sinister Strike"
-				};
-			} else {
-				PullSpells = new[] {
-					"Sinister Strike"
-				};
-			}
+			PullSpells = new[] {
+				"Stealth",
+				"Ambush",
+				"Sinister Strike"
+			};
 		}
 
 		public override bool OutOfCombat ()
 		{
-			// actions.precombat=flask,type=greater_draenic_agility_flask
-			// actions.precombat+=/food,type=buttered_sturgeon
-			// actions.precombat+=/apply_poison,lethal=deadly
 			if (Me.Level < 92) {
 				if (MainHandPoison (Mh))
 					return true;
 			}
 			if (OffHandPoison (Oh))
 				return true;
-			// # Snapshot raid buffed stats before combat begins and pre-potting is done.
-			// actions.precombat+=/snapshot_stats
-			// actions.precombat+=/potion,name=draenic_agility
-			// actions.precombat+=/stealth
-			// actions.precombat+=/marked_for_death
-			// actions.precombat+=/slice_and_dice,if=talent.marked_for_death.enabled
 
 			if (HasAura ("Blade Flurry")) {
 				CancelAura ("Blade Flurry");
@@ -86,8 +65,7 @@ namespace ReBot
 			// 	}
 			// }
 
-			// Heal
-			if ((!InRaid && Health (Me) < 0.8) || (Health (Me) < 0.3)) {
+			if (Health (Me) < 0.8) {
 				if (Recuperate ())
 					return true;
 			}
@@ -101,22 +79,13 @@ namespace ReBot
 			if (OraliusWhisperingCrystal ())
 				return true;
 
-//			if (CurrentBotName == "Quest" && Target.CombatRange > 20 && Target.IsEnemy) {
-//				if (Stealth ())
-//					return true;
-//			}
-
-//			API.Print (CurrentBotName);
-
-//			if (Target != null && CurrentBotName == "Quest" && Target.CombatRange > 10 && Target.IsEnemy && Target.IsAttackable) {
-//				if (Stealth ())
-//					return true;
-//			}
-			if (CurrentBotName == "Quest" && Me.DistanceTo (API.GetNaviTarget ()) > 30 && Me.IsMoving && !MeInStealth)
-				Stealth ();
-
 			if (InCombat) {
 				InCombat = false;
+			}
+
+			if (!MeInStealth) {
+				if (Stealth ())
+					return true;
 			}
 
 			return false;
@@ -132,7 +101,7 @@ namespace ReBot
 			if (AutoFacing != Facing.Off)
 				CheckTargetFacing (AutoFacing, 7);
 
-			if (HasGlobalCooldown () && Gcd)
+			if (MeIsBusy)
 				return;
 
 			if (Health (Me) < 0.9) {
@@ -158,17 +127,21 @@ namespace ReBot
 			if (ComboPoints < 4)
 				Premeditation ();
 
-			if (InRaid || InInstance)
-				TricksoftheTrade ();
+			if (Cc ())
+				return;
 
-			if (!InRaid && Multitarget) {
-				if (Cc ())
-					return;
+			if (UnBurst ())
+				return;
+
+			if (IsNotForDamage (Target)) {
+//				API.ExecuteMacro ("/stopattack");
+				Me.StopAttack ();
+				return;
 			}
 
-			if (Me.HasAura ("Blade Flurry") && !InRaid && !InInstance && IncapacitatedInRange (8) && ActiveEnemies (8) < 3)
+			if (Me.HasAura ("Blade Flurry") && IncapacitatedInRange (8) && ActiveEnemiesPlayer (8) < 3)
 				CancelAura ("Blade Flurry");
-			
+
 			// actions=potion,name=draenic_agility,if=buff.bloodlust.react|target.time_to_die<40|(buff.adrenaline_rush.up&(trinket.proc.any.react|trinket.stacking_proc.any.react|buff.archmages_greater_incandescence_agi.react))
 			// actions+=/kick
 			// actions+=/preparation,if=!buff.vanish.up&cooldown.vanish.remains>30
@@ -185,13 +158,11 @@ namespace ReBot
 			if (Energy < 60)
 				ArcaneTorrent ();
 			// actions+=/blade_flurry,if=(active_enemies>=2&!buff.blade_flurry.up)|(active_enemies<2&buff.blade_flurry.up)
-			if (!Me.HasAura ("Blade Flurry") && ActiveEnemies (8) >= 2 && Aoe) {
-				if (!IncapacitatedInRange (8) && (!InArena || (InArena && ActiveEnemiesPlayer (8) > 2))) {
-					if (BladeFlurry ())
-						return;
-				}
+			if (!Me.HasAura ("Blade Flurry") && ActiveEnemiesPlayer (8) >= 2 && Aoe && !IncapacitatedInRange (8)) {
+				if (BladeFlurry ())
+					return;
 			}
-			if (HasAura ("Blade Flurry") && ActiveEnemies (8) < 2)
+			if (HasAura ("Blade Flurry") && ActiveEnemiesPlayer (8) < 2)
 				CancelAura ("Blade Flurry");
 			// actions+=/shadow_reflection,if=(cooldown.killing_spree.remains<10&combo_points>3)|buff.adrenaline_rush.up
 			if ((HasSpell ("Killing Spree") && Cooldown ("Killing Spree") < 10 && ComboPoints > 3) || HasAura ("Adrenaline Rush")) {
@@ -202,10 +173,10 @@ namespace ReBot
 			if (Ambush ())
 				return;
 			// actions+=/vanish,if=time>10&(combo_points<3|(talent.anticipation.enabled&anticipation_charges<3)|(combo_points<4|(talent.anticipation.enabled&anticipation_charges<4)))&((talent.shadow_focus.enabled&buff.adrenaline_rush.down&energy<90&energy>=15)|(talent.subterfuge.enabled&energy>=90)|(!talent.shadow_focus.enabled&!talent.subterfuge.enabled&energy>=60))
-			if (Time > 10 && ((!HasSpell ("Anticipation") && ComboPoints < 3) || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") < 3) || ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") < 4))) && ((HasSpell ("Shadow Focus") && !HasSpell ("Adrenaline Rush") && Energy < 90 && Energy >= 15) || (HasSpell ("Subterfuge") && Energy >= 90) || (!HasSpell ("Shadow Focus") && !HasSpell ("Subterfuge") && Energy >= 60))) {
-				if (Vanish ())
-					return;
-			}
+//			if (Time > 10 && ((!HasSpell ("Anticipation") && ComboPoints < 3) || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") < 3) || ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") < 4))) && ((HasSpell ("Shadow Focus") && !HasSpell ("Adrenaline Rush") && Energy < 90 && Energy >= 15) || (HasSpell ("Subterfuge") && Energy >= 90) || (!HasSpell ("Shadow Focus") && !HasSpell ("Subterfuge") && Energy >= 60))) {
+//				if (Vanish ())
+//					return;
+//			}
 			// actions+=/slice_and_dice,if=buff.slice_and_dice.remains<2|((target.time_to_die>45&combo_points=5&buff.slice_and_dice.remains<12)&buff.deep_insight.down)
 			if (Me.AuraTimeRemaining ("Slice and Dice") < 2 || ((TimeToDie (Target) > 45 && ComboPoints == 5 && Me.AuraTimeRemaining ("Slice and Dice") < 12) && !HasAura ("Deep Insight"))) {
 				if (SliceandDice ())
@@ -313,10 +284,10 @@ namespace ReBot
 		// # Combo point finishers
 		public bool ActionFinishers ()
 		{
-			if (!InRaid && !InInstance) {
-				if (KidneyShot ())
-					return true;
-			}
+//			if (!InRaid && !InInstance) {
+//				if (KidneyShot ())
+//					return true;
+//			}
 
 			// actions.finisher=death_from_above
 			if (DeathfromAbove ())
@@ -328,17 +299,11 @@ namespace ReBot
 					return true;
 			}
 
-			if (!InArena && ActiveEnemies (10) >= 5) {
-				if (CrimsonTempest ())
-					return true;
-			}
-
 			// actions.finisher+=/eviscerate,if=(!talent.death_from_above.enabled|cooldown.death_from_above.remains)
 			if (!HasSpell ("Death from Above") || Cooldown ("Death from Above") > 0) {
 				if (Eviscerate ())
 					return true;
 			}
-
 			return false;
 		}
 
@@ -375,17 +340,17 @@ namespace ReBot
 		//			}
 		//
 		//			//			if (Cast ("Shadow Dance", () => ShDance == TargetDifficulty.Boss && Boss () == true))
-		////				return;
-		////			if (Cast ("Shadow Dance", () => ShDance == TargetDifficulty.Elite && Target.IsElite ()))
-		////				return;
-		////			if (Cast ("Shadow Dance", () => ShDance == TargetDifficulty.Always))
-		////				return;
-		////			if (Cast ("Shadow Reflection",	() => T100DPS == TargetDifficulty.Boss && Boss () == true))
-		////				return;
-		////			if (Cast ("Shadow Reflection",	() => T100DPS == TargetDifficulty.Elite && Target.IsElite ()))
-		////				return;
-		////			if (Cast ("Shadow Reflection",	() => T100DPS == TargetDifficulty.Always))
-		////				return;
+		//			//				return;
+		//			//			if (Cast ("Shadow Dance", () => ShDance == TargetDifficulty.Elite && Target.IsElite ()))
+		//			//				return;
+		//			//			if (Cast ("Shadow Dance", () => ShDance == TargetDifficulty.Always))
+		//			//				return;
+		//			//			if (Cast ("Shadow Reflection",	() => T100DPS == TargetDifficulty.Boss && Boss () == true))
+		//			//				return;
+		//			//			if (Cast ("Shadow Reflection",	() => T100DPS == TargetDifficulty.Elite && Target.IsElite ()))
+		//			//				return;
+		//			//			if (Cast ("Shadow Reflection",	() => T100DPS == TargetDifficulty.Always))
+		//			//				return;
 		//
 		//			if (ComboPoints == 0) {
 		//				if (MarkedforDeath ())

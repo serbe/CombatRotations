@@ -23,19 +23,10 @@ namespace ReBot
 
 		[JsonProperty ("Use multitarget")]
 		public bool Multitarget = true;
+		[JsonProperty ("Use Feith")]
+		public bool UseFeith = true;
 
 		// Get
-
-		//		public int EnergyMax {
-		//			get {
-		//				int energy = 100;
-		//				if (HasSpell ("Venom Rush"))
-		//					energy = energy + 15;
-		//				if (HasGlyph (159634))
-		//					energy = energy + 20;
-		//				return energy;
-		//			}
-		//		}
 
 		public int AmbushCost {
 			get {
@@ -47,14 +38,6 @@ namespace ReBot
 				return cost;
 			}
 		}
-
-
-
-		//		public double TimeToStartBattle {
-		//			get {
-		//				return API.ExecuteLua<double> ("return GetBattlefieldInstanceRunTime()") / 1000;
-		//			}
-		//		}
 
 		public double Cost (double i)
 		{
@@ -83,25 +66,37 @@ namespace ReBot
 		public bool Interrupt ()
 		{
 			if (Usable ("Kick")) {
-				if (ActiveEnemies (6) > 1 && Multitarget) {
-					Unit = Enemy.Where (u => Range (5, u) && u.IsCastingAndInterruptible () && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+				if (InArena) {
+					Unit = API.CollectUnits (u => u.IsAttackable && u.IsPlayer && Range (5, u) && u.IsCastingAndInterruptible () && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && Kick (Unit))
 						return true;
-				} else if (Target.IsCastingAndInterruptible () && Range (5, Target) && Target.RemainingCastTime > 0)
-				if (Kick (Target))
-					return true;
+				} else {
+					if (ActiveEnemies (6) > 1 && Multitarget) {
+						Unit = Enemy.Where (u => Range (5, u) && u.IsCastingAndInterruptible () && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+						if (Unit != null && Kick (Unit))
+							return true;
+					} else if (Target.IsCastingAndInterruptible () && Range (5, Target) && Target.RemainingCastTime > 0)
+					if (Kick (Target))
+						return true;
+				}
 			}
 			if (Usable ("Deadly Throw") && (ComboPoints == 5 || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") > 0))) {
-				if (ActiveEnemies (6) > 1 && Multitarget) {
-					Unit = Enemy.Where (u => Range (30, u) && u.IsCasting && !IsBoss (u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+				if (InArena) {
+					Unit = API.CollectUnits (u => u.IsAttackable && u.IsPlayer && Range (30, u) && u.IsCasting && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && DeadlyThrow (Unit))
 						return true;
-				} else if (Target.IsCasting && Range (30, Target) && !IsBoss (Target) && Target.RemainingCastTime > 0)
-				if (DeadlyThrow (Target))
-					return true;
+				} else {
+					if (ActiveEnemies (6) > 1 && Multitarget) {
+						Unit = Enemy.Where (u => Range (30, u) && u.IsCasting && !IsBoss (u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+						if (Unit != null && DeadlyThrow (Unit))
+							return true;
+					} else if (Target.IsCasting && Range (30, Target) && !IsBoss (Target) && Target.RemainingCastTime > 0)
+					if (DeadlyThrow (Target))
+						return true;
+				}
 			}
 			if (Usable ("Gouge") && (InArena || InBg) && Multitarget) {
-				Unit = Enemy.Where (u => Range (5, u) && u.IsCasting && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+				Unit = API.CollectUnits (u => u.IsAttackable && u.IsPlayer && Range (5, u) && u.IsCasting && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Gouge (Unit))
 					return true;
 			}
@@ -112,13 +107,19 @@ namespace ReBot
 		public bool UnEnrage ()
 		{
 			if (Usable ("Shiv") && HasCost (20)) {
-				if (ActiveEnemies (6) > 1 && Multitarget) {
-					Unit = Enemy.Where (u => Range (5, u) && IsInEnrage (u)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (InArena) {
+					Unit = API.CollectUnits (u => u.IsAttackable && u.IsPlayer && Range (5, u) && IsInEnrage (u)).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && Shiv (Unit))
 						return true;
-				} else if (IsInEnrage ()) {
-					if (Shiv ())
-						return true;
+				} else {
+					if (ActiveEnemies (6) > 1 && Multitarget) {
+						Unit = Enemy.Where (u => Range (5, u) && IsInEnrage (u)).DefaultIfEmpty (null).FirstOrDefault ();
+						if (Unit != null && Shiv (Unit))
+							return true;
+					} else if (IsInEnrage ()) {
+						if (Shiv ())
+							return true;
+					}
 				}
 			}
 			return false;
@@ -143,25 +144,21 @@ namespace ReBot
 
 		public bool Heal ()
 		{
-			if ((!InRaid && !InInstance && Health (Me) < 0.9) || (!InRaid && Health (Me) < 0.3)) {
-				if (ComboPoints > 0 && Recuperate ())
-					return true;
-			}
-			if (Health (Me) < 0.6 && Me.Auras.Any (a => a.IsDebuff && a.DebuffType.Contains ("magic")))
-				CloakofShadows ();
-			if (Health (Me) < 0.65 && !Me.HasAura ("Evasion"))
-				CombatReadiness ();
 			if (Health (Me) < 0.4 && !Me.HasAura ("Combat Readiness"))
 				Evasion ();
 			if (Health (Me) < 0.45) {
 				if (Healthstone ())
 					return true;
 			}
-			if (!Me.IsMoving && Health (Me) < 0.5) {
+			if (!Me.IsMoving && Health (Me) < 0.5 && !Me.HasAura ("Evasion")) {
 				if (SmokeBomb ())
 					return true;
 			}
-			if (Usable ("Feint")) {
+			if (Health (Me) < 0.6 && Me.Auras.Any (a => a.IsDebuff && a.DebuffType.Contains ("magic")))
+				CloakofShadows ();
+			if (Health (Me) < 0.65 && !Me.HasAura ("Evasion"))
+				CombatReadiness ();
+			if (Usable ("Feint") && UseFeith) {
 				if ((InArena || InBg) && Health (Me) < 0.7) {
 					if (Feint ())
 						return true;
@@ -176,13 +173,16 @@ namespace ReBot
 						return true;
 				}
 			}
-
+			if ((!InRaid && !InInstance && Health (Me) < 0.9) || (!InRaid && Health (Me) < 0.3)) {
+				if (ComboPoints > 0 && Recuperate ())
+					return true;
+			}
 			return false;
 		}
 
 		public bool Cc ()
 		{
-			
+
 			if (Target.CanParticipateInCombat) {
 				if (CheapShot ())
 					return true;
@@ -212,6 +212,22 @@ namespace ReBot
 						if (Unit != null && Blind (Unit))
 							return true;
 					}			
+				}
+			}
+			return false;
+		}
+
+		public bool UnBurst ()
+		{
+			if (InArena) {
+				Unit = API.CollectUnits (u => u.IsAttackable && u.CanParticipateInCombat && u.IsPlayer && u.IsTargetingMeOrPets && Range (15, u, 8) && u.Auras.Any (a => BurstAura.Contains (a.Name))).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null) {
+					if (Blind (Unit))
+						return true;
+					if (Gouge (Unit))
+						return true;
+					if (KidneyShot (Unit))
+						return true;
 				}
 			}
 
