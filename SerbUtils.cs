@@ -538,6 +538,12 @@ namespace ReBot
 			}
 		}
 
+		public bool InDef (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return u.Auras.Any (a => DefAura.Contains (a.Name));
+		}
+
 		// Party
 
 		public PlayerObject Healer {

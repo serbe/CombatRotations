@@ -88,7 +88,6 @@
     <Compile Include="Druid\SerbDruidBalance.cs" />
     <Compile Include="Druid\SerbDruidFeral.cs" />
     <Compile Include="Druid\JizarTank.cs" />
-    <Compile Include="Rogue\SerbRogueArena.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

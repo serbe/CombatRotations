@@ -31,7 +31,10 @@ namespace ReBot
 		};
 
 		public HashSet<string> DefAura = new HashSet<string> {
-			
+			"Evasion",
+			"Deterrence",
+			"Die by the Sword",
+			"Ice Block"
 		};
 
 		public HashSet<string> RangeDefAura = new HashSet<string> {

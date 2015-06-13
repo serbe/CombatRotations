@@ -129,21 +129,15 @@ namespace ReBot
 				StartBattle = DateTime.Now;
 			}
 
-			if (AutoFacing != Facing.Off)
-				CheckTargetFacing (AutoFacing, 7);
-
-			if (HasGlobalCooldown () && Gcd)
-				return;
+			if (Me.CanNotParticipateInCombat ())
+				Freedom ();
 
 			if (Health (Me) < 0.9) {
 				if (Heal ())
 					return;
 			}
 
-			if (Me.CanNotParticipateInCombat ())
-				Freedom ();
-
-			if (Me.CanNotParticipateInCombat ())
+			if (MeIsBusy)
 				return;
 
 			if (!Me.HasAura ("Stealth")) {
@@ -164,6 +158,22 @@ namespace ReBot
 			if (!InRaid && Multitarget) {
 				if (Cc ())
 					return;
+			}
+
+			if (InArena) {
+				if (UnBurst ())
+					return;
+
+				if (IsNotForDamage (Target)) {
+					//				API.ExecuteMacro ("/stopattack");
+					Unit = API.CollectUnits (u => u.IsAttackable && u.IsPlayer && u != Target && !IsNotForDamage (u)).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null) {
+						Me.SetTarget (Unit.GUID);
+						return;
+					}
+					Me.StopAttack ();
+					return;
+				}
 			}
 
 			if (Me.HasAura ("Blade Flurry") && !InRaid && !InInstance && IncapacitatedInRange (8) && ActiveEnemies (8) < 3)
@@ -199,8 +209,14 @@ namespace ReBot
 					return;
 			}
 			// actions+=/ambush
-			if (Ambush ())
-				return;
+			if (MeInStealth) {
+				if (Mana () > 0 && !Target.HasAura ("Garrote", true)) {
+					if (Garrote ())
+						return;
+				}
+				if (Ambush ())
+					return;
+			}
 			// actions+=/vanish,if=time>10&(combo_points<3|(talent.anticipation.enabled&anticipation_charges<3)|(combo_points<4|(talent.anticipation.enabled&anticipation_charges<4)))&((talent.shadow_focus.enabled&buff.adrenaline_rush.down&energy<90&energy>=15)|(talent.subterfuge.enabled&energy>=90)|(!talent.shadow_focus.enabled&!talent.subterfuge.enabled&energy>=60))
 			if (Time > 10 && ((!HasSpell ("Anticipation") && ComboPoints < 3) || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") < 3) || ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") < 4))) && ((HasSpell ("Shadow Focus") && !HasSpell ("Adrenaline Rush") && Energy < 90 && Energy >= 15) || (HasSpell ("Subterfuge") && Energy >= 90) || (!HasSpell ("Shadow Focus") && !HasSpell ("Subterfuge") && Energy >= 60))) {
 				if (Vanish ())
@@ -360,71 +376,5 @@ namespace ReBot
 			return false;
 		}
 
-		//		public bool Arena ()
-		//		{
-		//			if (Me.HasAura ("Blade Flurry")) {
-		//				API.ExecuteMacro ("/cancelaura Blade Flurry");
-		//			}
-		//			if (ComboPoints >= 2 && (!Me.HasAura ("Slice and Dice") || Me.AuraTimeRemaining ("Slice and Dice") <= 12)) {
-		//				if (SliceandDice ())
-		//					return true;
-		//			}
-		//			if (!Target.HasAura ("Revealing Strike", true) || Target.AuraTimeRemaining ("Revealing Strike", true) <= 5) {
-		//				if (RevealingStrike ())
-		//					return true;
-		//			}
-		//
-		//			//			if (Cast ("Shadow Dance", () => ShDance == TargetDifficulty.Boss && Boss () == true))
-		////				return;
-		////			if (Cast ("Shadow Dance", () => ShDance == TargetDifficulty.Elite && Target.IsElite ()))
-		////				return;
-		////			if (Cast ("Shadow Dance", () => ShDance == TargetDifficulty.Always))
-		////				return;
-		////			if (Cast ("Shadow Reflection",	() => T100DPS == TargetDifficulty.Boss && Boss () == true))
-		////				return;
-		////			if (Cast ("Shadow Reflection",	() => T100DPS == TargetDifficulty.Elite && Target.IsElite ()))
-		////				return;
-		////			if (Cast ("Shadow Reflection",	() => T100DPS == TargetDifficulty.Always))
-		////				return;
-		//
-		//			if (ComboPoints == 0) {
-		//				if (MarkedforDeath ())
-		//					return true;
-		//			}
-		//			if (Cast ("Adrenaline Rush", () => !Me.HasAura ("Killing Spree") && AdreRushON == BL_Boss_Both_Never.BL && Hero_BL))
-		//				return;
-		//			if (Cast ("Adrenaline Rush", () => !Me.HasAura ("Killing Spree") && AdreRushON == BL_Boss_Both_Never.Boss && Boss ()))
-		//				return;
-		//			if (Cast ("Adrenaline Rush", () => !Me.HasAura ("Killing Spree") && AdreRushON == BL_Boss_Both_Never.BossAndBL && (Boss () || Hero_BL)))
-		//				return;
-		//			if (Cast ("Killing Spree", () => !Me.HasAura ("Adrenaline Rush") && KillSprON == BL_Boss_Both_Never.BL && Hero_BL))
-		//				return;
-		//			if (Cast ("Killing Spree", () => !Me.HasAura ("Adrenaline Rush") && KillSprON == BL_Boss_Both_Never.Boss && Boss ()))
-		//				return;
-		//			if (Cast ("Killing Spree", () => !Me.HasAura ("Adrenaline Rush") && KillSprON == BL_Boss_Both_Never.BossAndBL && (Boss () || Hero_BL)))
-		//				return;
-		//			if (Cast ("Preparation", () => SpellCooldown ("Vanish") >= 20 && PrepaON == BL_Boss_Both_Never.BL && Hero_BL))
-		//				return;
-		//			if (Cast ("Preparation", () => SpellCooldown ("Vanish") >= 20 && PrepaON == BL_Boss_Both_Never.Boss && Boss ()))
-		//				return;
-		//			if (Cast ("Preparation", () => SpellCooldown ("Vanish") >= 20 && PrepaON == BL_Boss_Both_Never.BossAndBL && (Boss () || Hero_BL)))
-		//				return;
-		//			if (Cast ("Vanish", () => VanishOffensive == true && !aura_RS && MyEnergy >= 60))
-		//				return;
-		//			if (Cast ("Shadowmeld", () => HasSpell ("Shadowmeld") && VanishOffensive == true && !aura_RS && MyEnergy >= 60))
-		//				return;
-		//			if (MeInStealth) {
-		//				if (Ambush ())
-		//					return true;
-		//			}
-		//			if (ComboPoints == 5) {
-		//				if (Eviscerate ())
-		//					return true;
-		//			}
-		//			if (ComboPoints < 5) {
-		//				if (SinisterStrike ())
-		//					return true;
-		//			}
-		//		}
 	}
 }
