@@ -134,17 +134,17 @@ namespace ReBot
 			}
 			//	actions+=/use_item,name=vial_of_convulsive_shadows,if=buff.avenging_wrath.up
 			//	actions+=/avenging_wrath,sync=seraphim,if=talent.seraphim.enabled
-			if (HasSpell ("Seraphim") && Me.HasAura ("Seraphim")) {
+			if (HasSpell ("Seraphim") && Me.HasAura ("Seraphim") && ((!(InArena || InBg) && Danger ()) || ((InArena || InBg) && IsPlayer () && !InDef ()))) {
 				if (AvengingWrath ())
 					return;
 			}
 			//	actions+=/avenging_wrath,if=!talent.seraphim.enabled&set_bonus.tier18_4pc=0
-			if (!HasSpell ("Seraphim") && !HasSpell (185648)) {
+			if (!HasSpell ("Seraphim") && !HasSpell (185648) && ((!(InArena || InBg) && Danger ()) || ((InArena || InBg) && IsPlayer () && !InDef ()))) {
 				if (AvengingWrath ())
 					return;
 			}
 			//	actions+=/avenging_wrath,if=!talent.seraphim.enabled&time<20&set_bonus.tier18_4pc=1
-			if (!HasSpell ("Seraphim") && Time < 20 && HasSpell (185648)) {
+			if (!HasSpell ("Seraphim") && Time < 20 && HasSpell (185648) && ((!(InArena || InBg) && Danger ()) || ((InArena || InBg) && IsPlayer () && !InDef ()))) {
 				if (AvengingWrath ())
 					return;
 			}
@@ -154,17 +154,17 @@ namespace ReBot
 
 
 			//	actions+=/holy_avenger,sync=avenging_wrath,if=!talent.seraphim.enabled
-			if (!HasSpell ("Seraphim") && Me.HasAura ("Avenging Wrath") && Danger ()) {
+			if (!HasSpell ("Seraphim") && Me.HasAura ("Avenging Wrath") && ((!(InArena || InBg) && Danger ()) || ((InArena || InBg) && IsPlayer () && !InDef ()))) {
 				if (HolyAvenger ())
 					return;
 			}		
 			//	actions+=/holy_avenger,sync=seraphim,if=talent.seraphim.enabled
-			if (Me.HasAura ("Seraphim") && Danger ()) {
+			if (Me.HasAura ("Seraphim") && ((!(InArena || InBg) && Danger ()) || ((InArena || InBg) && IsPlayer () && !InDef ()))) {
 				if (HolyAvenger ())
 					return;
 			}
 			//	actions+=/holy_avenger,if=holy_power<=2&!talent.seraphim.enabled
-			if (HolyPower <= 2 && !HasSpell ("Seraphim") && Danger ()) {
+			if (HolyPower <= 2 && !HasSpell ("Seraphim") && ((!(InArena || InBg) && Danger ()) || ((InArena || InBg) && IsPlayer () && !InDef ()))) {
 				if (HolyAvenger ())
 					return;
 			}

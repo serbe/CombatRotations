@@ -340,7 +340,6 @@ namespace ReBot
 		}
 
 		// Healer
-
 		public bool UseBeaconofLight ()
 		{
 			if (Usable ("Beacon of Light")) {
@@ -639,13 +638,13 @@ namespace ReBot
 		// Святой каратель
 		public bool HolyAvenger ()
 		{
-			return Usable ("Holy Avenger") && Danger () && CS ("Holy Avenger");
+			return Usable ("Holy Avenger") && CS ("Holy Avenger");
 		}
 
 		// Гнев карателя
 		public bool AvengingWrath ()
 		{
-			return Usable ("Avenging Wrath") && Danger () && CS ("Avenging Wrath");
+			return Usable ("Avenging Wrath") && CS ("Avenging Wrath");
 		}
 
 		public bool Seraphim ()
