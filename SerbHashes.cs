@@ -23,19 +23,60 @@ namespace ReBot
 			"Incarnation: Son of Ursoc",
 			"Bestial Wrath",
 			"Frenzy",
-			"Barrage",
 			"Rapid Fire",
 			"Serenity",
 			"Avenging Wrath",
-			"Hand of Protection"
+			"Hand of Protection",
+			"Pillar of Frost",
+			"Icy Veins",
+			"Ascendance",
+			"Elemental Mastery",
+			"Dark Soul: Misery",
+			"Dark Soul: Knowledge",
+			"Dark Soul: Instability",
+			"Recklessness",
+			"Bloodbath"
 		};
 
 		public HashSet<string> DefAura = new HashSet<string> {
 			"Evasion",
 			"Deterrence",
 			"Die by the Sword",
-			"Ice Block"
+			"Ice Block",
+			"Evanesce",
+			"Life Cocoon",
+			"Divine Shield",
+			"Touch of Karma"
 		};
+
+		public HashSet<string> LittleDefAura = new HashSet<string> {
+			"Icebound Fortitude",
+			"Bone Shield",
+			"Survival Instincts",
+			"Savage Defense",
+			"Barkskin",
+			"Ironbark",
+			"Incarnation: Tree of Life",
+			"Guard",
+			"Hand of Purity",
+			"Shield of the Righteous",
+			"Ardent Defender",
+			"Pain Suppression",
+			"Power Word: Barrier",
+			"Combat Readiness",
+			"Shamanistic Rage",
+			"Astral Shift",
+			"Unending Resolve",
+			"Dark Bargain",
+			"Bladestorm",
+			"Shield Block",
+			"Shield Barrier"
+		};
+
+		public HashSet<string> ImmuneDefAura = new HashSet<string> {
+			"Bladestorm"
+		};
+
 
 		public HashSet<string> RangeDefAura = new HashSet<string> {
 			"Zen Meditation"
@@ -43,11 +84,19 @@ namespace ReBot
 
 		public HashSet<string> MagicDefAura = new HashSet<string> {
 			"Diffuse Magic",
-			"Devotion Aura"
+			"Devotion Aura",
+			"Anti-Magic Shell",
+			"Divine Protection"
 		};
 
 		public HashSet<string> AoeSkill = new HashSet<string> {
 			"Blizzard"
+		};
+
+		public HashSet<string> BLSkill = new HashSet<string> {
+			"Heroism",
+			"Bloodlust",
+			"Time Warp"
 		};
 
 		public HashSet<string> EnrageSkill = new HashSet<string> {
@@ -180,6 +229,44 @@ namespace ReBot
 			"Hex"
 		};
 
+		public HashSet<string> HealSpell = new HashSet<string> {
+			"Blazing Light",
+			"Cauterize Wound",
+			"Circle of Healing",
+			"Dark Mending",
+			"Eternal Flame",
+			"Flash Heal",
+			"Flash of Light",
+			"Great Heal",
+			"Greater Heal",
+			"Heal",
+			"Heal Other",
+			"Healing Wave of Antu'sul",
+			"Holy Light",
+			"Holy Nova",
+			"Janet's Heal",
+			"Lesser Heal",
+			"Light of Dawn",
+			"Major Heal",
+			"Medi-Beam",
+			"Prayer of Healing",
+			"Tender Touch",
+			"Unholy Darkness",
+			"Chain Heal",
+			"Fungal Regrowth",
+			"Heal Me!",
+			"Healing Touch",
+			"Healing Wave",
+			"Lesser Healing Wave",
+			"Lunar Blessing",
+			"Mend",
+			"Nourish",
+			"Regrowth",
+			"Runic Mending",
+			"Uplift",
+			"Blood Drain",
+			"Tranquility"
+		};
 	}
 }
 

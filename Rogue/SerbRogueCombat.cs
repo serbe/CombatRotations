@@ -173,7 +173,7 @@ namespace ReBot
 					return;
 			}
 
-			if (Me.IsMoving && (Target == null || (Target.Distance >= 8))) {
+			if (Me.IsMoving && (Target == null || (Target.Distance >= 8) || InArena)) {
 				if (BurstofSpeed ())
 					return;
 			}

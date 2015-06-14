@@ -93,30 +93,57 @@ namespace ReBot
 				StartBattle = DateTime.Now;
 			}
 
+			if (Me.CanNotParticipateInCombat ())
+				Freedom ();
+
 			if (Health (Me) < 0.9) {
 				if (Heal ())
 					return;
 			}
 
-			if (Me.CanNotParticipateInCombat ())
-				Freedom ();
+			if (MeIsBusy)
+				return;
 
 			if (!Me.HasAura ("Stealth")) {
 				Interrupt ();
 				UnEnrage ();
+				if (Target.HasAura ("Evasion") || Target.HasAura ("Deterrence") || Target.HasAura ("Die by the Sword")) {
+					if (Shiv ())
+						return;
+				}
 			}
 
 			if (ComboPoints < 4)
 				Premeditation ();
 
-			if (InRaid && InInstance)
+			if (InRaid || InInstance)
 				TricksoftheTrade ();
 
-			if (HasGlobalCooldown () && Gcd)
-				return;
+			if (!InRaid && Multitarget) {
+				if (Cc ())
+					return;
+			}
 
-			if (Cc ())
-				return;
+			if (Me.IsMoving && (Target == null || (Target.Distance >= 8) || InArena)) {
+				if (BurstofSpeed ())
+					return;
+			}
+
+			if (InArena) {
+				if (UnBurst ())
+					return;
+
+				if (IsNotForDamage (Target)) {
+					//				API.ExecuteMacro ("/stopattack");
+					Unit = API.CollectUnits (u => u.IsAttackable && u.IsPlayer && u != Target && !IsNotForDamage (u)).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null) {
+						Me.SetTarget (Unit.GUID);
+						return;
+					}
+					Me.StopAttack ();
+					return;
+				}
+			}
 
 
 //			actions=potion,name=draenic_agility,if=buff.bloodlust.react|target.time_to_die<40|debuff.vendetta.up
