@@ -1,12 +1,12 @@
-﻿using System.Linq;
+﻿// Need update
+
 using ReBot.API;
-using ReBot.DeathKnight;
 
-namespace ReBot.DeathKnight
+namespace ReBot
 {
-	[Rotation ("Serb DeathKnight Frost 2H SC", "Serb", WoWClass.DeathKnight, Specialization.DeathknightFrost, 5, 25)]
+	[Rotation ("SC DeathKnight Frost", "Serb", WoWClass.DeathKnight, Specialization.DeathknightFrost, 5, 25)]
 
-	public class DeathKnightFrost2HSC: SerbDeathKnight
+	public class DeathKnightFrost: SerbDeathKnight
 	{
 
 		public override bool OutOfCombat ()
