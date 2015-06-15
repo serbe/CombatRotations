@@ -439,7 +439,7 @@ namespace ReBot
 			if (StormBolt ())
 				return true;
 			//	actions.single+=/dragon_roar,if=buff.unyielding_strikes.stack=5
-			if (AuraStackCount ("Unyielding Strikes") = 5)
+			if (AuraStackCount ("Unyielding Strikes") == 5)
 				DragonRoar ();
 			//	actions.single+=/execute,if=rage>=50
 			if (Rage >= 50) {
