@@ -32,9 +32,16 @@ namespace ReBot
 			GroupBuffs = new[] {
 				"Battle Shout"
 			};
-			PullSpells = new[] {
-				"Devastate"
-			};
+			if (CurrentBotName == "Quest") {
+				PullSpells = new[] {
+					"Heroic Throw",
+					"Devastate"
+				};
+			} else {
+				PullSpells = new[] {
+					"Devastate"
+				};
+			}
 		}
 
 		public override bool OutOfCombat ()
