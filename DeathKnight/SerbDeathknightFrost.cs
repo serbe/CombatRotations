@@ -113,33 +113,123 @@ namespace ReBot
 					return true;
 			}
 			//	actions.single_target_2h+=/blood_tap,if=buff.killing_machine.react
+			if (Me.HasAura ("Killing Machine")) {
+				if (BloodTap ())
+					return true;
+			}
 			//	actions.single_target_2h+=/howling_blast,if=!talent.necrotic_plague.enabled&!dot.frost_fever.ticking&buff.rime.react
+			if (!HasSpell ("Necrotic Plague") && !HasFrostDisease () && Me.HasAura ("Rime")) {
+				if (HowlingBlast ())
+					return true;
+			}
 			//	actions.single_target_2h+=/outbreak,if=!disease.max_ticking
+			if (!HasDisease) {
+				if (Outbreak ())
+					return true;
+			}
 			//	actions.single_target_2h+=/unholy_blight,if=!disease.min_ticking
+			if (!HasDisease) {
+				if (UnholyBlight ())
+					return true;
+			}
 			//	actions.single_target_2h+=/breath_of_sindragosa,if=runic_power>75
+			if (RunicPower > 75) {
+				if (BreathofSindragosa ())
+					return true;
+			}
 			//	actions.single_target_2h+=/run_action_list,name=single_target_bos,if=dot.breath_of_sindragosa.ticking
 			if (Me.HasAura ("Breath of Sindragosa")) {
 				if (Single_target_bos ())
 					return true;
 			}
 			//	actions.single_target_2h+=/obliterate,if=talent.breath_of_sindragosa.enabled&cooldown.breath_of_sindragosa.remains<7&runic_power<76
+			if (HasSpell ("Breath of Sindragosa") && Cooldown ("Breath of Sindragosa") < 7 && RunicPower < 76) {
+				if (Obliterate ())
+					return true;
+			}
 			//	actions.single_target_2h+=/howling_blast,if=talent.breath_of_sindragosa.enabled&cooldown.breath_of_sindragosa.remains<3&runic_power<88
+			if (HasSpell ("Breath of Sindragosa") && Cooldown ("Breath of Sindragosa") < 3 && RunicPower < 88) {
+				if (HowlingBlast ())
+					return true;
+			}
 			//	actions.single_target_2h+=/howling_blast,if=!talent.necrotic_plague.enabled&!dot.frost_fever.ticking
+			if (!HasSpell ("Necrotic Plague") && !HasFrostDisease ()) {
+				if (HowlingBlast ())
+					return true;
+			}
 			//	actions.single_target_2h+=/howling_blast,if=talent.necrotic_plague.enabled&!dot.necrotic_plague.ticking
+			if (HasSpell ("Necrotic Plague") && !HasNecroticDisease ()) {
+				if (HowlingBlast ())
+					return true;
+			}
 			//	actions.single_target_2h+=/plague_strike,if=!talent.necrotic_plague.enabled&!dot.blood_plague.ticking
+			if (!HasSpell ("Necrotic Plague") && !HasBloodDisease ()) {
+				if (PlagueStrike ())
+					return true;
+			}
 			//	actions.single_target_2h+=/blood_tap,if=buff.blood_charge.stack>10&runic_power>76
+			if (BloodCharge > 10 && RunicPower > 76) {
+				if (BloodTap ())
+					return true;
+			}
 			//	actions.single_target_2h+=/frost_strike,if=runic_power>76
+			if (RunicPower > 76) {
+				if (FrostStrike ())
+					return true;
+			}
 			//	actions.single_target_2h+=/howling_blast,if=buff.rime.react&disease.min_remains>5&(blood.frac>=1.8|unholy.frac>=1.8|frost.frac>=1.8)
+			if (Me.HasAura ("Rime") && DiseaseMinRemains > 5 && (BloodFrac >= 1.8 || UnholyFrac >= 1.8 || FrostFrac >= 1.8)) {
+				if (HowlingBlast ())
+					return true;
+			}
 			//	actions.single_target_2h+=/obliterate,if=blood.frac>=1.8|unholy.frac>=1.8|frost.frac>=1.8
+			if (BloodFrac >= 1.8 || UnholyFrac >= 1.8 || FrostFrac >= 1.8) {
+				if (Obliterate ())
+					return true;
+			}
 			//	actions.single_target_2h+=/plague_leech,if=disease.min_remains<3&((blood.frac<=0.95&unholy.frac<=0.95)|(frost.frac<=0.95&unholy.frac<=0.95)|(frost.frac<=0.95&blood.frac<=0.95))
+			if (DiseaseMinRemains < 3 && ((BloodFrac <= 0.95 && UnholyFrac <= 0.95) || (FrostFrac <= 0.95 && UnholyFrac <= 0.95) || (FrostFrac <= 0.95 && BloodFrac <= 0.95))) {
+				if (PlagueLeech ())
+					return true;
+			}
 			//	actions.single_target_2h+=/frost_strike,if=talent.runic_empowerment.enabled&(frost=0|unholy=0|blood=0)&(!buff.killing_machine.react|!obliterate.ready_in<=1)
+			if (HasSpell ("Runic Empowerment") && (Frost == 0 || Unholy == 0 || Blood == 0) && (!Me.HasAura ("Killing Machine") || Cooldown ("Obliterate") > 1)) {
+				if (FrostStrike ())
+					return true;
+			}
 			//	actions.single_target_2h+=/frost_strike,if=talent.blood_tap.enabled&buff.blood_charge.stack<=10&(!buff.killing_machine.react|!obliterate.ready_in<=1)
+			if (HasSpell ("Blood Tap") && BloodCharge <= 10 && (!Me.HasAura ("Killing Machine") || Cooldown ("Obliterate") > 1)) {
+				if (FrostStrike ())
+					return true;
+			}
 			//	actions.single_target_2h+=/howling_blast,if=buff.rime.react&disease.min_remains>5
+			if (Me.HasAura ("Rime") && DiseaseMinRemains > 5) {
+				if (HowlingBlast ())
+					return true;
+			}
 			//	actions.single_target_2h+=/obliterate,if=blood.frac>=1.5|unholy.frac>=1.6|frost.frac>=1.6|buff.bloodlust.up|cooldown.plague_leech.remains<=4
+			if (BloodFrac >= 1.5 || UnholyFrac >= 1.6 || FrostFrac >= 1.6 || Me.HasAura ("Bloodlust") || (HasSpell ("Plague Leech") && Cooldown ("Plague Leech") <= 4)) {
+				if (Obliterate ())
+					return true;
+			}
 			//	actions.single_target_2h+=/blood_tap,if=(buff.blood_charge.stack>10&runic_power>=20)|(blood.frac>=1.4|unholy.frac>=1.6|frost.frac>=1.6)
+			if ((BloodCharge > 10 && RunicPower >= 20) || (BloodFrac >= 1.4 || UnholyFrac >= 1.6 || FrostFrac >= 1.6)) {
+				if (BloodTap ())
+					return true;
+			}
 			//	actions.single_target_2h+=/frost_strike,if=!buff.killing_machine.react
+			if (!Me.HasAura ("Killing Machine")) {
+				if (FrostStrike ())
+					return true;
+			}
 			//	actions.single_target_2h+=/plague_leech,if=(blood.frac<=0.95&unholy.frac<=0.95)|(frost.frac<=0.95&unholy.frac<=0.95)|(frost.frac<=0.95&blood.frac<=0.95)
+			if ((BloodFrac <= 0.95 && UnholyFrac <= 0.95) || (FrostFrac <= 0.95 && UnholyFrac <= 0.95) || (FrostFrac <= 0.95 && BloodFrac <= 0.95)) {
+				if (PlagueLeech ())
+					return true;
+			}
 			//	actions.single_target_2h+=/empower_rune_weapon
+			if (EmpowerRuneWeapon ())
+				return true;
 
 			return false;
 		}
@@ -202,6 +292,10 @@ namespace ReBot
 			//	actions.single_target_bos+=/plague_leech
 			//	actions.single_target_bos+=/obliterate,if=runic_power<76
 			//	actions.single_target_bos+=/howling_blast,if=((death=1&frost=0&unholy=0)|death=0&frost=1&unholy=0)&runic_power<88
+			if (((Death == 1 && Frost == 0 && Unholy == 0) || Death == 0 && Frost == 1 && Unholy == 0) && RunicPower < 88) {
+				if (HowlingBlast ())
+					return true;
+			}
 
 			return false;
 		}
@@ -209,13 +303,37 @@ namespace ReBot
 		bool Multi_target_bos ()
 		{
 			//	actions.multi_target_bos=howling_blast
+			if (HowlingBlast ())
+				return true;
 			//	actions.multi_target_bos+=/blood_tap,if=buff.blood_charge.stack>10
+			if (BloodCharge > 10) {
+				if (BloodTap ())
+					return true;
+			}
 			//	actions.multi_target_bos+=/death_and_decay,if=unholy=1
+			if (Unholy == 1) {
+				if (DeathandDecay ())
+					return true;
+			}
 			//	actions.multi_target_bos+=/plague_strike,if=unholy=2
+			if (Unholy == 2) {
+				if (PlagueStrike ())
+					return true;
+			}
 			//	actions.multi_target_bos+=/blood_tap
+			if (BloodTap ())
+				return true;
 			//	actions.multi_target_bos+=/plague_leech
+			if (PlagueLeech ())
+				return true;
 			//	actions.multi_target_bos+=/plague_strike,if=unholy=1
+			if (Unholy == 1) {
+				if (PlagueStrike ())
+					return true;
+			}
 			//	actions.multi_target_bos+=/empower_rune_weapon
+			if (EmpowerRuneWeapon ())
+				return true;
 
 			return false;
 		}
