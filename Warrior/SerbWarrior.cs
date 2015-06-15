@@ -452,6 +452,12 @@ namespace ReBot
 			return Usable ("Pummel") && Range (5, u) && C ("Pummel", u);
 		}
 
+		public bool Hamstring (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Hamstring") && Range (5, u) && C ("Hamstring", u);
+		}
+
 		public bool Whirlwind (UnitObject u = null)
 		{
 			u = u ?? Target;

@@ -1,7 +1,4 @@
-﻿
-//  NEED UPDATE FROM CS
-
-using ReBot.API;
+﻿using ReBot.API;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
@@ -90,9 +87,11 @@ namespace ReBot
 
 
 			// Slow Enemy Player
-//			if (Cast ("Hamstring", () => (IsPlayer && IsFleeing) && !Target.HasAura ("Hamstring")))
-//				return;
-//
+			if (IsPlayer () && Target.IsFleeing && !Target.HasAura ("Hamstring")) {
+				if (Hamstring ())
+					return;
+			}
+
 			//Heal
 			if (Health (Me) < 0.9 && Me.HasAura ("Victorious")) {
 				if (VictoryRush ())
@@ -106,12 +105,6 @@ namespace ReBot
 				if (EnragedRegeneration ())
 					return;
 			}
-
-			//CD
-			// if (CastSelf("Recklessness",	() => Target.IsElite() && RecklessnessCD)) return;
-
-			// # Executed every time the actor is available.
-
 
 			//	actions=charge,if=debuff.charge.down
 			//	actions+=/auto_attack
