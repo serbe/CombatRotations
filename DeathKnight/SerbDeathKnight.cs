@@ -9,34 +9,61 @@ namespace ReBot
 {
 	public abstract class SerbDeathKnight : SerbUtils
 	{
+		[JsonProperty ("Time run to use Death's Advance")]
+		public double TDA = 2;
 		[JsonProperty ("Use GCD")]
 		public bool Gcd = true;
 
 		// Check
 
+		//		public bool HasBlood {
+		//			get {
+		//				return (Me.Runes (RuneType.Blood) > 0);
+		//			}
+		//		}
+		//
+		//		public bool HasUnholy {
+		//			get {
+		//				return (Me.Runes (RuneType.Unholy) > 0);
+		//			}
+		//		}
+		//
+		//		public bool HasFrost {
+		//			get {
+		//				return (Me.Runes (RuneType.Frost) > 0);
+		//			}
+		//		}
+		//
+		//		public bool HasDeath {
+		//			get {
+		//				return (Me.Runes (RuneType.Death) > 0);
+		//			}
+		//		}
+
 		public bool HasBlood {
 			get { 
-				return (Me.Runes (RuneType.Blood) > 0);
+				return Blood > 0 || Death > 0;
 			}
 		}
 
 		public bool HasUnholy {
 			get { 
-				return (Me.Runes (RuneType.Unholy) > 0);
+				return Unholy > 0 || Death > 0;
 			}
 		}
 
 		public bool HasFrost {
 			get { 
-				return (Me.Runes (RuneType.Frost) > 0);
+				return Frost > 0 || Death > 0;
 			}
 		}
 
 		public bool HasDeath {
 			get { 
-				return (Me.Runes (RuneType.Death) > 0);
+				return Death > 0;
 			}
 		}
+
 
 		public bool HasFrostDisease (UnitObject u = null)
 		{
@@ -187,7 +214,7 @@ namespace ReBot
 			return HasBloodDisease (u) ? u.AuraTimeRemaining ("Blood Plague", true) : 0;
 		}
 
-		public double MinDisease (UnitObject u = null)
+		public double DiseaseMinRemains (UnitObject u = null)
 		{
 			u = u ?? Target;
 			return FrostDiseaseRemaining (u) < BloodDiseaseRemaining (u) ? FrostDiseaseRemaining (u) : BloodDiseaseRemaining (u);
@@ -238,13 +265,13 @@ namespace ReBot
 		public bool Defile (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Defile") && (Me.HasAura ("Crimson Scourge") || (HasUnholy || HasDeath)) && Range (30, u) && COT ("Defile", u);
+			return Usable ("Defile") && (Me.HasAura ("Crimson Scourge") || HasUnholy) && Range (30, u) && COT ("Defile", u);
 		}
 
 		public bool BloodBoil (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Blood Boil") && (Me.HasAura ("Crimson Scourge") || (HasBlood || HasDeath)) && Range (10, u) && CS ("Blood Boil");
+			return Usable ("Blood Boil") && (Me.HasAura ("Crimson Scourge") || HasBlood) && Range (10, u) && CS ("Blood Boil");
 		}
 
 		public bool SummonGargoyle (UnitObject u = null)
@@ -260,15 +287,23 @@ namespace ReBot
 
 		public bool BloodTap ()
 		{
-			return Usable ("Blood Tap") && BloodCharge >= 5 && CS ("Blood Tap");
+			return Usable ("Blood Tap") && BloodCharge >= 5 && (Blood == 0 || Unholy == 0 || Frost == 0) && CS ("Blood Tap");
 		}
 
 		public bool DeathandDecay (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return CastOnTerrain ("Death and Decay", u.Position, () => Usable ("Death and Decay") && (Me.HasAura ("Crimson Scourge") || (HasUnholy || HasDeath)) && Range (30, u));
+			return CastOnTerrain ("Death and Decay", u.Position, () => Usable ("Death and Decay") && (Me.HasAura ("Crimson Scourge") || HasUnholy) && Range (30, u));
 		}
 
+
+
+
+
+
+
+
+		// --------------------------------------
 		public bool SoulReaper (UnitObject u = null)
 		{
 			u = u ?? Target;
@@ -485,7 +520,7 @@ namespace ReBot
 		public bool ChainsofIce (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Chains of Ice") && Range (30, u) && (HasFrost && HasDeath) && C ("Chains of Ice", u);
+			return Usable ("Chains of Ice") && Range (30, u) && (HasFrost || HasDeath) && C ("Chains of Ice", u);
 		}
 
 		public bool RuneTap ()
@@ -501,6 +536,23 @@ namespace ReBot
 		public bool Conversion ()
 		{
 			return Usable ("Conversion") && CS ("Conversion");
+		}
+
+		public bool DeathsAdvance ()
+		{
+			return Usable ("Death's Advance") && CS ("Death's Advance");
+		}
+
+		public bool HowlingBlast (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Howling Blast") && Range (30, u) && (Me.HasAura ("Freezing Fog") || HasFrost || HasDeath) && C ("Howling Blast", u);
+		}
+
+		public bool Obliterate (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Obliterate") && Range (5, u) && HasFrost && HasUnholy && C ("Obliterate", u);
 		}
 	}
 }

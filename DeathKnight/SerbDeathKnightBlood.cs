@@ -119,7 +119,7 @@ namespace ReBot.DeathKnight
 					return;
 			}
 			//	actions+=/outbreak,if=(!talent.necrotic_plague.enabled&disease.min_remains<8)|!disease.ticking
-			if ((!HasSpell ("Necrotic Plague") && MinDisease () < 8) || Disease () == 0) {
+			if ((!HasSpell ("Necrotic Plague") && DiseaseMinRemains () < 8) || Disease () == 0) {
 				if (Outbreak ())
 					return;
 			}

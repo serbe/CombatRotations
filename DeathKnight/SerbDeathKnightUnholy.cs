@@ -101,7 +101,7 @@ namespace ReBot.DeathKnight
 		bool ActionUnholy ()
 		{
 			//	actions.unholy=plague_leech,if=((cooldown.outbreak.remains<1)|disease.min_remains<1)&((blood<1&frost<1)|(blood<1&unholy<1)|(frost<1&unholy<1))
-			if (((Cooldown ("Outbreak") < 1) || MinDisease () < 1) && ((Blood < 1 && Frost < 1) || (Blood < 1 && Unholy < 1) || (Frost < 1 && Unholy < 1))) {
+			if (((Cooldown ("Outbreak") < 1) || DiseaseMinRemains () < 1) && ((Blood < 1 && Frost < 1) || (Blood < 1 && Unholy < 1) || (Frost < 1 && Unholy < 1))) {
 				if (PlagueLeech ())
 					return true;
 			}
@@ -381,12 +381,12 @@ namespace ReBot.DeathKnight
 					return true;
 			}
 			//actions.single_target+=/plague_leech,if=((blood<1&frost<1)|(blood<1&unholy<1)|(frost<1&unholy<1))&disease.min_remains<3
-			if (((Blood < 1 && Frost < 1) || (Blood < 1 && Unholy < 1) || (Frost < 1 && Unholy < 1)) && MinDisease (Target) < 3) {
+			if (((Blood < 1 && Frost < 1) || (Blood < 1 && Unholy < 1) || (Frost < 1 && Unholy < 1)) && DiseaseMinRemains (Target) < 3) {
 				if (PlagueLeech ())
 					return true;
 			}
 			//actions.single_target+=/plague_leech,if=disease.min_remains<1
-			if (MinDisease (Target) < 1) {
+			if (DiseaseMinRemains (Target) < 1) {
 				if (PlagueLeech ())
 					return true;
 			}
@@ -396,7 +396,7 @@ namespace ReBot.DeathKnight
 					return true;
 			}
 			//actions.single_target+=/unholy_blight,if=!talent.necrotic_plague.enabled&disease.min_remains<3
-			if (!HasSpell ("Necrotic Plague") && MinDisease (Target) < 3) {
+			if (!HasSpell ("Necrotic Plague") && DiseaseMinRemains (Target) < 3) {
 				if (UnholyBlight ())
 					return true;
 			}
@@ -420,7 +420,7 @@ namespace ReBot.DeathKnight
 
 			//actions.single_target+=/plague_strike,if=!disease.min_ticking&unholy=2
 			// Analysis disable once CompareOfFloatsByEqualityOperator
-			if (MinDisease (Target) == 0 && Unholy == 2) {
+			if (DiseaseMinRemains (Target) == 0 && Unholy == 2) {
 				if (PlagueStrike ())
 					return true;
 			}
@@ -443,7 +443,7 @@ namespace ReBot.DeathKnight
 			}
 			//actions.single_target+=/plague_strike,if=!disease.min_ticking&(blood=2|frost=2)
 			// Analysis disable once CompareOfFloatsByEqualityOperator
-			if (MinDisease (Target) == 0 && (Blood == 2 || Frost == 2)) {
+			if (DiseaseMinRemains (Target) == 0 && (Blood == 2 || Frost == 2)) {
 				if (PlagueStrike ())
 					return true;
 			}
@@ -485,7 +485,7 @@ namespace ReBot.DeathKnight
 			
 			//actions.single_target+=/plague_strike,if=!disease.min_ticking
 			// Analysis disable once CompareOfFloatsByEqualityOperator
-			if (MinDisease (Target) == 0) {
+			if (DiseaseMinRemains (Target) == 0) {
 				if (PlagueStrike ())
 					return true;
 			}
@@ -675,19 +675,19 @@ namespace ReBot.DeathKnight
 		{
 			//actions.spread=blood_boil,cycle_targets=1,if=!disease.min_ticking
 			// Analysis disable once CompareOfFloatsByEqualityOperator
-			if (MinDisease (Target) == 0) {
+			if (DiseaseMinRemains (Target) == 0) {
 				if (BloodBoil ())
 					return true;
 			}
 			//actions.spread+=/outbreak,if=!disease.min_ticking
 			// Analysis disable once CompareOfFloatsByEqualityOperator
-			if (MinDisease (Target) == 0) {
+			if (DiseaseMinRemains (Target) == 0) {
 				if (Outbreak ())
 					return true;
 			}
 			//actions.spread+=/plague_strike,if=!disease.min_ticking
 			// Analysis disable once CompareOfFloatsByEqualityOperator
-			if (MinDisease (Target) == 0) {
+			if (DiseaseMinRemains (Target) == 0) {
 				if (PlagueStrike ())
 					return true;
 			}

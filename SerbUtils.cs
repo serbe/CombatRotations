@@ -24,6 +24,7 @@ namespace ReBot
 		public PlayerObject Player;
 		public IEnumerable<UnitObject> MaxCycle;
 		public String RangedAttack = "Throw";
+		public bool InRun;
 
 		public enum Keys
 		{

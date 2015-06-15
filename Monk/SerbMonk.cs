@@ -14,7 +14,7 @@ namespace ReBot
 		[JsonProperty ("Time run to use Tiger Lust")]
 		public double TTL = 1;
 
-		public bool InRun;
+
 		Random Rnd = new Random ();
 
 		// Get
