@@ -95,26 +95,13 @@ namespace ReBot
 					return;
 			}
 
-//			if (UseStance && !(Me.HasAura ("Defensive Stance") || Me.HasAura ("Improved Defensive Stance")) && (CombatRole == CombatRole.Tank || Health () < 0.4)) {
-//				if (DefensiveStance ())
-//					return;
-//			}
-//
-//			if (UseStance && !Me.HasAura ("Battle Stance") && (CombatRole == CombatRole.DPS || Health () >= 0.4)) {
-//				if (BattleStance ())
-//					return;
-//			}
-
-//			if (Me.HasAura ("Defensive Stance") || Me.HasAura ("Improved Defensive Stance")) {
-			if (Protection ())
-				return;
-//			}
-
-//			if (Me.HasAura ("Battle Stance")) {
-//				if (Gladiator ())
-//					return;
-//			}
-
+			if (HasSpell ("Gladiator's Resolve")) {
+				if (Gladiator ())
+					return;
+			} else {
+				if (Protection ())
+					return;
+			}
 		}
 
 		public bool Protection ()
