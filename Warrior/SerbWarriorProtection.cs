@@ -200,21 +200,6 @@ namespace ReBot
 			if (HasSpell ("Bloodbath") && ((Cooldown ("Dragon Roar") == 0 && HasSpell ("Dragon Roar")) || (Cooldown ("Storm Bolt") == 0 && HasSpell ("Storm Bolt")) || HasSpell ("Shockwave")))
 				Bloodbath ();
 			//	actions.prot+=/avatar,if=talent.avatar.enabled&((cooldown.ravager.remains=0&talent.ravager.enabled)|(cooldown.dragon_roar.remains=0&talent.dragon_roar.enabled)|(talent.storm_bolt.enabled&cooldown.storm_bolt.remains=0)|(!(talent.dragon_roar.enabled|talent.ravager.enabled|talent.storm_bolt.enabled)))
-			//	actions.prot+=/shield_slam
-			//	actions.prot+=/revenge
-			//	actions.prot+=/ravager
-			//	actions.prot+=/storm_bolt
-			//	actions.prot+=/dragon_roar
-			//	actions.prot+=/impending_victory,if=talent.impending_victory.enabled&cooldown.shield_slam.remains<=execute_time
-			//	actions.prot+=/victory_rush,if=!talent.impending_victory.enabled&cooldown.shield_slam.remains<=execute_time
-			//	actions.prot+=/execute,if=buff.sudden_death.react
-			//	actions.prot+=/devastate
-
-
-
-
-
-			//	actions.prot+=/avatar,if=talent.avatar.enabled&((cooldown.ravager.remains=0&talent.ravager.enabled)|(cooldown.dragon_roar.remains=0&talent.dragon_roar.enabled)|(talent.storm_bolt.enabled&cooldown.storm_bolt.remains=0)|(!(talent.dragon_roar.enabled|talent.ravager.enabled|talent.storm_bolt.enabled)))
 			if (HasSpell ("Avatar") && ((Cooldown ("Ravager") == 0 && HasSpell ("Ravager")) || (Cooldown ("Dragon Roar") == 0 && HasSpell ("Dragon Roar")) || (Cooldown ("Storm Bolt") == 0 && HasSpell ("Storm Bolt")) || (!(HasSpell ("Dragon Roar") || HasSpell ("Ravager") || HasSpell ("Storm Bolt")))))
 				Avatar ();
 			//	actions.prot+=/shield_slam
@@ -230,7 +215,8 @@ namespace ReBot
 			if (StormBolt ())
 				return true;
 			//	actions.prot+=/dragon_roar
-			DragonRoar ();
+			if (Danger ())
+				DragonRoar ();
 			//	actions.prot+=/impending_victory,if=talent.impending_victory.enabled&cooldown.shield_slam.remains<=execute_time
 			if (HasSpell ("Impending Victory") && Cooldown ("Shield Slam") <= 1.5) {
 				if (ImpendingVictory ())
@@ -256,25 +242,6 @@ namespace ReBot
 		public bool ProtAoe ()
 		{
 			//	actions.prot_aoe=bloodbath
-			//	actions.prot_aoe+=/avatar
-			//	actions.prot_aoe+=/thunder_clap,if=!dot.deep_wounds.ticking
-			//	actions.prot_aoe+=/heroic_strike,if=buff.ultimatum.up|rage>110|(talent.unyielding_strikes.enabled&buff.unyielding_strikes.stack>=6)
-			//	actions.prot_aoe+=/heroic_leap,if=(raid_event.movement.distance>25&raid_event.movement.in>45)|!raid_event.movement.exists
-			//	actions.prot_aoe+=/shield_slam,if=buff.shield_block.up
-			//	actions.prot_aoe+=/ravager,if=(buff.avatar.up|cooldown.avatar.remains>10)|!talent.avatar.enabled
-			//	actions.prot_aoe+=/dragon_roar,if=(buff.bloodbath.up|cooldown.bloodbath.remains>10)|!talent.bloodbath.enabled
-			//	actions.prot_aoe+=/shockwave
-			//	actions.prot_aoe+=/revenge
-			//	actions.prot_aoe+=/thunder_clap
-			//	actions.prot_aoe+=/bladestorm
-			//	actions.prot_aoe+=/shield_slam
-			//	actions.prot_aoe+=/storm_bolt
-			//	actions.prot_aoe+=/shield_slam
-			//	actions.prot_aoe+=/execute,if=buff.sudden_death.react
-			//	actions.prot_aoe+=/devastate
-
-
-			//	actions.prot_aoe=bloodbath
 			Bloodbath ();
 			//	actions.prot_aoe+=/avatar
 			Avatar ();
@@ -285,12 +252,11 @@ namespace ReBot
 					return true;
 			}
 			//	actions.prot_aoe+=/heroic_strike,if=buff.ultimatum.up|rage>110|(talent.unyielding_strikes.enabled&buff.unyielding_strikes.stack>=6)
-			if (Me.HasAura ("Ultimatum") || Rage >= MaxPower - 20 || (HasSpell ("Unyielding Strikes") && Me.GetAura ("Unyielding Strikes").StackCount >= 6)) {
+			if (Me.HasAura ("Ultimatum") || Rage >= MaxPower - 20 || (HasSpell ("Unyielding Strikes") && AuraStackCount ("Unyielding Strikes") >= 6)) {
 				if (HeroicStrike ())
 					return true;
 			}
 			//	actions.prot_aoe+=/heroic_leap,if=(raid_event.movement.distance>25&raid_event.movement.in>45)|!raid_event.movement.exists
-			//
 			//	actions.prot_aoe+=/shield_slam,if=buff.shield_block.up
 			if (Me.HasAura ("Shield Block")) {
 				if (ShieldSlam ())
@@ -379,7 +345,7 @@ namespace ReBot
 			}
 			//	actions+=/auto_attack
 			//	# This is mostly to prevent cooldowns from being accidentally used during movement.
-			//	actions+=/call_action_list,name=movement,if=movement.distance>5
+			//	actions+=/run_action_list,name=movement,if=movement.distance>5
 			if (Range (5)) {
 				if (Movement ())
 					return true;
@@ -388,6 +354,7 @@ namespace ReBot
 			Avatar ();
 			//	actions+=/bloodbath
 			Bloodbath ();
+			//	actions+=/use_item,name=vial_of_convulsive_shadows,if=buff.bloodbath.up|buff.avatar.up|buff.shield_charge.up|target.time_to_die<15
 			//	actions+=/blood_fury,if=buff.bloodbath.up|buff.avatar.up|buff.shield_charge.up|target.time_to_die<10
 			if (Me.HasAura ("Bloodbath") || Me.HasAura ("Avatar") || Me.HasAura ("Shield Charge") || TimeToDie () < 10)
 				BloodFury ();
@@ -409,26 +376,39 @@ namespace ReBot
 			if (!Me.HasAura ("Enrage"))
 				BerserkerRage ();
 			//	actions+=/heroic_leap,if=(raid_event.movement.distance>25&raid_event.movement.in>45)|!raid_event.movement.exists
-			//	actions+=/heroic_strike,if=(buff.shield_charge.up|(buff.unyielding_strikes.up&rage>=80-buff.unyielding_strikes.stack*10))&target.health.pct>20
-			if ((Me.HasAura ("Shield Charge") || (Me.HasAura ("Unyielding Strikes") && Rage >= 80 - AuraStackCount ("Unyielding Strikes") * 10)) && Health (Target) > 20) {
+			//	actions+=/heroic_strike,if=buff.unyielding_strikes.up&rage>=92-buff.unyielding_strikes.stack*12&target.health.pct>20
+			if (Me.HasAura ("Unyielding Strikes") && Rage >= 92 - AuraStackCount ("Unyielding Strikes") * 12 && Health (Target) > 20) {
 				if (HeroicStrike ())
 					return true;
 			}
-			//	actions+=/heroic_strike,if=buff.ultimatum.up|rage>=rage.max-20|buff.unyielding_strikes.stack>4|target.time_to_die<10
-			if (Me.HasAura ("Ultimatum") || Rage >= MaxPower - 20 || Me.GetAura ("Unyielding Strikes").StackCount > 4 || TimeToDie () < 10) {
+			//	actions+=/heroic_strike,if=buff.shield_charge.up&target.health.pct>20
+			if (Me.HasAura ("Shield Charge") && Health (Target) > 20) {
 				if (HeroicStrike ())
 					return true;
 			}
-			//	actions+=/call_action_list,name=single,if=active_enemies=1
-			if (ActiveEnemies (8) == 1) {
-				if (GladSingle ())
+			//	actions+=/heroic_strike,if=buff.shield_charge.up&target.health.pct<20&buff.unyielding_strikes.stack>3
+			if (Me.HasAura ("Shield Charge") && Health (Target) > 20 && AuraStackCount ("Unyielding Strikes") > 3) {
+				if (HeroicStrike ())
 					return true;
 			}
-			//	actions+=/call_action_list,name=aoe,if=active_enemies>=2
+			//	actions+=/heroic_strike,if=buff.ultimatum.up|(rage>=rage.max-20)
+			if (Me.HasAura ("Ultimatum") || Rage >= MaxPower - 20) {
+				if (HeroicStrike ())
+					return true;
+			}
+			//	actions+=/heroic_strike,if=target.time_to_die<10|buff.unyielding_strikes.stack>4
+			if (TimeToDie () < 10 || AuraStackCount ("Unyielding Strikes") > 4) {
+				if (HeroicStrike ())
+					return true;
+			}
+			//	actions+=/call_action_list,name=aoe,if=spell_targets.revenge>=2
 			if (ActiveEnemies (8) >= 2) {
 				if (GladAoe ())
 					return true;
 			}
+			//	actions+=/call_action_list,name=single
+			if (GladSingle ())
+				return true;
 
 			return false;
 		}
@@ -453,7 +433,7 @@ namespace ReBot
 		public bool GladSingle ()
 		{
 			//	actions.single=devastate,if=buff.unyielding_strikes.stack>0&buff.unyielding_strikes.stack<6&buff.unyielding_strikes.remains<1.5
-			if (Me.GetAura ("Unyielding Strikes").StackCount > 0 && Me.GetAura ("Unyielding Strikes").StackCount < 6 && Me.AuraTimeRemaining ("Unyielding Strikes") < 1.5) {
+			if (AuraStackCount ("Unyielding Strikes") > 0 && AuraStackCount ("Unyielding Strikes") < 6 && Me.AuraTimeRemaining ("Unyielding Strikes") < 1.5) {
 				if (Devastate ())
 					return true;
 			}
@@ -471,12 +451,14 @@ namespace ReBot
 			//	actions.single+=/storm_bolt
 			if (StormBolt ())
 				return true;
-			//	actions.single+=/dragon_roar,if=buff.unyielding_strikes.stack>=4&buff.unyielding_strikes.stack<6
-			if (AuraStackCount ("Unyielding Strikes") >= 4 && Me.GetAura ("Unyielding Strikes").StackCount < 6)
+			//	actions.single+=/dragon_roar,if=buff.unyielding_strikes.stack=5
+			if (AuraStackCount ("Unyielding Strikes") = 5)
 				DragonRoar ();
-			//	actions.single+=/execute,if=rage>60&target.health.pct<20
-			if (Execute ())
-				return true;
+			//	actions.single+=/execute,if=rage>=50
+			if (Rage >= 50) {
+				if (Execute ())
+					return true;
+			}
 			//	actions.single+=/devastate
 			if (Devastate ())
 				return true;
@@ -500,7 +482,7 @@ namespace ReBot
 				if (StormBolt ())
 					return true;
 			}
-			//	actions.aoe+=/thunder_clap,cycle_targets=1,if=dot.deep_wounds.remains<3&active_enemies>4
+			//	actions.aoe+=/thunder_clap,cycle_targets=1,if=dot.deep_wounds.remains<3&spell_targets.thunder_clap>4
 			if (ActiveEnemies (8) > 4) {
 				Unit = Enemy.Where (u => Me.Level >= 32 & u.AuraTimeRemaining ("Deep Wounds", true) < 3).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && ThunderClap ())
@@ -516,7 +498,7 @@ namespace ReBot
 				if (Execute ())
 					return true;
 			}
-			//	actions.aoe+=/thunder_clap,if=active_enemies>6
+			//	actions.aoe+=/thunder_clap,if=spell_targets.thunder_clap>6
 			if (ActiveEnemies (8) > 6) {
 				if (ThunderClap ())
 					return true;
@@ -537,4 +519,3 @@ namespace ReBot
 		}
 	}
 }
-	
