@@ -69,8 +69,10 @@ namespace ReBot
 				StartBattle = DateTime.Now;
 			}
 
-			if (Interrupt ())
-				return;
+			if (!Me.HasAura ("Spell Reflection") && !Me.HasAura ("Mass Spell Reflection")) {
+				if (Interrupt ())
+					return;
+			}
 
 			if (Reflect ())
 				return;
