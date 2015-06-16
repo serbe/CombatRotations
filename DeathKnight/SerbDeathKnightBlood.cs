@@ -200,21 +200,21 @@ namespace ReBot.DeathKnight
 					return true;
 			}
 			//	actions.bt+=/blood_tap,if=buff.blood_charge.stack>=5&!blood
-			if (BloodCharge >= 5 && !HasBlood)
+			if (BloodChargeStack >= 5 && !HasBlood)
 				BloodTap ();
 			//	actions.bt+=/death_strike,if=buff.blood_charge.stack>=10&unholy&frost
-			if (BloodCharge >= 10 && HasUnholy && HasFrost) {
+			if (BloodChargeStack >= 10 && HasUnholy && HasFrost) {
 				if (DeathStrike ())
 					return true;
 			}
 			//	actions.bt+=/blood_tap,if=buff.blood_charge.stack>=10&!unholy&!frost
-			if (BloodCharge >= 10 && !HasUnholy && !HasFrost)
+			if (BloodChargeStack >= 10 && !HasUnholy && !HasFrost)
 				BloodTap ();
 			//	actions.bt+=/blood_tap,if=buff.blood_charge.stack>=5&(!unholy|!frost)
-			if (BloodCharge >= 5 && (!HasUnholy || !HasFrost))
+			if (BloodChargeStack >= 5 && (!HasUnholy || !HasFrost))
 				BloodTap ();
 			//	actions.bt+=/blood_tap,if=buff.blood_charge.stack>=5&blood.death&!unholy&!frost
-			if (BloodCharge >= 5 && HasDeath && !HasUnholy && !HasFrost)
+			if (BloodChargeStack >= 5 && HasDeath && !HasUnholy && !HasFrost)
 				BloodTap ();
 			//	actions.bt+=/death_coil,if=runic_power>70
 			if (RunicPower > 70) {

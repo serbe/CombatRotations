@@ -184,7 +184,7 @@ namespace ReBot
 			}
 		}
 
-		public int BloodCharge {
+		public int BloodChargeStack {
 			get { 
 				return AuraStackCount ("Blood Charge");
 			}
@@ -381,7 +381,7 @@ namespace ReBot
 
 		public bool BloodTap ()
 		{
-			return Usable ("Blood Tap") && BloodCharge >= 5 && (Blood == 0 || Unholy == 0 || Frost == 0) && CS ("Blood Tap");
+			return Usable ("Blood Tap") && BloodChargeStack >= 5 && (Blood == 0 || Unholy == 0 || Frost == 0) && CS ("Blood Tap");
 		}
 
 		public bool DeathandDecay (UnitObject u = null)

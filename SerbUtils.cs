@@ -715,7 +715,11 @@ namespace ReBot
 		{
 			return UsableItem (122668) && API.UseItem (122668);
 		}
-			
+
+		public bool DraenicStrength ()
+		{
+			return UsableItem (109219) && !Me.HasAura ("Draenic Strength Potion") && API.UseItem (109219);
+		}
 	}
 }
 

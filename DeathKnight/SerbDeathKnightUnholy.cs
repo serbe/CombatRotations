@@ -204,13 +204,13 @@ namespace ReBot.DeathKnight
 
 
 			//	actions.unholy+=/blood_tap,if=buff.blood_charge.stack>10
-			if (BloodCharge > 10)
+			if (BloodChargeStack > 10)
 				BloodTap ();
 			//	actions.unholy+=/outbreak,if=talent.necrotic_plague.enabled&debuff.necrotic_plague.stack<=14
 
 
 			//	actions.unholy+=/death_coil,if=(buff.sudden_doom.react|runic_power>80)&(buff.blood_charge.stack<=10)
-			if ((Me.HasAura ("Sudden Doom") || RunicPower > 80) && (BloodCharge <= 10)) {
+			if ((Me.HasAura ("Sudden Doom") || RunicPower > 80) && (BloodChargeStack <= 10)) {
 				if (DeathCoil ())
 					return true;
 			}
@@ -273,7 +273,7 @@ namespace ReBot.DeathKnight
 			if (DarkTransformation ())
 				return true;
 			//	actions.bos+=/blood_tap,if=buff.blood_charge.stack>=5
-			if (BloodCharge >= 5)
+			if (BloodChargeStack >= 5)
 				BloodTap ();
 			//	actions.bos+=/plague_leech
 			if (PlagueLeech ())
@@ -493,7 +493,7 @@ namespace ReBot.DeathKnight
 			if (DarkTransformation ())
 				return true;
 			//actions.single_target+=/blood_tap,if=buff.blood_charge.stack>10&(buff.sudden_doom.react|(buff.dark_transformation.down&unholy<=1))
-			if (BloodCharge > 10 && (Me.HasAura ("Sudden Doom") || (!Me.Pet.HasAura ("Dark Transformation") && Unholy <= 1)))
+			if (BloodChargeStack > 10 && (Me.HasAura ("Sudden Doom") || (!Me.Pet.HasAura ("Dark Transformation") && Unholy <= 1)))
 				BloodTap ();
 			//actions.single_target+=/death_coil,if=buff.sudden_doom.react|(buff.dark_transformation.down&unholy<=1)
 			if (Me.HasAura ("Sudden Doom") || (Me.Pet.HasAura ("Dark Transformation") && Unholy <= 1)) {
@@ -618,7 +618,7 @@ namespace ReBot.DeathKnight
 			if (DarkTransformation ())
 				return true;
 			//actions.bos_st+=/blood_tap,if=buff.blood_charge.stack>10
-			if (BloodCharge > 10)
+			if (BloodChargeStack > 10)
 				BloodTap ();
 			//actions.bos_st+=/blood_boil,if=active_enemies>=4
 			if (ActiveEnemies (10) >= 4) {
