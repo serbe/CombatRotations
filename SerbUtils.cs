@@ -329,6 +329,15 @@ namespace ReBot
 			}
 			return null;
 		}
+
+		public int GetAuraStack (string s, UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (!u.HasAura (s, true))
+				return 0;
+			return u.GetAura (s, true).StackCount;
+		}
+
 		// Checkers
 
 		public bool C (string s, UnitObject u = null, bool t = false)

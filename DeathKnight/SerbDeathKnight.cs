@@ -184,12 +184,6 @@ namespace ReBot
 			}
 		}
 
-		public int BloodChargeStack {
-			get { 
-				return AuraStackCount ("Blood Charge");
-			}
-		}
-
 		public int Disease (UnitObject u = null)
 		{
 			u = u ?? Target;
@@ -222,9 +216,7 @@ namespace ReBot
 		public int NecroticDiseaseCount (UnitObject u = null)
 		{
 			u = u ?? Target;
-			if (!u.HasAura ("Necrotic Plague", true))
-				return 0;
-			return u.GetAura ("Necrotic Plague", true).StackCount;
+			return GetAuraStack ("Necrotic Plague", u);
 		}
 
 		// Combo
@@ -327,13 +319,7 @@ namespace ReBot
 		}
 
 
-		// Spell
-
-		public bool DeathGrip (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Usable ("Death Grip") && (Range (30, u) || (HasGlyph (62259) && Range (35, u))) && C ("Death Grip", u);
-		}
+		// Spells
 
 		public bool HornofWinter ()
 		{
@@ -371,43 +357,35 @@ namespace ReBot
 		public bool SummonGargoyle (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Summon Gargoyle") && Range (30, u) && (IsElite (u) || IsPlayer (u) || ActiveEnemies (10) > 2) && C ("Summon Gargoyle");
+			return Usable ("Summon Gargoyle") && Danger (u, 30) && C ("Summon Gargoyle");
 		}
 
 		public bool DarkTransformation ()
 		{
-			return Usable ("Dark Transformation") && !Me.Pet.HasAura ("Dark Transformation") && Me.HasAlivePet && Me.GetAura ("Shadow Infusion").StackCount == 5 && (HasSpell ("Enhanced Dark Transformation") || (HasDeath || HasUnholy)) && C ("Dark Transformation");
+			return Usable ("Dark Transformation") && !Me.Pet.HasAura ("Dark Transformation") && Me.HasAlivePet && GetAuraStack ("Shadow Infusion", Me) == 5 && (HasSpell ("Enhanced Dark Transformation") || HasUnholy) && C ("Dark Transformation");
 		}
 
 		public bool BloodTap ()
 		{
-			return Usable ("Blood Tap") && BloodChargeStack >= 5 && (Blood == 0 || Unholy == 0 || Frost == 0) && CS ("Blood Tap");
+			return Usable ("Blood Tap") && GetAuraStack ("Blood Charge", Me) >= 5 && (BloodFrac < 1 || FrostFrac < 1 || UnholyFrac < 1) && CS ("Blood Tap");
 		}
 
 		public bool DeathandDecay (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return CastOnTerrain ("Death and Decay", u.Position, () => Usable ("Death and Decay") && (Me.HasAura ("Crimson Scourge") || HasUnholy) && Range (30, u));
+			return Usable ("Death and Decay") && (Me.HasAura ("Crimson Scourge") || HasUnholy) && Range (30, u) && COT ("Death and Decay", u);
 		}
 
-
-
-
-
-
-
-
-		// --------------------------------------
 		public bool SoulReaper (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Soul Reaper") && C ("Soul Reaper", u);
+			return Usable ("Soul Reaper") && ((Me.Specialization == Specialization.DeathknightBlood && HasBlood) || (Me.Specialization == Specialization.DeathknightFrost && HasFrost) || (Me.Specialization == Specialization.DeathknightUnholy && HasUnholy)) && Range (5, u) && C ("Soul Reaper", u);
 		}
 
 		public bool ScourgeStrike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Scourge Strike") && (HasUnholy || HasDeath) && C ("Scourge Strike", u);
+			return Usable ("Scourge Strike") && HasUnholy && Range (5, u) && C ("Scourge Strike", u);
 		}
 
 		public bool DeathCoil (UnitObject u = null)
@@ -419,13 +397,13 @@ namespace ReBot
 		public bool IcyTouch (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Icy Touch") && (HasFrost || HasDeath) && Range (30, u) && C ("Icy Touch", u);
+			return Usable ("Icy Touch") && HasFrost && Range (30, u) && C ("Icy Touch", u);
 		}
 
 		public bool PlagueLeech (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Plague Leech") && u.HasAura ("Frost Fever", true) && u.HasAura ("Blood Plague", true) && C ("Plague Leech");
+			return Usable ("Plague Leech") && HasBloodDisease (u) && HasFrostDisease (u) && (BloodFrac < 1 || FrostFrac < 1 || UnholyFrac < 1) && C ("Plague Leech");
 		}
 
 		public bool EmpowerRuneWeapon (UnitObject u = null)
@@ -434,30 +412,28 @@ namespace ReBot
 			return Usable ("Empower Rune Weapon") && Danger (u, 10) && C ("Empower Rune Weapon");
 		}
 
-
 		public bool PlagueStrike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Plague Strike") && (HasUnholy || HasDeath) && C ("Plague Strike", u);
+			return Usable ("Plague Strike") && HasUnholy && Range (5, u) && C ("Plague Strike", u);
 		}
 
 		public bool FesteringStrike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Festering Strike") && ((HasFrost && HasBlood) || (HasFrost && HasDeath) || (HasDeath && HasBlood) || Death == 2) && C ("Festering Strike", u);
+			return Usable ("Festering Strike") && HasFrostAndBlood && Range (5, u) && C ("Festering Strike", u);
 		}
-
 
 		public bool MindFreeze (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("MindFreeze") && C ("Mind Freeze", u);
+			return Usable ("Mind Freeze") && Range (5, u) && C ("Mind Freeze", u);
 		}
 
 		public bool Strangulate (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Strangulate") && (HasBlood || HasDeath) && Range (30, u) && C ("Strangulate", u);
+			return Usable ("Strangulate") && HasBlood && Range (30, u) && C ("Strangulate", u);
 		}
 
 		public bool Asphyxiate (UnitObject u = null)
@@ -472,12 +448,11 @@ namespace ReBot
 			return Usable ("Death Siphon") && HasDeath && Range (30, u) && C ("Death Siphon", u);
 		}
 
-
-
-
-
-
-		// Spells
+		public bool DeathGrip (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Death Grip") && (Range (30, u) || (HasGlyph (62259) && Range (35, u))) && C ("Death Grip", u);
+		}
 
 		public bool BreathofSindragosa (UnitObject u = null)
 		{

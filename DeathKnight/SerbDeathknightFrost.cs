@@ -145,12 +145,12 @@ namespace ReBot
 					return true;
 			}
 			//	actions.single_target_2h+=/outbreak,if=!disease.max_ticking
-			if (!HasDisease) {
+			if (!HasDisease ()) {
 				if (Outbreak ())
 					return true;
 			}
 			//	actions.single_target_2h+=/unholy_blight,if=!disease.min_ticking
-			if (!HasDisease) {
+			if (!HasDisease ()) {
 				if (UnholyBlight ())
 					return true;
 			}
@@ -190,7 +190,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.single_target_2h+=/blood_tap,if=buff.blood_charge.stack>10&runic_power>76
-			if (BloodChargeStack > 10 && RunicPower > 76) {
+			if (GetAuraStack ("Blood Charge", Me) > 10 && RunicPower > 76) {
 				if (BloodTap ())
 					return true;
 			}
@@ -200,7 +200,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.single_target_2h+=/howling_blast,if=buff.rime.react&disease.min_remains>5&(blood.frac>=1.8|unholy.frac>=1.8|frost.frac>=1.8)
-			if (Me.HasAura ("Rime") && DiseaseMinRemains > 5 && (BloodFrac >= 1.8 || UnholyFrac >= 1.8 || FrostFrac >= 1.8)) {
+			if (Me.HasAura ("Rime") && DiseaseMinRemains () > 5 && (BloodFrac >= 1.8 || UnholyFrac >= 1.8 || FrostFrac >= 1.8)) {
 				if (HowlingBlast ())
 					return true;
 			}
@@ -210,7 +210,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.single_target_2h+=/plague_leech,if=disease.min_remains<3&((blood.frac<=0.95&unholy.frac<=0.95)|(frost.frac<=0.95&unholy.frac<=0.95)|(frost.frac<=0.95&blood.frac<=0.95))
-			if (DiseaseMinRemains < 3 && ((BloodFrac <= 0.95 && UnholyFrac <= 0.95) || (FrostFrac <= 0.95 && UnholyFrac <= 0.95) || (FrostFrac <= 0.95 && BloodFrac <= 0.95))) {
+			if (DiseaseMinRemains () < 3 && ((BloodFrac <= 0.95 && UnholyFrac <= 0.95) || (FrostFrac <= 0.95 && UnholyFrac <= 0.95) || (FrostFrac <= 0.95 && BloodFrac <= 0.95))) {
 				if (PlagueLeech ())
 					return true;
 			}
@@ -220,12 +220,12 @@ namespace ReBot
 					return true;
 			}
 			//	actions.single_target_2h+=/frost_strike,if=talent.blood_tap.enabled&buff.blood_charge.stack<=10&(!buff.killing_machine.react|!obliterate.ready_in<=1)
-			if (HasSpell ("Blood Tap") && BloodChargeStack <= 10 && (!Me.HasAura ("Killing Machine") || Cooldown ("Obliterate") > 1)) {
+			if (HasSpell ("Blood Tap") && GetAuraStack ("Blood Charge", Me) <= 10 && (!Me.HasAura ("Killing Machine") || Cooldown ("Obliterate") > 1)) {
 				if (FrostStrike ())
 					return true;
 			}
 			//	actions.single_target_2h+=/howling_blast,if=buff.rime.react&disease.min_remains>5
-			if (Me.HasAura ("Rime") && DiseaseMinRemains > 5) {
+			if (Me.HasAura ("Rime") && DiseaseMinRemains () > 5) {
 				if (HowlingBlast ())
 					return true;
 			}
@@ -235,7 +235,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.single_target_2h+=/blood_tap,if=(buff.blood_charge.stack>10&runic_power>=20)|(blood.frac>=1.4|unholy.frac>=1.6|frost.frac>=1.6)
-			if ((BloodChargeStack > 10 && RunicPower >= 20) || (BloodFrac >= 1.4 || UnholyFrac >= 1.6 || FrostFrac >= 1.6)) {
+			if ((GetAuraStack ("Blood Charge", Me) > 10 && RunicPower >= 20) || (BloodFrac >= 1.4 || UnholyFrac >= 1.6 || FrostFrac >= 1.6)) {
 				if (BloodTap ())
 					return true;
 			}
@@ -297,7 +297,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.single_target_1h+=/blood_tap,if=buff.blood_charge.stack>10
-			if (BloodChargeStack > 10) {
+			if (GetAuraStack ("Blood Charge", Me) > 10) {
 				if (BloodTap ())
 					return true;
 			}
@@ -307,12 +307,12 @@ namespace ReBot
 					return true;
 			}
 			//	actions.single_target_1h+=/unholy_blight,if=!disease.ticking
-			if (!HasDisease) {
+			if (!HasDisease ()) {
 				if (UnholyBlight ())
 					return true;
 			}
 			//	actions.single_target_1h+=/outbreak,if=!dot.blood_plague.ticking
-			if (!HasBloodDisease) {
+			if (!HasBloodDisease ()) {
 				if (Outbreak ())
 					return true;
 			}
@@ -361,7 +361,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.multi_target+=/blood_boil,if=dot.blood_plague.ticking&(!talent.unholy_blight.enabled|cooldown.unholy_blight.remains<49),line_cd=28
-			if (HasBloodDisease && (!HasSpell ("Necrotic Plague") || Cooldown ("Unholy Blight") < 49)) {
+			if (HasBloodDisease () && (!HasSpell ("Necrotic Plague") || Cooldown ("Unholy Blight") < 49)) {
 				if (BloodBoil ())
 					return true;
 			}
@@ -382,7 +382,7 @@ namespace ReBot
 			if (HowlingBlast ())
 				return true;
 			//	actions.multi_target+=/blood_tap,if=buff.blood_charge.stack>10
-			if (BloodChargeStack > 10) {
+			if (GetAuraStack ("Blood Charge", Me) > 10) {
 				if (BloodTap ())
 					return true;
 			}
@@ -397,7 +397,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.multi_target+=/plague_strike,if=unholy=2&!dot.blood_plague.ticking&!talent.necrotic_plague.enabled
-			if (Unholy == 2 && !HasBloodDisease && !HasSpell ("Necrotic Plague")) {
+			if (Unholy == 2 && !HasBloodDisease () && !HasSpell ("Necrotic Plague")) {
 				if (PlagueStrike ())
 					return true;
 			}
@@ -433,7 +433,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.single_target_bos+=/blood_tap,if=buff.killing_machine.react&buff.blood_charge.stack>=5
-			if (Me.HasAura ("Killing Machine") && BloodChargeStack >= 5) {
+			if (Me.HasAura ("Killing Machine") && GetAuraStack ("Blood Charge", Me) >= 5) {
 				if (BloodTap ())
 					return true;
 			}
@@ -443,7 +443,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.single_target_bos+=/blood_tap,if=buff.blood_charge.stack>=5
-			if (BloodChargeStack >= 5) {
+			if (GetAuraStack ("Blood Charge", Me) >= 5) {
 				if (BloodTap ())
 					return true;
 			}
@@ -470,7 +470,7 @@ namespace ReBot
 			if (HowlingBlast ())
 				return true;
 			//	actions.multi_target_bos+=/blood_tap,if=buff.blood_charge.stack>10
-			if (BloodChargeStack > 10) {
+			if (GetAuraStack ("Blood Charge", Me) > 10) {
 				if (BloodTap ())
 					return true;
 			}
