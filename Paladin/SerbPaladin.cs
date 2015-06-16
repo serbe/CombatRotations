@@ -224,7 +224,7 @@ namespace ReBot
 
 		public bool Heal ()
 		{
-			if (Health (Me) <= 0.7 && AuraStackCount ("Selfless Healer") >= 3) {
+			if (Health (Me) <= 0.7 && GetAuraStack ("Selfless Healer", Me) >= 3) {
 				if (FlashofLight (Me))
 					return true;
 			}
@@ -279,7 +279,7 @@ namespace ReBot
 
 		public bool ArenaHeal (UnitObject u)
 		{
-			if (Health (u) <= 0.7 && AuraStackCount ("Selfless Healer") >= 3) {
+			if (Health (u) <= 0.7 && GetAuraStack ("Selfless Healer", Me) >= 3) {
 				if (FlashofLight (u))
 					return true;
 			}

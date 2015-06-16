@@ -378,7 +378,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.main+=/mind_spike,if=active_enemies<=5&buff.surge_of_darkness.react=3
-			if (ActiveEnemies (40) <= 5 && AuraStackCount ("Surge of Darkness") == 3) {
+			if (ActiveEnemies (40) <= 5 && GetAuraStack ("Surge of Darkness", Me) == 3) {
 				if (MindSpike ())
 					return true;
 			}
@@ -654,7 +654,7 @@ namespace ReBot
 				}
 			}
 			//	actions.vent+=/mind_spike,if=active_enemies<=5&buff.surge_of_darkness.react=3
-			if (ActiveEnemies (40) <= 5 && AuraStackCount ("Surge of Darkness") == 3) {
+			if (ActiveEnemies (40) <= 5 && GetAuraStack ("Surge of Darkness", Me) == 3) {
 				if (MindSpike ())
 					return true;
 			}

@@ -82,7 +82,7 @@ namespace ReBot
 					return;
 			}
 
-			if (InInstance && PartyHeal && AuraStackCount ("Selfless Healer") >= 3) {
+			if (InInstance && PartyHeal && GetAuraStack ("Selfless Healer", Me) >= 3) {
 				if (LowestPlayer != null && Health (LowestPlayer) < 0.7) {
 					if (FlashofLight (LowestPlayer))
 						return;

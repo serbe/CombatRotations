@@ -97,7 +97,7 @@ namespace ReBot
 			if (Interrupt ())
 				return;
 
-			if (Mana (Me) < MTM && AuraStackCount ("Mana Tea") >= MTS) {
+			if (Mana (Me) < MTM && GetAuraStack ("Mana Tea", Me) >= MTS) {
 				if (ManaTea ())
 					return;
 			}
@@ -150,15 +150,15 @@ namespace ReBot
 				if (CracklingJadeLightning ())
 					return;
 			}
-			if (Mana (Me) >= 0.75 && Chi == 0 && SpellCharges ("Rising Sun Kick") >= 2 && AuraStackCount ("Mana Tea") >= 10) {
+			if (Mana (Me) >= 0.75 && Chi == 0 && SpellCharges ("Rising Sun Kick") >= 2 && GetAuraStack ("Mana Tea", Me) >= 10) {
 				if (CracklingJadeLightning ())
 					return;
 			}
-			if (Mana (Me) >= 0.70 && Chi == 0 && SpellCharges ("Rising Sun Kick") >= 2 && AuraStackCount ("Mana Tea") >= 15) {
+			if (Mana (Me) >= 0.70 && Chi == 0 && SpellCharges ("Rising Sun Kick") >= 2 && GetAuraStack ("Mana Tea", Me) >= 15) {
 				if (CracklingJadeLightning ())
 					return;
 			}
-			if (Mana (Me) >= 0.65 && Chi == 0 && SpellCharges ("Rising Sun Kick") >= 2 && AuraStackCount ("Mana Tea") >= 20) {
+			if (Mana (Me) >= 0.65 && Chi == 0 && SpellCharges ("Rising Sun Kick") >= 2 && GetAuraStack ("Mana Tea", Me) >= 20) {
 				if (CracklingJadeLightning ())
 					return;
 			}
@@ -197,7 +197,7 @@ namespace ReBot
 			if (CastPreventDouble ("Uplift", () => Me.GetPower (WoWPowerType.MonkLightForceChi) >= 2))
 				return;
 		
-			if (Cast ("Mana Tea", () => Me.ManaFraction < MTM && AuraStackCount ("Mana Tea") >= MTS))
+			if (Cast ("Mana Tea", () => Mana (Me) < MTM && GetAuraStack ("Mana Tea", Me) >= MTS))
 				return;
 		
 //			/// Lets not waste chi brew stacks!

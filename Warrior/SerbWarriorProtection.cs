@@ -188,7 +188,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.prot+=/heroic_strike,if=buff.ultimatum.up|(talent.unyielding_strikes.enabled&buff.unyielding_strikes.stack>=6)
-			if (Me.HasAura ("Ultimatum") || (HasSpell ("Unyielding Strikes") && AuraStackCount ("Unyielding Strikes") >= 6)) {
+			if (Me.HasAura ("Ultimatum") || (HasSpell ("Unyielding Strikes") && GetAuraStack ("Unyielding Strikes", Me) >= 6)) {
 				if (HeroicStrike ())
 					return true;
 			}
@@ -248,7 +248,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.prot_aoe+=/heroic_strike,if=buff.ultimatum.up|rage>110|(talent.unyielding_strikes.enabled&buff.unyielding_strikes.stack>=6)
-			if (Me.HasAura ("Ultimatum") || Rage >= MaxPower - 20 || (HasSpell ("Unyielding Strikes") && AuraStackCount ("Unyielding Strikes") >= 6)) {
+			if (Me.HasAura ("Ultimatum") || Rage >= MaxPower - 20 || (HasSpell ("Unyielding Strikes") && GetAuraStack ("Unyielding Strikes", Me) >= 6)) {
 				if (HeroicStrike ())
 					return true;
 			}
@@ -373,7 +373,7 @@ namespace ReBot
 				BerserkerRage ();
 			//	actions+=/heroic_leap,if=(raid_event.movement.distance>25&raid_event.movement.in>45)|!raid_event.movement.exists
 			//	actions+=/heroic_strike,if=buff.unyielding_strikes.up&rage>=92-buff.unyielding_strikes.stack*12&target.health.pct>20
-			if (Me.HasAura ("Unyielding Strikes") && Rage >= 92 - AuraStackCount ("Unyielding Strikes") * 12 && Health (Target) > 20) {
+			if (Me.HasAura ("Unyielding Strikes") && Rage >= 92 - GetAuraStack ("Unyielding Strikes", Me) * 12 && Health (Target) > 20) {
 				if (HeroicStrike ())
 					return true;
 			}
@@ -383,7 +383,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions+=/heroic_strike,if=buff.shield_charge.up&target.health.pct<20&buff.unyielding_strikes.stack>3
-			if (Me.HasAura ("Shield Charge") && Health (Target) > 20 && AuraStackCount ("Unyielding Strikes") > 3) {
+			if (Me.HasAura ("Shield Charge") && Health (Target) > 20 && GetAuraStack ("Unyielding Strikes", Me) > 3) {
 				if (HeroicStrike ())
 					return true;
 			}
@@ -393,7 +393,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions+=/heroic_strike,if=target.time_to_die<10|buff.unyielding_strikes.stack>4
-			if (TimeToDie () < 10 || AuraStackCount ("Unyielding Strikes") > 4) {
+			if (TimeToDie () < 10 || GetAuraStack ("Unyielding Strikes", Me) > 4) {
 				if (HeroicStrike ())
 					return true;
 			}
@@ -429,7 +429,7 @@ namespace ReBot
 		public bool GladSingle ()
 		{
 			//	actions.single=devastate,if=buff.unyielding_strikes.stack>0&buff.unyielding_strikes.stack<6&buff.unyielding_strikes.remains<1.5
-			if (AuraStackCount ("Unyielding Strikes") > 0 && AuraStackCount ("Unyielding Strikes") < 6 && Me.AuraTimeRemaining ("Unyielding Strikes") < 1.5) {
+			if (GetAuraStack ("Unyielding Strikes", Me) > 0 && GetAuraStack ("Unyielding Strikes", Me) < 6 && Me.AuraTimeRemaining ("Unyielding Strikes") < 1.5) {
 				if (Devastate ())
 					return true;
 			}
@@ -448,7 +448,7 @@ namespace ReBot
 			if (StormBolt ())
 				return true;
 			//	actions.single+=/dragon_roar,if=buff.unyielding_strikes.stack=5
-			if (AuraStackCount ("Unyielding Strikes") == 5)
+			if (GetAuraStack ("Unyielding Strikes", Me) == 5)
 				DragonRoar ();
 			//	actions.single+=/execute,if=rage>=50
 			if (Rage >= 50) {

@@ -93,7 +93,7 @@ namespace ReBot
 					return;
 			}
 			//	actions+=/dark_soul,if=!talent.demonbolt.enabled&((charges=2&(time>6|(debuff.shadowflame.stack=1&action.hand_of_guldan.in_flight)))|!talent.archimondes_darkness.enabled|(target.time_to_die<=20&!glyph.dark_soul.enabled)|target.time_to_die<=10|(target.time_to_die<=60&demonic_fury>400)|((trinket.proc.any.react|trinket.stacking_proc.any.react)&(demonic_fury>600|(glyph.dark_soul.enabled&demonic_fury>450))))
-			if (!HasSpell ("Demonbolt") && ((SpellCharges ("Dark Soul: Instability") == 2 && (Time > 6 || (Target.GetAura ("Shadowflame", true).StackCount == 1 && HandInFlight))) || !HasSpell ("Archimonde's Darkness") || (TimeToDie (Target) <= 20 && !HasGlyph (159665) || TimeToDie (Target) <= 10) || (TimeToDie (Target) <= 60 && DemonicFury > 400))) {
+			if (!HasSpell ("Demonbolt") && ((SpellCharges ("Dark Soul: Instability") == 2 && (Time > 6 || (GetAuraStack ("Shadowflame") == 1 && HandInFlight))) || !HasSpell ("Archimonde's Darkness") || (TimeToDie (Target) <= 20 && !HasGlyph (159665) || TimeToDie (Target) <= 10) || (TimeToDie (Target) <= 60 && DemonicFury > 400))) {
 				if (DarkSoul ())
 					return;
 			}
@@ -213,7 +213,7 @@ namespace ReBot
 					return;
 			}
 			//	actions+=/metamorphosis,if=buff.dark_soul.remains>gcd&(time>6|debuff.shadowflame.stack=2)&(demonic_fury>300|!glyph.dark_soul.enabled)&(demonic_fury>=80&buff.molten_core.stack>=1|demonic_fury>=40)
-			if (Me.AuraTimeRemaining ("Dark Soul: Instability") > 1.5 && (Time > 6 || Target.GetAura ("Shadowflame", true).StackCount == 2) && (DemonicFury > 300 || !HasGlyph (159665)) && (DemonicFury >= 80 && AuraStackCount ("Molten Core") >= 1 || DemonicFury >= 40)) {
+			if (Me.AuraTimeRemaining ("Dark Soul: Instability") > 1.5 && (Time > 6 || GetAuraStack ("Shadowflame") == 2) && (DemonicFury > 300 || !HasGlyph (159665)) && (DemonicFury >= 80 && AuraStackCount ("Molten Core") >= 1 || DemonicFury >= 40)) {
 				if (Metamorphosis ())
 					return;
 			}

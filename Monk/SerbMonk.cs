@@ -153,7 +153,7 @@ namespace ReBot
 
 		public bool ManaTea ()
 		{
-			return Usable ("Mana Tea") && AuraStackCount ("Mana Tea") > 0 && CS ("Mana Tea");
+			return Usable ("Mana Tea") && GetAuraStack ("Mana Tea", Me) > 0 && CS ("Mana Tea");
 		}
 
 		public bool RisingSunKick (UnitObject u = null)

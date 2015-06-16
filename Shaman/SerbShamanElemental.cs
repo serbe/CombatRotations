@@ -157,7 +157,7 @@ namespace ReBot
 			if (Me.IsMoving && Me.HasAura ("Ascendance"))
 				SpiritwalkersGrace ();
 			//	actions.single+=/earth_shock,if=buff.lightning_shield.react=buff.lightning_shield.max_stack
-			if (AuraStackCount ("Lightning Shield") == MaxLightningShieldCharges) {
+			if (GetAuraStack ("Lightning Shield", Me) == MaxLightningShieldCharges) {
 				if (EarthShock ())
 					return;
 			}
@@ -173,7 +173,7 @@ namespace ReBot
 				}
 			}
 			//	actions.single+=/earth_shock,if=(set_bonus.tier17_4pc&buff.lightning_shield.react>=12&!buff.lava_surge.up)|(set_bonus.tier18_4pc&buff.lightning_shield.react>=14)|(!set_bonus.tier17_4pc&!set_bonus.tier18_4pc&buff.lightning_shield.react>15)
-			if ((HasSpell (165580) && AuraStackCount ("Lightning Shield") >= 12 && !Me.HasAura ("Lava Surge")) || (HasSpell (165580) && AuraStackCount ("Lightning Shield") >= 14) || (!HasSpell (165580) && !HasSpell (165580) && AuraStackCount ("Lightning Shield") > 15)) {
+			if ((HasSpell (165580) && GetAuraStack ("Lightning Shield", Me) >= 12 && !Me.HasAura ("Lava Surge")) || (HasSpell (165580) && GetAuraStack ("Lightning Shield", Me) >= 14) || (!HasSpell (165580) && !HasSpell (165580) && GetAuraStack ("Lightning Shield", Me) > 15)) {
 				if (EarthShock ())
 					return;
 			}
@@ -222,7 +222,7 @@ namespace ReBot
 			if (LavaBeam ())
 				return;
 			//	actions.aoe+=/earth_shock,if=buff.lightning_shield.react=buff.lightning_shield.max_stack
-			if (AuraStackCount ("Lightning Shield") == MaxLightningShieldCharges) {
+			if (GetAuraStack ("Lightning Shield", Me) == MaxLightningShieldCharges) {
 				if (EarthShock ())
 					return;
 			}

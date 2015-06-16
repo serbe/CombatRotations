@@ -75,19 +75,12 @@
     <Compile Include="Paladin\SerbPaladinProtection.cs" />
     <Compile Include="Paladin\SerbPaladinRetribution.cs" />
     <Compile Include="Paladin\SerbPaladinHoly.cs" />
-    <Compile Include="Paladin\PalAlpha.cs" />
-    <Compile Include="Monk\JizarHeal.cs" />
-    <Compile Include="Paladin\Jizar.cs" />
-    <Compile Include="Druid\Pasterke.cs" />
     <Compile Include="SerbUtils.cs" />
     <Compile Include="SerbHashes.cs" />
-    <Compile Include="Paladin\Paladin4stable.cs" />
-    <Compile Include="Paladin\Paladin5.cs" />
     <Compile Include="Shaman\SerbShamanElemental.cs" />
     <Compile Include="Shaman\SerbShamanEnhancement.cs" />
     <Compile Include="Druid\SerbDruidBalance.cs" />
     <Compile Include="Druid\SerbDruidFeral.cs" />
-    <Compile Include="Druid\JizarTank.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

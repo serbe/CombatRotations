@@ -188,12 +188,12 @@ namespace ReBot
 					ArdentDefender ();
 			}
 			//	actions+=/eternal_flame,if=buff.eternal_flame.remains<2&buff.bastion_of_glory.react>2&(holy_power>=3|buff.divine_purpose.react|buff.bastion_of_power.react)
-			if (Me.AuraTimeRemaining ("Eternal Flame") < 2 && AuraStackCount ("Bastion of Glory") > 2 && (HolyPower >= 3 || Me.HasAura ("Divine Purpose") || Me.HasAura ("Bastion of Power"))) {
+			if (Me.AuraTimeRemaining ("Eternal Flame") < 2 && GetAuraStack ("Bastion of Glory", Me) > 2 && (HolyPower >= 3 || Me.HasAura ("Divine Purpose") || Me.HasAura ("Bastion of Power"))) {
 				if (EternalFlame ())
 					return true;
 			}
 			//	actions+=/eternal_flame,if=buff.bastion_of_power.react&buff.bastion_of_glory.react>=5
-			if (Me.HasAura ("Bastion of Power") && AuraStackCount ("Bastion of Glory") >= 5) {
+			if (Me.HasAura ("Bastion of Power") && GetAuraStack ("Bastion of Glory", Me) >= 5) {
 				if (EternalFlame ())
 					return true;
 			}
@@ -337,7 +337,7 @@ namespace ReBot
 			if (SacredShield (Me))
 				return true;
 			//	actions+=/flash_of_light,if=talent.selfless_healer.enabled&buff.selfless_healer.stack>=3
-			if (HasSpell ("Selfless Healer") && AuraStackCount ("Selfless Healer") >= 3) {
+			if (HasSpell ("Selfless Healer") && GetAuraStack ("Selfless Healer", Me) >= 3) {
 				if (Health (Me) < 0.8 && FlashofLight (Me))
 					return true;
 			}
@@ -490,7 +490,7 @@ namespace ReBot
 			if (SacredShield (Me))
 				return true;
 			//	actions.max_dps+=/flash_of_light,if=talent.selfless_healer.enabled&buff.selfless_healer.stack>=3
-			if (HasSpell ("Selfless Healer") && AuraStackCount ("Selfless Healer") >= 3) {
+			if (HasSpell ("Selfless Healer") && GetAuraStack ("Selfless Healer", Me) >= 3) {
 				if (Health (Me) < 0.8 && FlashofLight (Me))
 					return true;
 			}
@@ -538,12 +538,12 @@ namespace ReBot
 					ArdentDefender ();
 			}
 			//	actions.max_survival+=/eternal_flame,if=buff.eternal_flame.remains<2&buff.bastion_of_glory.react>2&(holy_power>=3|buff.divine_purpose.react|buff.bastion_of_power.react)
-			if (Me.AuraTimeRemaining ("Eternal Flame") < 2 && AuraStackCount ("Bastion of Glory") > 2 && (HolyPower >= 3 || Me.HasAura ("Divine Purpose") || Me.HasAura ("Bastion of Power"))) {
+			if (Me.AuraTimeRemaining ("Eternal Flame") < 2 && GetAuraStack ("Bastion of Glory", Me) > 2 && (HolyPower >= 3 || Me.HasAura ("Divine Purpose") || Me.HasAura ("Bastion of Power"))) {
 				if (EternalFlame ())
 					return true;
 			}
 			//	actions.max_survival+=/eternal_flame,if=buff.bastion_of_power.react&buff.bastion_of_glory.react>=5
-			if (Me.HasAura ("Bastion of Power") && AuraStackCount ("Bastion of Glory") >= 5) {
+			if (Me.HasAura ("Bastion of Power") && GetAuraStack ("Bastion of Glory", Me) >= 5) {
 				if (EternalFlame ())
 					return true;
 			}
@@ -631,7 +631,7 @@ namespace ReBot
 			if (Health (Me) < 0.4 && ExecutionSentence (Me))
 				return true;
 			//	actions.max_survival+=/flash_of_light,if=talent.selfless_healer.enabled&buff.selfless_healer.stack>=3
-			if (HasSpell ("Selfless Healer") && AuraStackCount ("Selfless Healer") >= 3) {
+			if (HasSpell ("Selfless Healer") && GetAuraStack ("Selfless Healer", Me) >= 3) {
 				if (Health (Me) < 0.8 && FlashofLight (Me))
 					return true;
 			}

@@ -115,7 +115,7 @@ namespace ReBot
 					return;
 			}
 			//	actions+=/berserker_rage,if=buff.enrage.down|(prev_gcd.bloodthirst&buff.raging_blow.stack<2)
-			if (!Me.HasAura ("Enrage") || (PrevGcdBloodthirst && AuraStackCount ("Raging Blow") < 2)) {
+			if (!Me.HasAura ("Enrage") || (PrevGcdBloodthirst && GetAuraStack ("Raging Blow", Me) < 2)) {
 				if (BerserkerRage ())
 					return;
 			}
@@ -181,7 +181,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.single_target+=/bloodthirst,if=(!talent.unquenchable_thirst.enabled&(rage<rage.max-40))|buff.enrage.down|buff.raging_blow.stack<2
-			if ((!HasSpell ("Unquenchable Thirst") && (Rage < MaxPower - 40)) || !Me.HasAura ("Enrage") || AuraStackCount ("Raging Blow") < 2) {
+			if ((!HasSpell ("Unquenchable Thirst") && (Rage < MaxPower - 40)) || !Me.HasAura ("Enrage") || GetAuraStack ("Raging Blow", Me) < 2) {
 				if (Bloodthirst ()) {
 					PrevBloodthirst = DateTime.Now;
 					return true;
@@ -344,7 +344,7 @@ namespace ReBot
 				}
 			}
 			//	actions.three_targets+=/raging_blow,if=buff.meat_cleaver.stack>=2
-			if (AuraStackCount ("Meat Cleaver") >= 2) {
+			if (GetAuraStack ("Meat Cleaver", Me) >= 2) {
 				if (RagingBlow ())
 					return true;
 			}
@@ -395,7 +395,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.aoe+=/raging_blow,if=buff.meat_cleaver.stack>=3&buff.enrage.up
-			if (AuraStackCount ("Meat Cleaver") >= 3 && Me.HasAura ("Enrage")) {
+			if (GetAuraStack ("Meat Cleaver", Me) >= 3 && Me.HasAura ("Enrage")) {
 				if (RagingBlow ())
 					return true;
 			}
@@ -407,7 +407,7 @@ namespace ReBot
 				}
 			}
 			//	actions.aoe+=/raging_blow,if=buff.meat_cleaver.stack>=3
-			if (AuraStackCount ("Meat Cleaver") >= 3) {
+			if (GetAuraStack ("Meat Cleaver", Me) >= 3) {
 				if (RagingBlow ())
 					return true;
 			}
