@@ -9,10 +9,34 @@ namespace ReBot
 {
 	public abstract class SerbPriest : SerbUtils
 	{
+		[JsonProperty ("Mindbender Mana %")]
+		public double MindbenderMana = 0.60;
+		[JsonProperty ("Keep Power Word: Shield on tank")]
+		public bool PWSTank = true;
+
 		public string IfInterrupt;
 		public string Spell = "";
 
+		public double PainSuppressionHealth = 0.45;
+		double PWSHealthDungeon = 0.95;
+		double PWSHealthRaid = 0.85;
+		double ClarityofWillHealth = 0.40;
+		double CascadeHealthDungeon = 0.85;
+		double CascadeHealthRaid = 0.80;
+		int CascadePlayersDungeon = 2;
+		int CascadePlayersRaid = 5;
+		double HaloHealthDungeon = 0.85;
+		double HaloHealthRaid = 0.80;
+		int HaloPlayersDungeon = 2;
+		int HaloPlayersRaid = 5;
+
 		// Check
+
+		public bool UsePowerInfusion {
+			get {
+				return MyGroupAndMe.Where (u => Health (u) <= 0.65).ToList ().Count >= AOECount;
+			}
+		}
 
 		// Get
 
@@ -149,12 +173,6 @@ namespace ReBot
 			return Usable ("Desperate Prayer") && C ("Desperate Prayer");
 		}
 
-		public bool PowerInfusion ()
-		{
-			return Usable ("Power Infusion") && Danger () && C ("Power Infusion");
-			// GCD = 0
-		}
-
 		public bool PowerWordFortitude (UnitObject u = null)
 		{
 			u = u ?? Me;
@@ -178,13 +196,6 @@ namespace ReBot
 			u = u ?? Target;
 			return Usable ("Shadow Word: Pain") && Range (40, u) && C ("Shadow Word: Pain", u);
 		}
-
-		public bool Penance (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Usable ("Penance") && Range (40, u) && (HasGlyph (119866) || !Me.IsMoving) && C ("Penance", u);
-		}
-
 
 		// Utils
 
@@ -240,12 +251,6 @@ namespace ReBot
 		{
 			u = u ?? Target;
 			return Usable ("Holy Fire") && (Range (30, u) || (HasGlyph (119853) && Range (40, u))) && C ("Holy Fire");
-		}
-
-		public bool Smite (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Usable ("Smite") && (Range (30, u) || (HasGlyph (119853) && Range (40, u))) && !Me.IsMoving && C ("Smite");
 		}
 
 		public bool PowerWordShield (UnitObject u = null)
@@ -350,83 +355,85 @@ namespace ReBot
 			return Usable ("Cascade") && u.IsInLoS && Range (40, u) && C ("Cascade", u);
 		}
 
-		public bool DivineStar (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Usable ("Divine Star") && u.IsInLoS && Range (30, u) && C ("Divine Star", u);
-		}
-
 		public bool DispelAll ()
 		{
-			var AllForDispel = MyGroupAndMe.Where (u => u.IsInLoS && Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic,Disease".Contains (a.DebuffType)));
-			Unit = AllForDispel.DefaultIfEmpty (null).FirstOrDefault ();
-			if (Unit != null && AllForDispel.Count () > 3) {
-				if (MassDispel (Unit))
-					return true;
-			}
-			Unit = MyGroupAndMe.Where (u => u.IsInLoS && Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic,Disease".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault (); 
-			if (Unit != null && Purify (Unit))
+			if (DispelTarget != null && DispelMagic (DispelTarget))
+				return true;
+			if (PurifyTarget != null && Purify (PurifyTarget))
 				return true;
 			return false;
 		}
 
-		public bool MassDispel (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return CastOnTerrain ("Mass Dispel", u.Position, () => Usable ("Mass Dispel") && u.IsInLoS && Range (30, u));
-		}
 
-		public bool Purify (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return CastOnTerrain ("Purify", u.Position, () => Usable ("Purify") && u.IsInLoS && Range (30, u));
-		}
 
-		public bool SavingGrace (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Usable ("Saving Grace") && u.IsInLoS && Range (40, u) && C ("Saving Grace", u);
-		}
 
-		public bool PainSuppression (UnitObject u = null)
-		{
-			u = u ?? Target;
-			return Usable ("Pain Suppression") && u.IsInLoS && Range (40, u) && C ("Pain Suppression", u);
-		}
 
-		public UnitObject CascadeTarget {
+		public UnitObject CascadeHealthTarget {
 			get {
-				List<PlayerObject> CascadeCounts;
-				if (MyGroupAndMe.Count < 6) {
-					CascadeCounts = MyGroupAndMe.Where (u => !u.IsDead && Range (40, u) && Health (u) <= 0.85).ToList ();
-					if (CascadeCounts.Count () >= 2)
-						return CascadeCounts.FirstOrDefault ();
+				var CascadeHealth = CascadeHealthDungeon;
+				var CascadePlayer = CascadePlayersDungeon;
+				if (GroupMemberCount > 5) {
+					CascadeHealth = CascadeHealthRaid;
+					CascadePlayer = CascadePlayersRaid;
 				}
-				if (MyGroupAndMe.Count > 5) {
-					CascadeCounts = MyGroupAndMe.Where (u => !u.IsDead && Range (40, u) && Health (u) <= 0.8).ToList ();
-					if (CascadeCounts.Count () >= 5)
-						return CascadeCounts.FirstOrDefault ();
-				}
+				if (LowestPlayerCount (CascadeHealth) > CascadePlayer)
+					return LowestPlayer;
 				return null;
 			}
 		}
 
-		public UnitObject HaloTarget {
+		public UnitObject HaloHealthTarget {
 			get {
-				List<PlayerObject> HaloCounts;
-				if (MyGroupAndMe.Count < 6) {
-					HaloCounts = MyGroupAndMe.Where (u => !u.IsDead && Range (30, u) && Health (u) <= 0.85).ToList ();
-					if (HaloCounts.Count () >= 2)
-						return HaloCounts.FirstOrDefault ();
+				var HaloHealth = HaloHealthDungeon;
+				var HaloPlayer = HaloPlayersDungeon;
+				if (GroupMemberCount > 5) {
+					HaloHealth = HaloHealthRaid;
+					HaloPlayer = HaloPlayersRaid;
 				}
-				if (MyGroupAndMe.Count > 5) {
-					HaloCounts = MyGroupAndMe.Where (u => !u.IsDead && Range (30, u) && Health (u) <= 0.8).ToList ();
-					if (HaloCounts.Count () >= 5)
-						return HaloCounts.FirstOrDefault ();
-				}
+				if (LowestPlayerCount (HaloHealth, 30) > HaloPlayer)
+					return LowestPlayer;
 				return null;
 			}
 		}
+
+		public UnitObject PurifyTarget {
+			get {
+				return MyGroupAndMe.Where (u => Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic,Disease".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
+			}
+		}
+
+		public UnitObject DispelTarget {
+			get {
+				return MyGroupAndMe.Where (u => Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
+			}
+		}
+
+		public UnitObject SWPTarget (double r = 0)
+		{
+			return API.Units.Where (u => u != null && !u.IsDead && u.IsAttackable && (u.InCombat && u.IsTargetingMeOrPets) && !Me.IsNotInFront (u) && Range (30, u) && ((r == 0 && !u.HasAura ("Shadow Word: Pain", true)) || (r > 0 && u.HasAura ("Shadow Word: Pain", true) && u.AuraTimeRemaining ("Shadow Word: Pain", true) <= r))).DefaultIfEmpty (null).FirstOrDefault ();
+		}
+
+		public UnitObject PWSTarget {
+			get {
+				var PWSHealth = PWSHealthDungeon;
+				if (GroupMemberCount > 5)
+					PWSHealth = PWSHealthRaid;
+				return MyGroupAndMe.Where (p => !p.HasAura ("Power Word: Shield") && !p.HasAura ("Weakened Soul") && (Health (p) <= PWSHealth || (IsTank (p) && PWSTank))).DefaultIfEmpty (null).FirstOrDefault ();
+			}
+		}
+
+		public UnitObject MindbenderTarget {
+			get {
+				return API.Units.Where (u => !u.IsDead && u.IsAttackable && u.InCombat && u.IsEnemy && Range (40, u)).OrderByDescending (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
+			}
+		}
+
+		public UnitObject ClarityofWillTarget {
+			get {
+				return MyGroupAndMe.Where (u => Health (u) <= ClarityofWillHealth).DefaultIfEmpty (null).FirstOrDefault ();
+			}
+		}
+
 
 		public bool CastSpell (string s)
 		{
@@ -440,6 +447,72 @@ namespace ReBot
 			}
 			return false;
 		}
+
+
+		// Spells
+
+		public bool Purify (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Purify") && Range (30, u) && C ("Purify", u);
+		}
+
+		public bool DispelMagic (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Dispel Magic") && Range (30, u) && C ("Dispel Magic", u);
+		}
+
+		public bool MassDispel (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Mass Dispel") && Range (30, u) && COT ("Mass Dispel", u);
+		}
+
+		public bool SavingGrace (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Saving Grace") && Range (40, u) && C ("Saving Grace", u);
+		}
+
+		public bool PainSuppression (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Pain Suppression") && Range (40, u) && C ("Pain Suppression", u);
+		}
+
+		public bool DivineStar (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Divine Star") && Range (30, u) && C ("Divine Star", u);
+		}
+
+		public bool PowerInfusion ()
+		{
+			return Usable ("Power Infusion") && C ("Power Infusion");
+			// GCD = 0
+		}
+
+		public bool Penance (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Penance") && Range (40, u) && (HasGlyph (119866) || !Me.IsMoving) && C ("Penance", u);
+		}
+
+		public bool Smite (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Smite") && (Range (30, u) || (HasGlyph (119853) && Range (40, u))) && !Me.IsMoving && C ("Smite");
+		}
+
+
+		// Def
+		//
+		// Pain Suppression
+
+		// Burst
+		//
+		// Power Infusion
 
 	}
 }

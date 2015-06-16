@@ -81,6 +81,7 @@
     <Compile Include="Shaman\SerbShamanEnhancement.cs" />
     <Compile Include="Druid\SerbDruidBalance.cs" />
     <Compile Include="Druid\SerbDruidFeral.cs" />
+    <Compile Include="Priest\PasterkeDisc.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

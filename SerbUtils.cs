@@ -562,12 +562,34 @@ namespace ReBot
 			}
 		}
 
+		public bool IsTank (UnitObject unit)
+		{
+			return Tanks.Contains (unit); 
+		}
+
+		public IEnumerable<UnitObject> Tanks {
+			get {
+				if (InPG) {
+					return API.Units.Where (p => p.Name == "Oto the Protector" && !p.IsDead);
+				}
+				return MyGroupAndMe.Where (p => p.IsTank);
+			}
+		}
+
 		public PlayerObject Tank {
 			get {
 				if (InPG) {
 					return (PlayerObject)API.Units.Where (p => p.Name == "Oto the Protector" && !p.IsDead).DefaultIfEmpty (null).FirstOrDefault ();
 				}
 				return MyGroupAndMe.Where (p => p.IsTank).DefaultIfEmpty (null).FirstOrDefault ();
+			}
+		}
+
+		public UnitObject TankTarget {
+			get {
+				if (Tank != null && Tank.Target != null && !Tank.Target.IsDead && Tank.Target.IsEnemy && Tank.Target.InCombat && Range (40, Tank.Target))
+					return Tank.Target;
+				return null;
 			}
 		}
 
@@ -614,9 +636,9 @@ namespace ReBot
 			}
 		}
 
-		public int LowestPlayerCount (double h)
+		public int LowestPlayerCount (double h, int r = 40)
 		{
-			return MyGroupAndMe.Count (p => Health (p) < h);
+			return MyGroupAndMe.Count (p => Health (p) < h && Range (r, p));
 		}
 
 		public int AOECount {
