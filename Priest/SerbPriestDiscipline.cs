@@ -170,10 +170,8 @@ namespace ReBot
 			if (PurifyTarget != null && Purify (PurifyTarget))
 				return;
 
-			if (GetAuraStack ("Evangelism", Me) >= 5) {
-				if (Archangel ())
-					return;
-			}
+			if (GetAuraStack ("Evangelism", Me) >= 5 && Archangel ())
+				return;
 			if (UsePowerInfusion && PowerInfusion ())
 				return;
 			if (TankTarget != null && Shadowfiend (TankTarget))
@@ -202,9 +200,9 @@ namespace ReBot
 				return;
 			if (HealTarget != null && Heal (HealTarget))
 				return;
-//
-//			if (CastSelfPreventDouble ("Holy Nova", () => needHolyNova))
-//				return;
+
+			if (CastSelfPreventDouble ("Holy Nova", () => needHolyNova))
+				return;
 //
 //			if (Cast ("Holy Fire", () => HasSpell ("Holy Fire")
 //			    && tankTarget != null && SpellCooldown ("Holy Fire") <= 0
