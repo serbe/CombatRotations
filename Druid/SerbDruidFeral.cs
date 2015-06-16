@@ -394,7 +394,7 @@ namespace ReBot
 			}
 			if (Me.AuraTimeRemaining ("Pulverize") <= 3.6)
 				Pulverize ();
-			if (HasSpell ("Pulverize") && Me.AuraTimeRemaining ("Pulverize") <= (3 - GetAuraStack ("Lacerate", Me)) * 1.5 && !Me.HasAura ("Berserk")) {
+			if (HasSpell ("Pulverize") && Me.AuraTimeRemaining ("Pulverize") <= (3 - GetAuraStack ("Lacerate")) * 1.5 && !Me.HasAura ("Berserk")) {
 				if (Lacerate ())
 					return;
 			}

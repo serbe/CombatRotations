@@ -84,11 +84,11 @@ namespace ReBot
 		{
 			if (Mangle ())
 				return;
-			if (!Target.HasAura ("Pulverize") && !Target.HasAura ("Lacerate", true, 3)) {
+			if (!Target.HasAura ("Pulverize") && !GetAuraStack ("Lacerate") == 3) {
 				if (Lacerate ())
 					return;
 			}
-			if (Target.HasAura ("Lacerate", true, 3)) {
+			if (GetAuraStack ("Lacerate") == 3) {
 				if (Pulverize ())
 					return;
 			}
@@ -107,11 +107,11 @@ namespace ReBot
 				if (Unit != null && Thrash ())
 					return;
 			}
-			if (!Target.HasAura ("Pulverize") && !Target.HasAura ("Lacerate", true, 3)) {
+			if (!Target.HasAura ("Pulverize") && !GetAuraStack ("Lacerate") == 3) {
 				if (Lacerate ())
 					return;
 			}
-			if (Target.HasAura ("Lacerate", true, 3)) {
+			if (GetAuraStack ("Lacerate") == 3) {
 				if (Pulverize ())
 					return;
 			}
@@ -181,7 +181,7 @@ namespace ReBot
 			if (Me.AuraTimeRemaining ("Pulverize") <= 3.6)
 				Pulverize ();
 			//	actions+=/lacerate,if=talent.pulverize.enabled&buff.pulverize.remains<=(3-dot.lacerate.stack)*gcd&buff.berserk.down
-			if (HasSpell ("Pulverize") && Me.AuraTimeRemaining ("Pulverize") <= (3 - GetAuraStack ("Lacerate", Me)) * 1.5 && !Me.HasAura ("Berserk")) {
+			if (HasSpell ("Pulverize") && Me.AuraTimeRemaining ("Pulverize") <= (3 - GetAuraStack ("Lacerate")) * 1.5 && !Me.HasAura ("Berserk")) {
 				if (Lacerate ())
 					return;
 			}
