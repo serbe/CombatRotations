@@ -136,28 +136,28 @@ namespace ReBot
 			}
 		}
 
-		public bool UseHolyNova {
-			get {
-				var t = new List<UnitObject> ();
-				if (Group.GetNumGroupMembers () < 6) {
-					t = PartyMembers ().Where (p => !p.IsDead
-					&& p.IsInCombatRangeAndLoS
-					&& p.HealthFraction <= holyNovaHealthD
-					&& p.Distance2DTo (Me.Position) <= 10).ToList ();
-					if (t.Count () >= holyNovaPlayersD)
-						return true;
-				}
-				if (Group.GetNumGroupMembers () > 5) {
-					t = PartyMembers ().Where (p => !p.IsDead
-					&& p.IsInCombatRangeAndLoS
-					&& p.HealthFraction <= holyNovaHealthR
-					&& p.Distance2DTo (Me.Position) <= 10).ToList ();
-					if (t.Count () >= holyNovaPlayersR)
-						return true;
-				}
-				return false;
-			}
-		}
+		//		public bool UseHolyNova {
+		//			get {
+		//				var t = new List<UnitObject> ();
+		//				if (Group.GetNumGroupMembers () < 6) {
+		//					t = PartyMembers ().Where (p => !p.IsDead
+		//					&& p.IsInCombatRangeAndLoS
+		//					&& p.HealthFraction <= holyNovaHealthD
+		//					&& p.Distance2DTo (Me.Position) <= 10).ToList ();
+		//					if (t.Count () >= holyNovaPlayersD)
+		//						return true;
+		//				}
+		//				if (Group.GetNumGroupMembers () > 5) {
+		//					t = PartyMembers ().Where (p => !p.IsDead
+		//					&& p.IsInCombatRangeAndLoS
+		//					&& p.HealthFraction <= holyNovaHealthR
+		//					&& p.Distance2DTo (Me.Position) <= 10).ToList ();
+		//					if (t.Count () >= holyNovaPlayersR)
+		//						return true;
+		//				}
+		//				return false;
+		//			}
+		//		}
 
 		// Get
 

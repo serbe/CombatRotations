@@ -201,8 +201,8 @@ namespace ReBot
 			if (HealTarget != null && Heal (HealTarget))
 				return;
 
-			if (CastSelfPreventDouble ("Holy Nova", () => needHolyNova))
-				return;
+//			if (CastSelfPreventDouble ("Holy Nova", () => needHolyNova))
+//				return;
 //
 //			if (Cast ("Holy Fire", () => HasSpell ("Holy Fire")
 //			    && tankTarget != null && SpellCooldown ("Holy Fire") <= 0
@@ -214,103 +214,71 @@ namespace ReBot
 				return;
 		}
 
-		//		public void Raid ()
-		//		{
-		//			if (useHealthstone ()) {
-		//				Healthstone ();
-		//				return;
-		//			}
-		//			if (useHealTonic ()) {
-		//				HealTonic ();
-		//				return;
-		//			}
-		//			if (useTrinket1) {
-		//				Trinket1 ();
-		//				return;
-		//			}
-		//			if (useTrinket2) {
-		//				Trinket2 ();
-		//				return;
-		//			}
-		//
-		//			if (Cast ("Dispel Magic", () => HasSpell ("Dispel Magic") && dispelTarget != null && SpellCooldown ("Dispel Magic") <= 0, dispelTarget))
-		//				return;
-		//			if (Cast (PURIFY, () => HasSpell (PURIFY) && purifyTarget != null && SpellCooldown (PURIFY) <= 0, purifyTarget))
-		//				return;
-		//
-		//			if (CastSelfPreventDouble ("Archangel", () => HasSpell ("Archangel") && Me.HasAura ("Evangelism") && GetAuraStack ("Evangelism", Me) >= 5))
-		//				return;
-		//
-		//			if (CastSelfPreventDouble ("Power Infusion", () => HasSpell ("Power Infusion") && SpellCooldown ("Power Infusion") <= 0 && needPowerInfusion))
-		//				return;
-		//
-		//			if (Cast ("Shadowfiend", () => HasSpell ("Shadowfiend") && tankTarget != null && SpellCooldown ("Shadowfiend") <= 0, tankTarget))
-		//				return;
-		//
-		//			if (Cast ("Mindbender", () => HasSpell ("Mindbender")
-		//			    && mindbenderTarget != null
-		//			    && Me.ManaFraction <= MindbenderMana
-		//			    && SpellCooldown ("Mindbender") <= 0, mindbenderTarget))
-		//				return;
-		//
-		//			if (Cast ("Power Word: Shield", () => HasSpell ("Power Word: Shield") && pwsTarget != null, pwsTarget))
-		//				return;
-		//
-		//			if (Cast ("Clarity of Will", () => HasSpell ("Clarity of Will") && clarityTarget != null, clarityTarget))
-		//				return;
-		//
-		//			if (Cast ("Pain Suppression", () => HasSpell ("Pain Suppression") && tankPainSupTarget != null && SpellCooldown ("Pain Suppression") <= 0, tankPainSupTarget))
-		//				return;
-		//
-		//			if (Cast ("Power Word: Shield"OLACE, () => HasSpell ("Power Word: Shield"OLACE)
-		//			    && tankTarget != null
-		//			    && SpellCooldown ("Power Word: Shield"OLACE) <= 0
-		//			    && !Me.IsNotInFront (tankTarget), tankTarget))
-		//				return;
-		//
-		//			if (Cast ("Cascade", () => HasSpell ("Cascade") && cascadeTarget != null && SpellCooldown ("Cascade") <= 0, cascadeTarget))
-		//				return;
-		//
-		//			if (Cast ("Halo", () => HasSpell ("Halo") && haloTarget != null && SpellCooldown ("Halo") <= 0, haloTarget))
-		//				return;
-		//
-		//			if (Cast ("Penance", () => HasSpell ("Penance")
-		//			    && penanceTarget != null
-		//			    && SpellCooldown ("Penance") <= 0, penanceTarget))
-		//				return;
-		//
-		//			if (Cast (PRAYER_OF_MENDING, () => HasSpell (PRAYER_OF_MENDING)
-		//			    && PomTarget != null
-		//			    && SpellCooldown (PRAYER_OF_MENDING) <= 0, PomTarget))
-		//				return;
-		//
-		//			if (Cast (PRAYER_OF_"Heal"ING, () => HasSpell (PRAYER_OF_"Heal"ING)
-		//			    && pohTarget != null
-		//			    && SpellCooldown (PRAYER_OF_"Heal"ING) <= 0, pohTarget))
-		//				return;
-		//
-		//			if (Cast ("Flash Heal", () => HasSpell ("Flash Heal")
-		//			    && flashTarget != null, flashTarget))
-		//				return;
-		//
-		//			if (Cast ("Heal", () => HasSpell ("Heal")
-		//			    && healTarget != null, healTarget))
-		//				return;
-		//
-		//			if (CastSelfPreventDouble ("Holy Nova", () => needHolyNova))
-		//				return;
-		//
-		//			if (Cast ("Holy Fire", () => HasSpell ("Holy Fire")
-		//			    && tankTarget != null && SpellCooldown ("Holy Fire") <= 0
-		//			    && tankTarget.Distance <= dpsRange
-		//			    && !Me.IsNotInFront (tankTarget), tankTarget))
-		//				return;
-		//
-		//			if (Cast ("Smite", () => HasSpell ("Smite")
-		//			    && Atonement
-		//			    && Me.ManaFraction > AtonementMana && tankTarget != null
-		//			    && !Me.IsNotInFront (tankTarget), tankTarget))
-		//				return;
-		//		}
+		public void Raid ()
+		{
+			//			if (useHealthstone ()) {
+			//				Healthstone ();
+			//				return;
+			//			}
+			//			if (useHealTonic ()) {
+			//				HealTonic ();
+			//				return;
+			//			}
+			//			if (useTrinket1) {
+			//				Trinket1 ();
+			//				return;
+			//			}
+			//			if (useTrinket2) {
+			//				Trinket2 ();
+			//				return;
+			//			}
+			//
+			if (DispelTarget != null && DispelMagic (DispelTarget))
+				return;
+			if (PurifyTarget != null && Purify (PurifyTarget))
+				return;
+			if (GetAuraStack ("Evangelism", Me) >= 5 && Archangel ())
+				return;
+			if (UsePowerInfusion && PowerInfusion ())
+				return;
+			if (TankTarget != null && Shadowfiend (TankTarget))
+				return;
+			if (Mana (Me) <= MindbenderMana && MindbenderTarget != null && Mindbender (MindbenderTarget))
+				return;
+			if (PWSTarget != null && PowerWordShield (PWSTarget))
+				return;
+			if (ClarityofWillTarget != null && ClarityofWill (ClarityofWillTarget))
+				return;
+			if (Tank != null && Health (Tank) <= PainSuppressionHealth && PainSuppression (Tank))
+				return;
+			if (TankTarget != null && !Me.IsNotInFront (TankTarget) && PowerWordSolace (TankTarget))
+				return;
+			if (CascadeHealthTarget != null && Cascade (CascadeHealthTarget))
+				return;
+			if (HaloHealthTarget != null && Halo (HaloHealthTarget))
+				return;
+			if (PenanceTarget != null && Penance (PenanceTarget))
+				return;
+			if (PoMTarget != null && PrayerofMending (PoMTarget))
+				return;
+			if (PoHTarget != null && PrayerofHealing (PoHTarget))
+				return;
+			if (FlashHealTarget != null && FlashHeal (FlashHealTarget))
+				return;
+			if (HealTarget != null && Heal (HealTarget))
+				return;
+			//
+			//			if (CastSelfPreventDouble ("Holy Nova", () => needHolyNova))
+			//				return;
+			//
+			//			if (Cast ("Holy Fire", () => HasSpell ("Holy Fire")
+			//			    && tankTarget != null && SpellCooldown ("Holy Fire") <= 0
+			//			    && tankTarget.Distance <= dpsRange
+			//			    && !Me.IsNotInFront (tankTarget), tankTarget))
+			//				return;
+			//
+			if (Atonement && Mana (Me) > AtonementMana && TankTarget != null && !Me.IsNotInFront (TankTarget) && Smite (TankTarget))
+				return;
+		}
 	}
 }
