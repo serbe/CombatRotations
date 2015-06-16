@@ -41,6 +41,10 @@ namespace ReBot
 		double FHHealthRaid = 0.50;
 		double HealHealthDungeon = 0.85;
 		double HealHealthRaid = 0.75;
+		double HolyNovaHealthDungeon = 0.80;
+		double HolyNovaHealthRaid = 0.70;
+		int HolyNovaPlayersDungeon = 2;
+		int HolyNovaPlayersRaid = 5;
 		int PoHPlayersDungeon = 3;
 		int PoHPlayersRaid = 5;
 		int HaloPlayersDungeon = 2;
@@ -92,13 +96,13 @@ namespace ReBot
 
 		public UnitObject PurifyTarget {
 			get {
-				return MyGroupAndMe.Where (u => Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic,Disease".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
+				return PartyMembers.Where (u => Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic,Disease".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
 		public UnitObject DispelTarget {
 			get {
-				return MyGroupAndMe.Where (u => Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
+				return PartyMembers.Where (u => Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
@@ -109,10 +113,7 @@ namespace ReBot
 
 		public UnitObject PWSTarget {
 			get {
-				var PWSHealth = PWSHealthDungeon;
-				if (GroupMemberCount > 5)
-					PWSHealth = PWSHealthRaid;
-				return MyGroupAndMe.Where (p => !p.HasAura ("Power Word: Shield") && !p.HasAura ("Weakened Soul") && (Health (p) <= PWSHealth || (IsTank (p) && PWSTank))).DefaultIfEmpty (null).FirstOrDefault ();
+				return PartyMembers.Where (u => !u.HasAura ("Power Word: Shield") && !u.HasAura ("Weakened Soul") && (Health (u) <= GetDR (PWSHealthDungeon, PWSHealthRaid) || (IsTank (u) && PWSTank))).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
@@ -132,32 +133,15 @@ namespace ReBot
 
 		public bool UsePowerInfusion {
 			get {
-				return MyGroupAndMe.Where (u => Health (u) <= 0.65).ToList ().Count >= GetDR (3, 5);
+				return PartyMembers.Where (u => Health (u) <= 0.65).ToList ().Count >= GetDR (3, 5);
 			}
 		}
 
-		//		public bool UseHolyNova {
-		//			get {
-		//				var t = new List<UnitObject> ();
-		//				if (Group.GetNumGroupMembers () < 6) {
-		//					t = PartyMembers ().Where (p => !p.IsDead
-		//					&& p.IsInCombatRangeAndLoS
-		//					&& p.HealthFraction <= holyNovaHealthD
-		//					&& p.Distance2DTo (Me.Position) <= 10).ToList ();
-		//					if (t.Count () >= holyNovaPlayersD)
-		//						return true;
-		//				}
-		//				if (Group.GetNumGroupMembers () > 5) {
-		//					t = PartyMembers ().Where (p => !p.IsDead
-		//					&& p.IsInCombatRangeAndLoS
-		//					&& p.HealthFraction <= holyNovaHealthR
-		//					&& p.Distance2DTo (Me.Position) <= 10).ToList ();
-		//					if (t.Count () >= holyNovaPlayersR)
-		//						return true;
-		//				}
-		//				return false;
-		//			}
-		//		}
+		public bool UseHolyNova {
+			get {
+				return PartyMembers.Where (u => Range (12, u) && Health (u) <= GetDR (HolyNovaPlayersDungeon, HolyNovaPlayersRaid)).ToList ().Count >= GetDR (HolyNovaPlayersDungeon, HolyNovaPlayersRaid);
+			}
+		}
 
 		// Get
 
@@ -194,22 +178,22 @@ namespace ReBot
 
 			if (Usable ("Silence")) {
 				if (InArena || InBg) {
-					Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCastingAndInterruptible () && u.IsInLoS && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && Silence (Unit))
 						return true;
 				} else {
-					Unit = targets.Where (u => u.IsCastingAndInterruptible () && u.IsInLoS && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					Unit = targets.Where (u => u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && Silence (Unit))
 						return true;
 				}
 			}
 			if (Usable ("Psychic Horror") && Orb >= 1) {
 				if (InArena || InBg) {
-					Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCasting && u.IsInLoS && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCasting && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && PsychicHorror (Unit))
 						return true;
 				} else {
-					Unit = targets.Where (u => u.IsCasting && !IsBoss (u) && (IsElite (u) || IsPlayer (u)) && u.IsInLoS && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					Unit = targets.Where (u => u.IsCasting && !IsBoss (u) && (IsElite (u) || IsPlayer (u)) && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && PsychicHorror (Unit))
 						return true;
 				}
@@ -275,7 +259,7 @@ namespace ReBot
 		public bool Silence (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Silence") && u.IsInLoS && Range (30, u) && C ("Silence", u);
+			return Usable ("Silence") && Range (30, u) && C ("Silence", u);
 		}
 
 		public bool PsychicHorror (UnitObject u = null)
@@ -467,15 +451,19 @@ namespace ReBot
 		public bool Halo (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Halo") && u.IsInLoS && Range (30, u) && C ("Halo", u);
+			return Usable ("Halo") && Range (30, u) && C ("Halo", u);
 		}
 
 		public bool Cascade (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Cascade") && u.IsInLoS && Range (40, u) && C ("Cascade", u);
+			return Usable ("Cascade") && Range (40, u) && C ("Cascade", u);
 		}
 
+		public bool HolyNova ()
+		{
+			return Usable ("Holy Nova") && CS ("Holy Nova");
+		}
 
 		public bool CastSpell (string s)
 		{

@@ -198,7 +198,7 @@ namespace ReBot
 				if (Player != null && HealingTouch (Player, true))
 					return true;
 			}
-			if (InArena && UseHealingTouch && !Me.IsMoving && MyGroupAndMe.Count > 1) {
+			if (InArena && UseHealingTouch && !Me.IsMoving && PartyMembers.Count > 1) {
 				if (EnemyPlayerTargetToMe == null && LowestPlayer != null && Health (LowestPlayer) < 0.5 && HealingTouch (LowestPlayer))
 					return true;
 			}
@@ -325,7 +325,7 @@ namespace ReBot
 		public bool MarkoftheWild (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Mark of the Wild") && u.AuraTimeRemaining ("Mark of the Wild") < 300 && u.AuraTimeRemaining ("Blessing of Kings") < 300 && Range (40, u) && C ("Mark of the Wild", u);
+			return Usable ("Mark of the Wild") && u.AuraTimeRemaining ("Mark of the Wild") < 300 && u.AuraTimeRemaining ("Blessing of Kings") < 300 && u.AuraTimeRemaining ("Legacy of the Emperor") < 300 && Range (40, u) && C ("Mark of the Wild", u);
 		}
 
 		public bool Rejuvenation (UnitObject u = null, bool t = false)

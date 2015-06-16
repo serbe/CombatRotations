@@ -90,8 +90,8 @@ namespace ReBot
 				Solo ();
 			if (GroupMemberCount < 6)
 				Dungeon ();
-//			if (GroupMemberCount > 2)
-//				Raid ();
+			if (GroupMemberCount > 2)
+				Raid ();
 
 		}
 
@@ -200,9 +200,8 @@ namespace ReBot
 				return;
 			if (HealTarget != null && Heal (HealTarget))
 				return;
-
-//			if (CastSelfPreventDouble ("Holy Nova", () => needHolyNova))
-//				return;
+			if (UseHolyNova && HolyNova ())
+				return;
 //
 //			if (Cast ("Holy Fire", () => HasSpell ("Holy Fire")
 //			    && tankTarget != null && SpellCooldown ("Holy Fire") <= 0
@@ -267,10 +266,9 @@ namespace ReBot
 				return;
 			if (HealTarget != null && Heal (HealTarget))
 				return;
-			//
-			//			if (CastSelfPreventDouble ("Holy Nova", () => needHolyNova))
-			//				return;
-			//
+			if (UseHolyNova && HolyNova ())
+				return;
+			
 			//			if (Cast ("Holy Fire", () => HasSpell ("Holy Fire")
 			//			    && tankTarget != null && SpellCooldown ("Holy Fire") <= 0
 			//			    && tankTarget.Distance <= dpsRange

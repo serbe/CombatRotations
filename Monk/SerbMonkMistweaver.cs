@@ -181,9 +181,9 @@ namespace ReBot
 			/// Revival with Option for some boss fights
 			if (Revival) {
 				int revivalLimit = 3;
-				if (MyGroupAndMe.Count > 5)
+				if (PartyMembers.Count > 5)
 					revivalLimit = 5;
-				var lowPlayerCount = MyGroupAndMe.Count (p => p.HealthFraction <= RHeal);
+				var lowPlayerCount = PartyMembers.Count (p => p.HealthFraction <= RHeal);
 				if (lowPlayerCount >= revivalLimit) {
 					var revCD = SpellCooldown ("Revival");
 //					API.Print ("{0} players have low hp: Casting Revival! (Cooldown={1:0.0})", lowPlayerCount, revCD);

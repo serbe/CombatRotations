@@ -72,7 +72,7 @@ namespace ReBot
 		public int PlayerFigthWithTarget (UnitObject u)
 		{
 			int x = 0;
-			foreach (PlayerObject p in MyGroupAndMe) {
+			foreach (PlayerObject p in PartyMembers) {
 				if (!p.IsDead && u.IsPlayer && !p.IsHealer && p.Target == u) {
 					x++;
 				}
@@ -322,7 +322,7 @@ namespace ReBot
 
 		public UnitObject BestAOEPlayer (int spellRange, int aoeRange, int minCount, double minHealth = 1)
 		{
-			Unit = MyGroupAndMe.Where (u => Range (spellRange, u) && Health (u) <= minHealth).OrderByDescending (u => MyGroupAndMe.Count (o => Vector3.Distance (u.Position, o.Position) <= aoeRange)).DefaultIfEmpty (null).FirstOrDefault ();
+			Unit = PartyMembers.Where (u => Range (spellRange, u) && Health (u) <= minHealth).OrderByDescending (u => PartyMembers.Count (o => Vector3.Distance (u.Position, o.Position) <= aoeRange)).DefaultIfEmpty (null).FirstOrDefault ();
 			if (Unit != null) {
 				if (Enemy.Where (u => Vector3.Distance (u.Position, Unit.Position) <= aoeRange).ToList ().Count >= minCount)
 					return Unit;
@@ -558,7 +558,7 @@ namespace ReBot
 
 		public PlayerObject Healer {
 			get {
-				return MyGroupAndMe.Where (p => p.IsHealer).DefaultIfEmpty (null).FirstOrDefault ();
+				return PartyMembers.Where (p => p.IsHealer).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
@@ -572,7 +572,7 @@ namespace ReBot
 				if (InPG) {
 					return API.Units.Where (p => p.Name == "Oto the Protector" && !p.IsDead);
 				}
-				return MyGroupAndMe.Where (p => p.IsTank);
+				return PartyMembers.Where (p => p.IsTank);
 			}
 		}
 
@@ -581,7 +581,7 @@ namespace ReBot
 				if (InPG) {
 					return (PlayerObject)API.Units.Where (p => p.Name == "Oto the Protector" && !p.IsDead).DefaultIfEmpty (null).FirstOrDefault ();
 				}
-				return MyGroupAndMe.Where (p => p.IsTank).DefaultIfEmpty (null).FirstOrDefault ();
+				return PartyMembers.Where (p => p.IsTank).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
@@ -611,54 +611,60 @@ namespace ReBot
 			}
 		}
 
-		public List<PlayerObject> MyGroupAndMe {
-			get {
-				if (InPG) {
-					var pgGroup = new List<PlayerObject> ();
-					var t = API.Units.Where (p => p != null && !p.IsDead && p.IsValid).ToList ();
-					if (t.Any ()) {
-						foreach (var unit in t) {
-							if (PgUnits.Contains (unit.Name)) {
-								pgGroup.Add ((PlayerObject)unit);
-							}
-						}
+		public IEnumerable<UnitObject> MyParty ()
+		{
+			List<PlayerObject> Units;
+			Units = MyGroup;
+			Units.Add (Me);
+			return Units.Distinct ();
+		}
+
+		public IEnumerable<UnitObject> PGParty ()
+		{
+			var pgGroup = new List<UnitObject> ();
+			var Units = API.Units.Where (p => p != null && !p.IsDead && p.IsValid).ToList ();
+			if (Units.Any ()) {
+				foreach (var unit in Units) {
+					if (PgUnits.Contains (unit.Name)) {
+						pgGroup.Add (unit);
 					}
-					pgGroup.Add (Me);
-					return pgGroup;
 				}
-				return MyGroup.Where (p => !p.IsDead && Health (p) > 0 && Range (40, p)).Concat (new[] { Me }).ToList ();
+			}
+			pgGroup.Add (Me);
+			return pgGroup.Distinct ();
+		}
+
+		public List<PlayerObject> PartyMembers {
+			get {
+				return InPG ? PGParty : MyParty;
 			}
 		}
 
 		public PlayerObject LowestPlayer {
 			get {
-				return MyGroupAndMe.Where (p => Health (p) < 1).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
+				return PartyMembers.Where (u => !u.IsDead && Range (40, u) && Health (u) < 1).OrderBy (u => Health (u)).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
 		public PlayerObject Lowest (double h, int r = 40)
 		{
-			return MyGroupAndMe.Where (p => Health (p) < h && Range (r, p)).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
+			return PartyMembers.Where (p => Health (p) < h && Range (r, p)).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
 		}
 
 		public int LowestPlayerCount (double h, int r = 40)
 		{
-			return MyGroupAndMe.Count (p => Health (p) < h && Range (r, p));
+			return PartyMembers.Count (p => Health (p) < h && Range (r, p));
 		}
 
 		public int AOECount {
 			get {
-				if (MyGroupAndMe.Count > 5)
-					return 6;
-				return 3;
+				return PartyMembers.Count > 5 ? 6 : 3;
 			}
 		}
 
 		public double GetDR (double dungeon, double raid)
 		{
-			if (GroupMemberCount > 5)
-				return raid;
-			return dungeon;
+			return GroupMemberCount > 5 ? raid : dungeon;
 		}
 
 		// Scripts
