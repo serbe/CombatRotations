@@ -237,23 +237,87 @@ namespace ReBot
 		bool Single_target_1h ()
 		{
 			//	actions.single_target_1h=breath_of_sindragosa,if=runic_power>75
+			if (RunicPower > 75) {
+				if (BreathofSindragosa ())
+					return true;
+			}
 			//	actions.single_target_1h+=/run_action_list,name=single_target_bos,if=dot.breath_of_sindragosa.ticking
+			if (Me.HasAura ("Breath of Sindragosa")) {
+				if (Single_target_bos ())
+					return true;
+			}
 			//	actions.single_target_1h+=/frost_strike,if=buff.killing_machine.react
+			if (Me.HasAura ("Killing Machine")) {
+				if (FrostStrike ())
+					return true;
+			}
 			//	actions.single_target_1h+=/obliterate,if=unholy>1|buff.killing_machine.react
+			if (Unholy > 1 || Me.HasAura ("Killing Machine")) {
+				if (Obliterate ())
+					return true;
+			}
 			//	actions.single_target_1h+=/defile
+			if (Defile ())
+				return true;
 			//	actions.single_target_1h+=/blood_tap,if=talent.defile.enabled&cooldown.defile.remains=0
+			if (Usable ("Defile")) {
+				if (BloodTap ())
+					return true;
+			}
 			//	actions.single_target_1h+=/frost_strike,if=runic_power>88
+			if (RunicPower > 88) {
+				if (FrostStrike ())
+					return true;
+			}
 			//	actions.single_target_1h+=/howling_blast,if=buff.rime.react|death>1|frost>1
+			if (Me.HasAura ("Rime") || Death > 1 || Frost > 1) {
+				if (HowlingBlast ())
+					return true;
+			}
 			//	actions.single_target_1h+=/blood_tap,if=buff.blood_charge.stack>10
+			if (BloodCharge > 10) {
+				if (BloodTap ())
+					return true;
+			}
 			//	actions.single_target_1h+=/frost_strike,if=runic_power>76
+			if (RunicPower > 76) {
+				if (FrostStrike ())
+					return true;
+			}
 			//	actions.single_target_1h+=/unholy_blight,if=!disease.ticking
+			if (!HasDisease) {
+				if (UnholyBlight ())
+					return true;
+			}
 			//	actions.single_target_1h+=/outbreak,if=!dot.blood_plague.ticking
+			if (!HasBloodDisease) {
+				if (Outbreak ())
+					return true;
+			}
 			//	actions.single_target_1h+=/plague_strike,if=!talent.necrotic_plague.enabled&!dot.blood_plague.ticking
+			if (HasSpell ("Necrotic Plague") && !HasNecroticDisease ()) {
+				if (PlagueStrike ())
+					return true;
+			}
 			//	actions.single_target_1h+=/howling_blast,if=!(target.health.pct-3*(target.health.pct%target.time_to_die)<=35&cooldown.soul_reaper.remains<3)|death+frost>=2
+			if (!((Health () - 3 * (Health () / TimeToDie ()) <= 0.35) && Cooldown ("Soul Reaper") < 3) || Death + Frost >= 2) {
+				if (SoulReaper ())
+					return true;
+			}
 			//	actions.single_target_1h+=/outbreak,if=talent.necrotic_plague.enabled&debuff.necrotic_plague.stack<=14
+			if (HasSpell ("Necrotic Plague") && NecroticDiseaseCount () <= 14) {
+				if (Outbreak ())
+					return true;
+			}
 			//	actions.single_target_1h+=/blood_tap
+			if (BloodTap ())
+				return true;
 			//	actions.single_target_1h+=/plague_leech
+			if (PlagueLeech ())
+				return true;
 			//	actions.single_target_1h+=/empower_rune_weapon
+			if (EmpowerRuneWeapon ())
+				return true;
 
 			return false;
 		}

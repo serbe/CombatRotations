@@ -89,7 +89,6 @@ namespace ReBot
 			return HasBloodDisease (u) && HasFrostDisease (u);
 		}
 
-
 		// Get
 
 		public int Blood {
@@ -218,6 +217,14 @@ namespace ReBot
 		{
 			u = u ?? Target;
 			return FrostDiseaseRemaining (u) < BloodDiseaseRemaining (u) ? FrostDiseaseRemaining (u) : BloodDiseaseRemaining (u);
+		}
+
+		public int NecroticDiseaseCount (UnitObject u = null)
+		{
+			u = u ?? Target;
+			if (!u.HasAura ("Necrotic Plague", true))
+				return 0;
+			return u.GetAura ("Necrotic Plague", true).StackCount;
 		}
 
 		// Combo
