@@ -22,7 +22,7 @@ namespace ReBot
 			};
 
 			PullSpells = new[] {
-				"Charge",
+				"Bloodbath",
 			};
 		}
 

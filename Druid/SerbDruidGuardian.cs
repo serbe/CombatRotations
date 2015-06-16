@@ -84,7 +84,7 @@ namespace ReBot
 		{
 			if (Mangle ())
 				return;
-			if (!Target.HasAura ("Pulverize") && !GetAuraStack ("Lacerate") == 3) {
+			if (!Target.HasAura ("Pulverize") && GetAuraStack ("Lacerate") != 3) {
 				if (Lacerate ())
 					return;
 			}
@@ -107,7 +107,7 @@ namespace ReBot
 				if (Unit != null && Thrash ())
 					return;
 			}
-			if (!Target.HasAura ("Pulverize") && !GetAuraStack ("Lacerate") == 3) {
+			if (!Target.HasAura ("Pulverize") && GetAuraStack ("Lacerate") != 3) {
 				if (Lacerate ())
 					return;
 			}
