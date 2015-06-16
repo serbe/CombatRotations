@@ -1,21 +1,8 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Geometry;
 using ReBot.API;
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Configuration;
-using System.IO;
 using System.Linq;
-using System.Drawing;
-using System.Text;
-using System.IO;
 using System.ComponentModel;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
 
 namespace RebotClasses
 {
