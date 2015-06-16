@@ -13,6 +13,10 @@ namespace ReBot
 		public double MindbenderMana = 0.60;
 		[JsonProperty ("Keep Power Word: Shield on tank")]
 		public bool PWSTank = true;
+		[JsonProperty ("Use Atonement Healing")]
+		public bool Atonement = true;
+		[JsonProperty ("Stop Atonement Healing at Mana %")]
+		public double AtonementMana = 0.60;
 
 		public string IfInterrupt;
 		public string Spell = "";
@@ -27,8 +31,102 @@ namespace ReBot
 		int CascadePlayersRaid = 5;
 		double HaloHealthDungeon = 0.85;
 		double HaloHealthRaid = 0.80;
+		double PenanceHealthDungeon = 0.90;
+		double PenanceHealthRaid = 0.80;
+		double PoMHealthDungeon = 0.95;
+		double PoMHealthRaid = 0.85;
+		double PoHHealthDungeon = 0.75;
+		double PoHHealthRaid = 0.65;
+		double FHHealthDungeon = 0.70;
+		double FHHealthRaid = 0.50;
+		double HealHealthDungeon = 0.85;
+		double HealHealthRaid = 0.75;
+		int PoHPlayersDungeon = 3;
+		int PoHPlayersRaid = 5;
 		int HaloPlayersDungeon = 2;
 		int HaloPlayersRaid = 5;
+
+		// Targets
+
+		public UnitObject HealTarget {
+			get {
+				return Lowest (GetDR (HealHealthDungeon, HealHealthRaid));
+			}
+		}
+
+		public UnitObject FlashHealTarget {
+			get {
+				return Lowest (GetDR (FHHealthDungeon, FHHealthRaid));
+			}
+		}
+
+		public UnitObject PoHTarget {
+			get {
+				return LowestPlayerCount (GetDR (PoHHealthDungeon, PoHHealthRaid)) > GetDR (PoHPlayersDungeon, PoHPlayersRaid) ? LowestPlayer : null;
+			}
+		}
+
+		public UnitObject PoMTarget {
+			get {
+				return Lowest (GetDR (PoMHealthDungeon, PoMHealthRaid));
+			}
+		}
+
+		public UnitObject PenanceTarget {
+			get {
+				return Lowest (GetDR (PenanceHealthDungeon, PenanceHealthRaid));
+			}
+		}
+
+		public UnitObject CascadeHealthTarget {
+			get {
+				return LowestPlayerCount (GetDR (CascadeHealthDungeon, CascadeHealthRaid)) > GetDR (CascadePlayersDungeon, CascadePlayersRaid) ? LowestPlayer : null;
+			}
+		}
+
+		public UnitObject HaloHealthTarget {
+			get {
+				return LowestPlayerCount (GetDR (HaloHealthDungeon, HaloHealthRaid), 30) > GetDR (HaloPlayersDungeon, HaloPlayersRaid) ? LowestPlayer : null;
+			}
+		}
+
+		public UnitObject PurifyTarget {
+			get {
+				return MyGroupAndMe.Where (u => Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic,Disease".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
+			}
+		}
+
+		public UnitObject DispelTarget {
+			get {
+				return MyGroupAndMe.Where (u => Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
+			}
+		}
+
+		public UnitObject SWPTarget (double r = 0)
+		{
+			return API.Units.Where (u => u != null && !u.IsDead && u.IsAttackable && (u.InCombat && u.IsTargetingMeOrPets) && !Me.IsNotInFront (u) && Range (30, u) && ((r == 0 && !u.HasAura ("Shadow Word: Pain", true)) || (r > 0 && u.HasAura ("Shadow Word: Pain", true) && u.AuraTimeRemaining ("Shadow Word: Pain", true) <= r))).DefaultIfEmpty (null).FirstOrDefault ();
+		}
+
+		public UnitObject PWSTarget {
+			get {
+				var PWSHealth = PWSHealthDungeon;
+				if (GroupMemberCount > 5)
+					PWSHealth = PWSHealthRaid;
+				return MyGroupAndMe.Where (p => !p.HasAura ("Power Word: Shield") && !p.HasAura ("Weakened Soul") && (Health (p) <= PWSHealth || (IsTank (p) && PWSTank))).DefaultIfEmpty (null).FirstOrDefault ();
+			}
+		}
+
+		public UnitObject MindbenderTarget {
+			get {
+				return API.Units.Where (u => !u.IsDead && u.IsAttackable && u.InCombat && u.IsEnemy && Range (40, u)).OrderByDescending (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
+			}
+		}
+
+		public UnitObject ClarityofWillTarget {
+			get {
+				return Lowest (ClarityofWillHealth);
+			}
+		}
 
 		// Check
 
@@ -170,7 +268,7 @@ namespace ReBot
 
 		public bool DesperatePrayer ()
 		{
-			return Usable ("Desperate Prayer") && C ("Desperate Prayer");
+			return Usable ("Desperate Prayer") && CS ("Desperate Prayer");
 		}
 
 		public bool PowerWordFortitude (UnitObject u = null)
@@ -355,85 +453,6 @@ namespace ReBot
 			return Usable ("Cascade") && u.IsInLoS && Range (40, u) && C ("Cascade", u);
 		}
 
-		public bool DispelAll ()
-		{
-			if (DispelTarget != null && DispelMagic (DispelTarget))
-				return true;
-			if (PurifyTarget != null && Purify (PurifyTarget))
-				return true;
-			return false;
-		}
-
-
-
-
-
-		public UnitObject CascadeHealthTarget {
-			get {
-				var CascadeHealth = CascadeHealthDungeon;
-				var CascadePlayer = CascadePlayersDungeon;
-				if (GroupMemberCount > 5) {
-					CascadeHealth = CascadeHealthRaid;
-					CascadePlayer = CascadePlayersRaid;
-				}
-				if (LowestPlayerCount (CascadeHealth) > CascadePlayer)
-					return LowestPlayer;
-				return null;
-			}
-		}
-
-		public UnitObject HaloHealthTarget {
-			get {
-				var HaloHealth = HaloHealthDungeon;
-				var HaloPlayer = HaloPlayersDungeon;
-				if (GroupMemberCount > 5) {
-					HaloHealth = HaloHealthRaid;
-					HaloPlayer = HaloPlayersRaid;
-				}
-				if (LowestPlayerCount (HaloHealth, 30) > HaloPlayer)
-					return LowestPlayer;
-				return null;
-			}
-		}
-
-		public UnitObject PurifyTarget {
-			get {
-				return MyGroupAndMe.Where (u => Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic,Disease".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
-			}
-		}
-
-		public UnitObject DispelTarget {
-			get {
-				return MyGroupAndMe.Where (u => Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
-			}
-		}
-
-		public UnitObject SWPTarget (double r = 0)
-		{
-			return API.Units.Where (u => u != null && !u.IsDead && u.IsAttackable && (u.InCombat && u.IsTargetingMeOrPets) && !Me.IsNotInFront (u) && Range (30, u) && ((r == 0 && !u.HasAura ("Shadow Word: Pain", true)) || (r > 0 && u.HasAura ("Shadow Word: Pain", true) && u.AuraTimeRemaining ("Shadow Word: Pain", true) <= r))).DefaultIfEmpty (null).FirstOrDefault ();
-		}
-
-		public UnitObject PWSTarget {
-			get {
-				var PWSHealth = PWSHealthDungeon;
-				if (GroupMemberCount > 5)
-					PWSHealth = PWSHealthRaid;
-				return MyGroupAndMe.Where (p => !p.HasAura ("Power Word: Shield") && !p.HasAura ("Weakened Soul") && (Health (p) <= PWSHealth || (IsTank (p) && PWSTank))).DefaultIfEmpty (null).FirstOrDefault ();
-			}
-		}
-
-		public UnitObject MindbenderTarget {
-			get {
-				return API.Units.Where (u => !u.IsDead && u.IsAttackable && u.InCombat && u.IsEnemy && Range (40, u)).OrderByDescending (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
-			}
-		}
-
-		public UnitObject ClarityofWillTarget {
-			get {
-				return MyGroupAndMe.Where (u => Health (u) <= ClarityofWillHealth).DefaultIfEmpty (null).FirstOrDefault ();
-			}
-		}
-
 
 		public bool CastSpell (string s)
 		{
@@ -447,6 +466,7 @@ namespace ReBot
 			}
 			return false;
 		}
+
 
 
 		// Spells
@@ -503,6 +523,12 @@ namespace ReBot
 		{
 			u = u ?? Target;
 			return Usable ("Smite") && (Range (30, u) || (HasGlyph (119853) && Range (40, u))) && !Me.IsMoving && C ("Smite");
+		}
+
+		public bool PrayerofHealing (UnitObject u = null)
+		{
+			u = u ?? Target;
+			return Usable ("Prayer of Healing") && Range (40, u) && !Me.IsMoving && C ("Prayer of Healing", u);
 		}
 
 

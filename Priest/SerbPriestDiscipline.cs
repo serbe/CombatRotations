@@ -65,7 +65,9 @@ namespace ReBot
 					return true;
 			}
 
-			if (DispelAll ())
+			if (DispelTarget != null && DispelMagic (DispelTarget))
+				return true;
+			if (PurifyTarget != null && Purify (PurifyTarget))
 				return true;
 
 			if (Me.FallingTime > 2) {
@@ -95,7 +97,9 @@ namespace ReBot
 
 		public void Solo ()
 		{
-			if (DispelAll ())
+			if (DispelTarget != null && DispelMagic (DispelTarget))
+				return;
+			if (PurifyTarget != null && Purify (PurifyTarget))
 				return;
 		
 			if (GetAuraStack ("Evangelism", Me) >= 5) {
@@ -129,7 +133,7 @@ namespace ReBot
 
 			if (Health (Me) <= 0.9 && PowerWordShield (Me))
 				return;
-			if (Health (Me) <= 0.35 && DesperatePrayer (Me))
+			if (Health (Me) <= 0.35 && DesperatePrayer ())
 				return;
 			
 			//	actions+=/shadow_word_pain,if=!ticking
@@ -161,7 +165,9 @@ namespace ReBot
 
 		public void Dungeon ()
 		{
-			if (DispelAll ())
+			if (DispelTarget != null && DispelMagic (DispelTarget))
+				return;
+			if (PurifyTarget != null && Purify (PurifyTarget))
 				return;
 
 			if (GetAuraStack ("Evangelism", Me) >= 5) {
@@ -186,29 +192,16 @@ namespace ReBot
 				return;
 			if (HaloHealthTarget != null && Halo (HaloHealthTarget))
 				return;
-
-//			if (Cast ("Penance", () => HasSpell ("Penance")
-//			    && penanceTarget != null
-//			    && SpellCooldown ("Penance") <= 0, penanceTarget))
-//				return;
-//
-//			if (Cast (PRAYER_OF_MENDING, () => HasSpell (PRAYER_OF_MENDING)
-//			    && PomTarget != null
-//			    && SpellCooldown (PRAYER_OF_MENDING) <= 0, PomTarget))
-//				return;
-//
-//			if (Cast (PRAYER_OF_"Heal"ING, () => HasSpell (PRAYER_OF_"Heal"ING)
-//			    && pohTarget != null
-//			    && SpellCooldown (PRAYER_OF_"Heal"ING) <= 0, pohTarget))
-//				return;
-//
-//			if (Cast ("Flash Heal", () => HasSpell ("Flash Heal")
-//			    && flashTarget != null, flashTarget))
-//				return;
-//
-//			if (Cast ("Heal", () => HasSpell ("Heal")
-//			    && healTarget != null, healTarget))
-//				return;
+			if (PenanceTarget != null && Penance (PenanceTarget))
+				return;
+			if (PoMTarget != null && PrayerofMending (PoMTarget))
+				return;
+			if (PoHTarget != null && PrayerofHealing (PoHTarget))
+				return;
+			if (FlashHealTarget != null && FlashHeal (FlashHealTarget))
+				return;
+			if (HealTarget != null && Heal (HealTarget))
+				return;
 //
 //			if (CastSelfPreventDouble ("Holy Nova", () => needHolyNova))
 //				return;
@@ -219,11 +212,8 @@ namespace ReBot
 //			    && !Me.IsNotInFront (tankTarget), tankTarget))
 //				return;
 //
-//			if (Cast ("Smite", () => HasSpell ("Smite")
-//			    && Atonement
-//			    && Me.ManaFraction > AtonementMana && tankTarget != null
-//			    && !Me.IsNotInFront (tankTarget), tankTarget))
-//				return;
+			if (Atonement && Mana (Me) > AtonementMana && TankTarget != null && !Me.IsNotInFront (TankTarget) && Smite (TankTarget))
+				return;
 		}
 
 		//		public void Raid ()

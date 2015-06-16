@@ -636,6 +636,11 @@ namespace ReBot
 			}
 		}
 
+		public PlayerObject Lowest (double h, int r = 40)
+		{
+			return MyGroupAndMe.Where (p => Health (p) < h && Range (r, p)).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
+		}
+
 		public int LowestPlayerCount (double h, int r = 40)
 		{
 			return MyGroupAndMe.Count (p => Health (p) < h && Range (r, p));
@@ -647,6 +652,13 @@ namespace ReBot
 					return 6;
 				return 3;
 			}
+		}
+
+		public double GetDR (double dungeon, double raid)
+		{
+			if (GroupMemberCount > 5)
+				return raid;
+			return dungeon;
 		}
 
 		// Scripts
