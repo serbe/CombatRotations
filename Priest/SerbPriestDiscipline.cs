@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using ReBot.API;
-using System.Linq;
 
 namespace ReBot
 {
@@ -30,17 +29,6 @@ namespace ReBot
 			};
 		}
 
-		//		public UnitObject DamageTarget {
-		//			get {
-		//				if (!Target.IsEnemy) {
-		//					Unit = API.CollectUnits (40).Where (u => u.IsEnemy && !u.IsDead && u.IsInLoS && u.IsAttackable && u.InCombat && Range (40, u)).OrderBy (u => u.CombatRange).DefaultIfEmpty (null).FirstOrDefault ();
-		//					if (Unit != null)
-		//						return Unit;
-		//				}
-		//				return null;
-		//			}
-		//		}
-
 		public override bool OutOfCombat ()
 		{
 			//	actions.precombat=flask,type=greater_draenic_intellect_flask
@@ -53,17 +41,11 @@ namespace ReBot
 			//	actions.precombat+=/potion,name=draenic_intellect
 			//	actions.precombat+=/smite
 
-//			if (HealTarget != null) {
-//				if (HealTarget.HealthFraction < HealPr) {
-//					if (Healing (Player))
-//						return true;
-//				}
-//			}
+			if (Tank != null && Tank.InCombat && Health (Tank) < 1 && PowerWordShield (Tank))
+				return true;
 
-			if (Health (Me) < 0.9 && !Me.IsMoving && !Me.IsMounted) {
-				if (Heal (Me))
-					return true;
-			}
+			if (Health (Me) < 0.9 && !Me.IsMoving && !Me.IsMounted && Heal (Me))
+				return true;
 
 			if (DispelTarget != null && DispelMagic (DispelTarget))
 				return true;
@@ -202,13 +184,8 @@ namespace ReBot
 				return;
 			if (UseHolyNova && HolyNova ())
 				return;
-//
-//			if (Cast ("Holy Fire", () => HasSpell ("Holy Fire")
-//			    && tankTarget != null && SpellCooldown ("Holy Fire") <= 0
-//			    && tankTarget.Distance <= dpsRange
-//			    && !Me.IsNotInFront (tankTarget), tankTarget))
-//				return;
-//
+			if (TankTarget != null && !Me.IsNotInFront (TankTarget) && HolyFire (TankTarget))
+				return;
 			if (Atonement && Mana (Me) > AtonementMana && TankTarget != null && !Me.IsNotInFront (TankTarget) && Smite (TankTarget))
 				return;
 		}
@@ -268,13 +245,8 @@ namespace ReBot
 				return;
 			if (UseHolyNova && HolyNova ())
 				return;
-			
-			//			if (Cast ("Holy Fire", () => HasSpell ("Holy Fire")
-			//			    && tankTarget != null && SpellCooldown ("Holy Fire") <= 0
-			//			    && tankTarget.Distance <= dpsRange
-			//			    && !Me.IsNotInFront (tankTarget), tankTarget))
-			//				return;
-			//
+			if (TankTarget != null && !Me.IsNotInFront (TankTarget) && HolyFire (TankTarget))
+				return;
 			if (Atonement && Mana (Me) > AtonementMana && TankTarget != null && !Me.IsNotInFront (TankTarget) && Smite (TankTarget))
 				return;
 		}

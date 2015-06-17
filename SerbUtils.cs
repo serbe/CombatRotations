@@ -576,12 +576,9 @@ namespace ReBot
 			}
 		}
 
-		public PlayerObject Tank {
+		public UnitObject Tank {
 			get {
-				if (InPG) {
-					return (PlayerObject)API.Units.Where (p => p.Name == "Oto the Protector" && !p.IsDead).DefaultIfEmpty (null).FirstOrDefault ();
-				}
-				return PartyMembers.Where (p => p.IsTank).DefaultIfEmpty (null).FirstOrDefault ();
+				return Tanks.Where (p => !p.IsDead).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
