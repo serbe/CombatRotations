@@ -25,6 +25,7 @@ namespace ReBot
 
 		double LayonHandsHealth = 0.2;
 		double HolyShockHealth = 0.95;
+		double HandofSacrifice = 0.55;
 
 		public UnitObject LastJudgmentTarget;
 
@@ -35,16 +36,8 @@ namespace ReBot
 
 		// Targets
 
-		public bool UseHandofSacrifice ()
-		{
-			if (Me.Focus != null && Usable ("Hand of Sacrifice")) {
-				if (Me.Focus.IsFriendly && Range (40, Me.Focus) && Health (Me.Focus) <= HoS && !Me.Focus.HasAura ("Hand of Sacrifice", true)) {
-					if (HandofSacrifice (Me.Focus))
-						return true;
-				}
-			}
-			return false;
-		}
+
+
 
 		public bool UseHolyLight ()
 		{
@@ -135,6 +128,28 @@ namespace ReBot
 				return PartyMembers.Where (p => Health (p) <= HoP && Range (40, p) && (!IsTank (p) || p == Me || IsHealer (p))).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
+
+		// Длань жертвенности
+		public PlayerObject HandofSacrificeTarget {
+			get {
+				if (Me.Focus != null && Range (40, Me.Focus) && Health (Me.Focus) <= HoS && !Me.Focus.HasAura ("Hand of Sacrifice", true)) {
+					return Me.Focus;
+				}
+			}
+		}
+
+//		bool DoHoS ( lowestPlayer) {
+//			// Hand of Sacrifice
+//			bool done = false;
+//			int hos = API.ExecuteLua<int>("return GetSpellCharges(6940)");
+//			if (!lowestPlayer.HasAura("Hand of Sacrifice") && lowestPlayer != (PlayerObject)Me && hos > 1) {
+//				if (Cast("Hand of Sacrifice",() => lowestPlayer.HealthFraction < HoSHeal && !lowestPlayer.HasAura("Hand of Sacrifice"),lowestPlayer)) {
+//					DebugWrite("Hand of Sacrifice on " + lowestPlayer.Name);
+//					done = true;
+//				}
+//			}
+//			return done;
+//		}
 
 		// Get
 

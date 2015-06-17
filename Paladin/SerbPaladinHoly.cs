@@ -113,7 +113,7 @@ namespace ReBot
 					return;
 			}
 
-			if (UseHandOfProtection ())
+			if (HandOfProtectionTarget != null && HandofProtection (HandOfProtectionTarget))
 				return;
 
 			if (UseHoS && UseHandofSacrifice ())
