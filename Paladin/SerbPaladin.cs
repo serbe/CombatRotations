@@ -30,6 +30,10 @@ namespace ReBot
 			_choice = c;
 		}
 
+		// Targets
+
+
+
 		// Get
 
 		public int MaxHolyPower {
