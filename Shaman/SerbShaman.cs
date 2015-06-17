@@ -104,7 +104,7 @@ namespace ReBot
 				if (CleanseSpirit (Me))
 					return true;
 			}
-			Player = Group.GetGroupMemberObjects ().Where (p => !p.IsDead && Range (40, p) && p.Auras.Any (x => x.IsDebuff && "Curse".Contains (x.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
+			Player = MyGroup.Where (p => !p.IsDead && Range (40, p) && p.Auras.Any (x => x.IsDebuff && "Curse".Contains (x.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
 			if (Player != null && CleanseSpirit (Unit))
 				return true;
 

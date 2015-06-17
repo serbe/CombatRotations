@@ -198,7 +198,7 @@ namespace ReBot
 				if (Player != null && HealingTouch (Player, true))
 					return true;
 			}
-			if (InArena && UseHealingTouch && !Me.IsMoving && PartyMembers.Count > 1) {
+			if (InArena && UseHealingTouch && !Me.IsMoving && GroupMemberCount > 1) {
 				if (EnemyPlayerTargetToMe == null && LowestPlayer != null && Health (LowestPlayer) < 0.5 && HealingTouch (LowestPlayer))
 					return true;
 			}

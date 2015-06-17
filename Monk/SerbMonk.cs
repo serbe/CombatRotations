@@ -116,7 +116,7 @@ namespace ReBot
 		
 			var statue = API.Units.FirstOrDefault (u => u.EntryID == StatueEntryID && u.CreatedByMe);
 			if (statue == null || statue.Distance > 35) {
-				foreach (var u in PartyMembers.Where(p => p.IsTank || p == Me)) {
+				foreach (var u in PartyMembers.Where(p => IsTank(p) || p == Me)) {
 					if (u != null && u.Distance < 20) {
 						var pos = u.Position;
 						for (int i = 0; i < 8; i++) {

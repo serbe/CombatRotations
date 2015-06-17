@@ -257,9 +257,8 @@ namespace ReBot
 			}
 			//	actions.st+=/zen_sphere,cycle_targets=1,if=!dot.zen_sphere.ticking&energy.time_to_max>2&buff.serenity.down
 			if (EnergyTimeToMax > 2 && !Me.HasAura ("Serenity")) {
-				var players = Group.GetGroupMemberObjects ();
-				Unit = players.Where (p => !p.IsDead && Range (40, p) && !p.HasAura ("Zen Sphere", true) && Health (p) < 0.95).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Unit != null && ZenSphere (Unit))
+				Player = MyGroup.Where (p => !p.IsDead && Range (40, p) && !p.HasAura ("Zen Sphere", true) && Health (p) < 0.95).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Player != null && ZenSphere (Player))
 					return;
 				if (!Me.HasAura ("Zen Sphere", true)) {
 					if (ZenSphere (Me))
@@ -356,9 +355,8 @@ namespace ReBot
 			}
 			//	actions.aoe+=/zen_sphere,cycle_targets=1,if=!dot.zen_sphere.ticking&energy.time_to_max>2&buff.serenity.down
 			if (EnergyTimeToMax > 2 && !Me.HasAura ("Serenity")) {
-				var players = Group.GetGroupMemberObjects ();
-				Unit = players.Where (p => !p.IsDead && Range (40, p) && !p.HasAura ("Zen Sphere", true) && Health (p) < 0.95).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Unit != null && ZenSphere (Unit))
+				Player = MyGroup.Where (p => !p.IsDead && Range (40, p) && !p.HasAura ("Zen Sphere", true) && Health (p) < 0.95).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Player != null && ZenSphere (Player))
 					return;
 				if (!Me.HasAura ("Zen Sphere", true)) {
 					if (ZenSphere (Me))

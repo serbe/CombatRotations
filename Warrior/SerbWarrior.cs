@@ -19,6 +19,8 @@ namespace ReBot
 		public bool UseStance = true;
 		[JsonProperty ("Use Berserker Rage in fear")]
 		public bool UseBerserkerRage;
+		[JsonProperty ("Melee range")]
+		public int MeleeRange = 6;
 
 		public bool WaitBloodthirst;
 		public DateTime PrevBloodthirst;
@@ -160,7 +162,7 @@ namespace ReBot
 		public bool Interrupt ()
 		{
 			if (Usable ("Pummel")) {
-				Unit = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (6, u) && u.RemainingCastTime > 0 && (u.Target == Me && !Me.HasAura ("Spell Reflect")) && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
+				Unit = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (MeleeRange, u) && u.RemainingCastTime > 0 && (u.Target == Me && !Me.HasAura ("Spell Reflect")) && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Pummel (Unit))
 					return true;
 			}
@@ -267,7 +269,7 @@ namespace ReBot
 		public bool HeroicStrike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Heroic Strike") && (HasRage (30) || Me.HasAura ("Ultimatum")) && Range (5, u) && C ("Heroic Strike", u);
+			return Usable ("Heroic Strike") && (HasRage (30) || Me.HasAura ("Ultimatum")) && Range (MeleeRange, u) && C ("Heroic Strike", u);
 		}
 
 		public bool Bloodbath ()
@@ -283,7 +285,7 @@ namespace ReBot
 		public bool ShieldSlam (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Shield Slam") && Range (5, u) && C ("Shield Slam", u);
+			return Usable ("Shield Slam") && Range (MeleeRange, u) && C ("Shield Slam", u);
 		}
 
 		public bool ShatteringThrow (UnitObject u = null)
@@ -295,13 +297,13 @@ namespace ReBot
 		public bool Revenge (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Revenge") && Range (5, u) && C ("Revenge", u);
+			return Usable ("Revenge") && Range (MeleeRange, u) && C ("Revenge", u);
 		}
 
 		public bool Rend (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Rend") && Range (5, u) && HasRage (5) && C ("Rend", u);
+			return Usable ("Rend") && Range (MeleeRange, u) && HasRage (5) && C ("Rend", u);
 		}
 
 		public bool SweepingStrikes ()
@@ -312,25 +314,25 @@ namespace ReBot
 		public bool Slam (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Slam") && Range (5, u) && HasRage (10) && C ("Slam", u);
+			return Usable ("Slam") && Range (MeleeRange, u) && HasRage (10) && C ("Slam", u);
 		}
 
 		public bool ColossusSmash (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Colossus Smash") && Range (5, u) && Rage >= 10 && C ("Colossus Smash", u);
+			return Usable ("Colossus Smash") && Range (MeleeRange, u) && Rage >= 10 && C ("Colossus Smash", u);
 		}
 
 		public bool MortalStrike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Mortal Strike") && Range (5, u) && HasRage (20) && C ("Mortal Strike", u);
+			return Usable ("Mortal Strike") && Range (MeleeRange, u) && HasRage (20) && C ("Mortal Strike", u);
 		}
 
 		public bool Ravager (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Ravager") && Range (5, u) && C ("Ravager", u);
+			return Usable ("Ravager") && Range (MeleeRange, u) && C ("Ravager", u);
 		}
 
 		public bool StormBolt (UnitObject u = null)
@@ -347,25 +349,25 @@ namespace ReBot
 		public bool ImpendingVictory (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Impending Victory") && HasRage (10) && Range (5, u) && C ("Impending Victory", u);
+			return Usable ("Impending Victory") && HasRage (10) && Range (MeleeRange, u) && C ("Impending Victory", u);
 		}
 
 		public bool VictoryRush (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Victory Rush") && Range (5, u) && Me.HasAura ("Victorious") && C ("Victory Rush", u);
+			return Usable ("Victory Rush") && Range (MeleeRange, u) && Me.HasAura ("Victorious") && C ("Victory Rush", u);
 		}
 
 		public bool Execute (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Execute") && Range (5, u) && ((HasRage (30) && Health (u) <= 0.2) || Me.HasAura ("Sudden Death")) && C ("Execute", u);
+			return Usable ("Execute") && Range (MeleeRange, u) && ((HasRage (30) && Health (u) <= 0.2) || Me.HasAura ("Sudden Death")) && C ("Execute", u);
 		}
 
 		public bool Devastate (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Devastate") && Range (5, u) && C ("Devastate", u);
+			return Usable ("Devastate") && Range (MeleeRange, u) && C ("Devastate", u);
 		}
 
 		public bool ThunderClap ()
@@ -425,37 +427,37 @@ namespace ReBot
 		public bool WildStrike (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Wild Strike") && (Rage >= 45 || (Me.HasAura ("Furious Strikes") && Rage >= 20)) && Range (5, u) && C ("Wild Strike", u);
+			return Usable ("Wild Strike") && (Rage >= 45 || (Me.HasAura ("Furious Strikes") && Rage >= 20)) && Range (MeleeRange, u) && C ("Wild Strike", u);
 		}
 
 		public bool Bloodthirst (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Bloodthirst") && Range (5, u) && C ("Bloodthirst", u);
+			return Usable ("Bloodthirst") && Range (MeleeRange, u) && C ("Bloodthirst", u);
 		}
 
 		public bool Siegebreaker (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Siegebreaker") && Range (5, u) && C ("Siegebreaker", u);
+			return Usable ("Siegebreaker") && Range (MeleeRange, u) && C ("Siegebreaker", u);
 		}
 
 		public bool RagingBlow (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Raging Blow") && Rage >= 10 && Range (5, u) && C ("Raging Blow", u);
+			return Usable ("Raging Blow") && Rage >= 10 && Range (MeleeRange, u) && C ("Raging Blow", u);
 		}
 
 		public bool Pummel (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Pummel") && Range (5, u) && C ("Pummel", u);
+			return Usable ("Pummel") && Range (MeleeRange, u) && C ("Pummel", u);
 		}
 
 		public bool Hamstring (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Hamstring") && Range (5, u) && C ("Hamstring", u);
+			return Usable ("Hamstring") && Range (MeleeRange, u) && C ("Hamstring", u);
 		}
 
 		public bool Whirlwind (UnitObject u = null)

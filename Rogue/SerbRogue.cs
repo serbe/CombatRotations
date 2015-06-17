@@ -420,8 +420,8 @@ namespace ReBot
 		public bool TricksoftheTrade ()
 		{
 			if (Usable ("Tricks of the Trade")) {
-				Unit = Group.GetGroupMemberObjects ().Where (u => !u.IsDead && Range (100, u) && u.IsTank).OrderBy (u => Health (u)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Unit != null && C ("Tricks of the Trade", Unit))
+				Player = MyGroup.Where (u => !u.IsDead && Range (100, u) && u.IsTank).OrderBy (u => Health (u)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Player != null && C ("Tricks of the Trade", Player))
 					return true;
 			}
 			return false;

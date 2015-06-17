@@ -181,7 +181,7 @@ namespace ReBot
 			/// Revival with Option for some boss fights
 			if (Revival) {
 				int revivalLimit = 3;
-				if (PartyMembers.Count > 5)
+				if (GroupMemberCount > 5)
 					revivalLimit = 5;
 				var lowPlayerCount = PartyMembers.Count (p => p.HealthFraction <= RHeal);
 				if (lowPlayerCount >= revivalLimit) {

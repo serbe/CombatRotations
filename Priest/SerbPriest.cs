@@ -52,55 +52,55 @@ namespace ReBot
 
 		// Targets
 
-		public UnitObject HealTarget {
+		public PlayerObject HealTarget {
 			get {
 				return Lowest (GetDR (HealHealthDungeon, HealHealthRaid));
 			}
 		}
 
-		public UnitObject FlashHealTarget {
+		public PlayerObject FlashHealTarget {
 			get {
 				return Lowest (GetDR (FHHealthDungeon, FHHealthRaid));
 			}
 		}
 
-		public UnitObject PoHTarget {
+		public PlayerObject PoHTarget {
 			get {
 				return LowestPlayerCount (GetDR (PoHHealthDungeon, PoHHealthRaid)) > GetDR (PoHPlayersDungeon, PoHPlayersRaid) ? LowestPlayer : null;
 			}
 		}
 
-		public UnitObject PoMTarget {
+		public PlayerObject PoMTarget {
 			get {
 				return Lowest (GetDR (PoMHealthDungeon, PoMHealthRaid));
 			}
 		}
 
-		public UnitObject PenanceTarget {
+		public PlayerObject PenanceTarget {
 			get {
 				return Lowest (GetDR (PenanceHealthDungeon, PenanceHealthRaid));
 			}
 		}
 
-		public UnitObject CascadeHealthTarget {
+		public PlayerObject CascadeHealthTarget {
 			get {
 				return LowestPlayerCount (GetDR (CascadeHealthDungeon, CascadeHealthRaid)) > GetDR (CascadePlayersDungeon, CascadePlayersRaid) ? LowestPlayer : null;
 			}
 		}
 
-		public UnitObject HaloHealthTarget {
+		public PlayerObject HaloHealthTarget {
 			get {
 				return LowestPlayerCount (GetDR (HaloHealthDungeon, HaloHealthRaid), 30) > GetDR (HaloPlayersDungeon, HaloPlayersRaid) ? LowestPlayer : null;
 			}
 		}
 
-		public UnitObject PurifyTarget {
+		public PlayerObject PurifyTarget {
 			get {
 				return PartyMembers.Where (u => Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic,Disease".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
-		public UnitObject DispelTarget {
+		public PlayerObject DispelTarget {
 			get {
 				return PartyMembers.Where (u => Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
 			}
@@ -111,7 +111,7 @@ namespace ReBot
 			return API.Units.Where (u => u != null && !u.IsDead && u.IsAttackable && (u.InCombat && u.IsTargetingMeOrPets) && !Me.IsNotInFront (u) && Range (30, u) && ((r == 0 && !u.HasAura ("Shadow Word: Pain", true)) || (r > 0 && u.HasAura ("Shadow Word: Pain", true) && u.AuraTimeRemaining ("Shadow Word: Pain", true) <= r))).DefaultIfEmpty (null).FirstOrDefault ();
 		}
 
-		public UnitObject PWSTarget {
+		public PlayerObject PWSTarget {
 			get {
 				return PartyMembers.Where (u => !u.HasAura ("Power Word: Shield") && !u.HasAura ("Weakened Soul") && (Health (u) <= GetDR (PWSHealthDungeon, PWSHealthRaid) || (IsTank (u) && PWSTank))).DefaultIfEmpty (null).FirstOrDefault ();
 			}
@@ -123,7 +123,7 @@ namespace ReBot
 			}
 		}
 
-		public UnitObject ClarityofWillTarget {
+		public PlayerObject ClarityofWillTarget {
 			get {
 				return Lowest (ClarityofWillHealth);
 			}
@@ -133,33 +133,17 @@ namespace ReBot
 
 		public bool UsePowerInfusion {
 			get {
-				return PartyMembers.Where (u => Health (u) <= 0.65).ToList ().Count >= GetDR (3, 5);
+				return LowestPlayerCount (0.65) >= GetDR (3, 5);
 			}
 		}
 
 		public bool UseHolyNova {
 			get {
-				return PartyMembers.Where (u => Range (12, u) && Health (u) <= GetDR (HolyNovaPlayersDungeon, HolyNovaPlayersRaid)).ToList ().Count >= GetDR (HolyNovaPlayersDungeon, HolyNovaPlayersRaid);
+				return LowestPlayerCount (GetDR (HolyNovaPlayersDungeon, HolyNovaPlayersRaid), 12) >= GetDR (HolyNovaPlayersDungeon, HolyNovaPlayersRaid);
 			}
 		}
 
 		// Get
-
-		//		public GUID AutoTarget {
-		//			get {
-		//				if (GroupMembers.Count > 0) {
-		//					if (Tank != null)
-		//						return Tank.GUID;
-		//					Player = GroupMembers.Where (u => !u.IsDead).DefaultIfEmpty (null).FirstOrDefault ();
-		//					if (Player != null)
-		//						return Player.GUID;
-		//				}
-		//				Unit = API.CollectUnits (40).Where (u => u.IsEnemy && !u.IsDead && u.IsInLoS && u.IsAttackable && u.InCombat && Range (40, u)).OrderBy (u => u.CombatRange).DefaultIfEmpty (null).FirstOrDefault ();
-		//				if (Unit != null)
-		//					return Unit.GUID;
-		//				return Me.GUID;
-		//			}
-		//		}
 
 		public int ShadowApparitions {
 			get {
@@ -349,25 +333,25 @@ namespace ReBot
 		public bool PowerWordSolace (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Power Word: Solace") && (Range (30, u) || (HasGlyph (119853) && Range (40, u))) && C ("Power Word: Solace");
+			return Usable ("Power Word: Solace") && (Range (30, u) || (HasGlyph (119853) && Range (40, u))) && C ("Power Word: Solace", u);
 		}
 
 		public bool HolyFire (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Holy Fire") && (Range (30, u) || (HasGlyph (119853) && Range (40, u))) && C ("Holy Fire");
+			return Usable ("Holy Fire") && (Range (30, u) || (HasGlyph (119853) && Range (40, u))) && C ("Holy Fire", u);
 		}
 
 		public bool PowerWordShield (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Power Word: Shield") && !u.HasAura ("Power Word: Shield") && !u.HasAura ("Weakened Soul") && Range (40, u) && C ("Power Word: Shield");
+			return Usable ("Power Word: Shield") && !u.HasAura ("Power Word: Shield") && !u.HasAura ("Weakened Soul") && Range (40, u) && C ("Power Word: Shield", u);
 		}
 
 		public bool FlashHeal (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Flash Heal") && Range (40, u) && (Me.HasAura ("Surge of Light") || !Me.IsMoving) && C ("Flash Heal");
+			return Usable ("Flash Heal") && Range (40, u) && (Me.HasAura ("Surge of Light") || !Me.IsMoving) && C ("Flash Heal", u);
 		}
 
 		public bool Heal (UnitObject u = null)
@@ -379,7 +363,7 @@ namespace ReBot
 		public bool PrayerofMending (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Prayer of Mending") && !u.HasAura ("Prayer of Mending") && Range (40, u) && !Me.IsMoving && C ("Prayer of Mending");
+			return Usable ("Prayer of Mending") && !u.HasAura ("Prayer of Mending") && Range (40, u) && !Me.IsMoving && C ("Prayer of Mending", u);
 		}
 
 		public bool ClarityofWill (UnitObject u = null)
@@ -396,7 +380,7 @@ namespace ReBot
 
 		public bool Archangel ()
 		{
-			return Usable ("Archangel") && C ("Archangel");
+			return Usable ("Archangel") && CS ("Archangel");
 		}
 
 		public bool SetShieldAll ()
@@ -533,7 +517,7 @@ namespace ReBot
 		public bool Smite (UnitObject u = null)
 		{
 			u = u ?? Target;
-			return Usable ("Smite") && (Range (30, u) || (HasGlyph (119853) && Range (40, u))) && !Me.IsMoving && C ("Smite");
+			return Usable ("Smite") && (Range (30, u) || (HasGlyph (119853) && Range (40, u))) && !Me.IsMoving && C ("Smite", u);
 		}
 
 		public bool PrayerofHealing (UnitObject u = null)

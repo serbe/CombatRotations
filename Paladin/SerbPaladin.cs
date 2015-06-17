@@ -470,7 +470,7 @@ namespace ReBot
 		public bool UseHolyShock ()
 		{
 			if (HolyPower < MaxHolyPower && Usable ("Holy Shock")) {
-				Player = PartyMembers.Where (p => Health (p) <= 0.95).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
+				Unit = PartyMembers.Where (p => Health (p) <= 0.95).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Player != null && HolyShock (Player))
 					return true;
 				if (Tank != null && Tank.InCombat && HolyShock (Tank))
@@ -482,7 +482,7 @@ namespace ReBot
 		public bool UseHandOfProtection ()
 		{
 			if (Usable ("Hand of Protection")) {
-				Player = PartyMembers.Where (p => Health (p) <= HoP && Range (40, p) && (!p.IsTank || p == Me || p.IsHealer)).DefaultIfEmpty (null).FirstOrDefault ();
+				Unit = PartyMembers.Where (p => Health (p) <= HoP && Range (40, p) && (!IsTank (p) || p == Me || IsHealer (p))).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Player != null && HandofProtection (Player))
 					return true;
 			}
@@ -503,7 +503,7 @@ namespace ReBot
 		public bool UseHolyLight ()
 		{
 			if (Usable ("Holy Light")) {
-				Player = PartyMembers.Where (p => Health (p) <= HL).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
+				Unit = PartyMembers.Where (p => Health (p) <= HL).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Player != null && HolyLight (Player))
 					return true;
 			}
@@ -513,11 +513,11 @@ namespace ReBot
 		public bool UseFlashLight ()
 		{
 			if (Usable ("Holy Light") && Me.HasAura ("Infusion of Light")) {
-				Player = PartyMembers.Where (p => Health (p) < HL).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
+				Unit = PartyMembers.Where (p => Health (p) < HL).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Player != null && HolyLight (Player))
 					return true;
 			} else if (Usable ("Flash of Light")) {
-				Player = PartyMembers.Where (p => Health (p) < FL).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
+				Unit = PartyMembers.Where (p => Health (p) < FL).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Player != null && FlashofLight (Player))
 					return true;
 			}
@@ -527,7 +527,7 @@ namespace ReBot
 		public bool UseLightofDawn ()
 		{
 			if (HolyPower >= 3) {
-				Player = PartyMembers.Where (p => Range (30, p) && Health (p) < 1).DefaultIfEmpty (null).FirstOrDefault ();
+				Unit = PartyMembers.Where (p => Range (30, p) && Health (p) < 1).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Player != null && LightofDawn ())
 					return true;
 			}
@@ -537,7 +537,7 @@ namespace ReBot
 		public bool UseHolyRadiance ()
 		{
 			if (Usable ("Holy Radiance")) {
-				Player = PartyMembers.Where (p => Health (p) < HR).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
+				Unit = PartyMembers.Where (p => Health (p) < HR).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Player != null && HolyRadiance (Player))
 					return true;
 			}
@@ -589,7 +589,7 @@ namespace ReBot
 		public bool CleanAll ()
 		{
 			if (Usable ("Cleanse")) {
-				Player = PartyMembers.Where (u => u.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
+				Unit = PartyMembers.Where (u => u.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
 				return Player != null && Cleanse (Player);
 			}
 			return false;
