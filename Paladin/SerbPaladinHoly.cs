@@ -97,7 +97,7 @@ namespace ReBot
 				}
 			}
 
-			if (UseLayonHands ())
+			if (LayonHandsTarget != null && LayonHands (LayonHandsTarget))
 				return;
 
 			if (Health (Me) <= 0.25) {

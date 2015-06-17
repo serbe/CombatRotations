@@ -23,6 +23,9 @@ namespace ReBot
 
 		Menu _choice;
 
+		double LayonHandsHealth = 0.2;
+		double HolyShockHealth = 0.95;
+
 		public UnitObject LastJudgmentTarget;
 
 		public void SetChoice (Menu c = Menu.Normal)
@@ -32,7 +35,106 @@ namespace ReBot
 
 		// Targets
 
+		public bool UseHandofSacrifice ()
+		{
+			if (Me.Focus != null && Usable ("Hand of Sacrifice")) {
+				if (Me.Focus.IsFriendly && Range (40, Me.Focus) && Health (Me.Focus) <= HoS && !Me.Focus.HasAura ("Hand of Sacrifice", true)) {
+					if (HandofSacrifice (Me.Focus))
+						return true;
+				}
+			}
+			return false;
+		}
 
+		public bool UseHolyLight ()
+		{
+			if (Usable ("Holy Light")) {
+				Unit = PartyMembers.Where (p => Health (p) <= HL).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Player != null && HolyLight (Player))
+					return true;
+			}
+			return false;
+		}
+
+		public bool UseFlashLight ()
+		{
+			if (Usable ("Holy Light") && Me.HasAura ("Infusion of Light")) {
+				Unit = PartyMembers.Where (p => Health (p) < HL).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Player != null && HolyLight (Player))
+					return true;
+			} else if (Usable ("Flash of Light")) {
+				Unit = PartyMembers.Where (p => Health (p) < FL).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Player != null && FlashofLight (Player))
+					return true;
+			}
+			return false;
+		}
+
+		public bool UseLightofDawn ()
+		{
+			if (HolyPower >= 3) {
+				Unit = PartyMembers.Where (p => Range (30, p) && Health (p) < 1).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Player != null && LightofDawn ())
+					return true;
+			}
+			return false;
+		}
+
+		public bool UseHolyRadiance ()
+		{
+			if (Usable ("Holy Radiance")) {
+				Unit = PartyMembers.Where (p => Health (p) < HR).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Player != null && HolyRadiance (Player))
+					return true;
+			}
+			return false;
+		}
+
+		public PlayerObject FocusTankorMe (double h, int r = 40)
+		{
+			if (Me.Focus != null && Me.Focus.IsFriendly && !Me.Focus.IsDead && Range (r, Me.Focus)) {
+				if (Health (Me.Focus) <= h) {
+					return (PlayerObject)Me.Focus;
+				}
+			} else if (Tank != null && !Tank.IsDead && Range (r, Tank)) {
+				if (Health (Tank) <= h) {
+					return Tank;
+				}
+			} else {
+				if (Health (Me) <= h) {
+					return Me;
+				}
+			}
+			return null;
+		}
+
+		public PlayerObject LayonHandsTarget {
+			get {
+				return FocusTankorMe (LayonHandsHealth);
+			}
+		}
+
+		public PlayerObject HolyShockTarget {
+			get {
+				if (HolyPower < MaxHolyPower) {
+					Player = Lowest (HolyShockHealth);
+					if (Player != null)
+						return Player;
+				}
+				if (!Me.InCombat) {
+					Player = FocusTankorMe (1);
+					if (Player != null && Player != Me && Player.InCombat)
+						return Player;
+				}
+				return null;
+			}
+		}
+
+		public PlayerObject HandOfProtectionTarget {
+			get {
+				return PartyMembers.Where (p => Health (p) <= HoP && Range (40, p) && (!IsTank (p) || p == Me || IsHealer (p))).DefaultIfEmpty (null).FirstOrDefault ();
+			}
+		}
 
 		// Get
 
@@ -425,28 +527,6 @@ namespace ReBot
 			return false;
 		}
 
-		public bool UseLayonHands ()
-		{
-			if (Usable ("Lay on Hands")) {
-				if (Me.Focus != null) {
-					if (Health (Me.Focus) <= 0.25) {
-						if (LayonHands (Me.Focus))
-							return true;
-					}
-				} else if (Tank != null) {
-					if (Health (Tank) <= 0.25) {
-						if (LayonHands (Tank))
-							return true;
-					}
-				} else {
-					if (Health (Me) <= 0.25) {
-						if (LayonHands (Me))
-							return true;
-					}
-				}
-			}
-			return false;
-		}
 
 		public bool UseWarningHeal ()
 		{
@@ -471,82 +551,7 @@ namespace ReBot
 			return false;
 		}
 
-		public bool UseHolyShock ()
-		{
-			if (HolyPower < MaxHolyPower && Usable ("Holy Shock")) {
-				Unit = PartyMembers.Where (p => Health (p) <= 0.95).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Player != null && HolyShock (Player))
-					return true;
-				if (Tank != null && Tank.InCombat && HolyShock (Tank))
-					return true;
-			}
-			return false;
-		}
 
-		public bool UseHandOfProtection ()
-		{
-			if (Usable ("Hand of Protection")) {
-				Unit = PartyMembers.Where (p => Health (p) <= HoP && Range (40, p) && (!IsTank (p) || p == Me || IsHealer (p))).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Player != null && HandofProtection (Player))
-					return true;
-			}
-			return false;
-		}
-
-		public bool UseHandofSacrifice ()
-		{
-			if (Me.Focus != null && Usable ("Hand of Sacrifice")) {
-				if (Me.Focus.IsFriendly && Range (40, Me.Focus) && Health (Me.Focus) <= HoS && !Me.Focus.HasAura ("Hand of Sacrifice", true)) {
-					if (HandofSacrifice (Me.Focus))
-						return true;
-				}
-			}
-			return false;
-		}
-
-		public bool UseHolyLight ()
-		{
-			if (Usable ("Holy Light")) {
-				Unit = PartyMembers.Where (p => Health (p) <= HL).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Player != null && HolyLight (Player))
-					return true;
-			}
-			return false;
-		}
-
-		public bool UseFlashLight ()
-		{
-			if (Usable ("Holy Light") && Me.HasAura ("Infusion of Light")) {
-				Unit = PartyMembers.Where (p => Health (p) < HL).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Player != null && HolyLight (Player))
-					return true;
-			} else if (Usable ("Flash of Light")) {
-				Unit = PartyMembers.Where (p => Health (p) < FL).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Player != null && FlashofLight (Player))
-					return true;
-			}
-			return false;
-		}
-
-		public bool UseLightofDawn ()
-		{
-			if (HolyPower >= 3) {
-				Unit = PartyMembers.Where (p => Range (30, p) && Health (p) < 1).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Player != null && LightofDawn ())
-					return true;
-			}
-			return false;
-		}
-
-		public bool UseHolyRadiance ()
-		{
-			if (Usable ("Holy Radiance")) {
-				Unit = PartyMembers.Where (p => Health (p) < HR).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Player != null && HolyRadiance (Player))
-					return true;
-			}
-			return false;
-		}
 
 		public bool  UseHealTarget ()
 		{
