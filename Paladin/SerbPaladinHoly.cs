@@ -33,7 +33,7 @@ namespace ReBot
 			if (HasGlobalCooldown ())
 				return true;
 
-			if (!IsInShapeshiftForm ("Seal of Insight")) {
+			if (!IsInShapeshiftForm ("Seal of Insight") && GroupMemberCount > 0) {
 				if (SealofInsight ())
 					return true;
 			}
@@ -41,13 +41,13 @@ namespace ReBot
 			if (Buff (Me))
 				return true;
 
-			if (CleanAll ())
+			if (CleanseTarget != null && Cleanse (CleanseTarget))
 				return true;
 
 			if (RessAll && RessurectAll ())
 				return true;
 
-			if (UseBeaconofLight ())
+			if (BeaconofLightTarget != null && BeaconofLight (BeaconofLightTarget))
 				return true;
 
 //			if (UseSacredShield ())
@@ -57,16 +57,13 @@ namespace ReBot
 //				return true;
 
 			if (Mana (Me) > 0.5) {
-				if (UseHolyLight ())
+				if (HolyLightTarget != null && HolyLight (HolyLightTarget))
 					return true;
-				if (UseFlashLight ())
+				if (FlashofLightTarget != null && FlashofLight (FlashofLightTarget))
 					return true;
 			}
 
-			if (InArena && LowestPlayer != null && HolyShock (LowestPlayer))
-				return true;
-
-			if (Tank != null && Tank.InCombat && HolyShock (Tank))
+			if (HolyShockTarget != null && HolyShock (HolyShockTarget))
 				return true;
 
 			return false;
@@ -90,41 +87,58 @@ namespace ReBot
 			if (MeIsBusy)
 				return;
 
-			if (Target != null) {
-				if (Target.IsEnemy && Target.IsInCombatRange) {
-					if (HolyPrism ())
-						return;
-				}
-			}
-
-			if (LayonHandsTarget != null && LayonHands (LayonHandsTarget))
-				return;
-
-			if (Health (Me) <= 0.25) {
+			if (Health (Me) < 0.2) {
 				if (DivineShield ())
 					return;
 			}
-
-			if (UseSacredShield ())
-				return;
+			if (Health (Me) <= 0.8 && UseDivineProtection) {
+				if (DivineProtection ())
+					return;
+			}
 
 			if (LowestPlayerCount (0.5) >= AOECount) {
 				if (AvengingWrath ())
 					return;
 			}
 
+			if (LayonHandsTarget != null && LayonHands (LayonHandsTarget))
+				return;
+			if (TankTarget != null && !Me.IsNotInFront (TankTarget) && HolyPrism (TankTarget))
+				return;
+			if (CleanseTarget != null && Cleanse (CleanseTarget))
+				return;
 			if (HandOfProtectionTarget != null && HandofProtection (HandOfProtectionTarget))
 				return;
-
-			if (UseHoS && UseHandofSacrifice ())
+			if (BeaconofLightTarget != null && BeaconofLight (BeaconofLightTarget))
+				return;
+			if (EternalFlameTarget != null && EternalFlame (EternalFlameTarget))
+				return;
+			if (SacredShieldTarget != null && SacredShield (SacredShieldTarget))
+				return;
+			if (HolyShockTarget != null && HolyShock (HolyShockTarget))
+				return;
+			if (HandofSacrificeTarget != null && HandofSacrifice (HandofSacrificeTarget))
 				return;
 
 			if (Me.HasAura ("Divine Purpose")) {
-				if (UseLightofDawn ())
+				if (LightofDawnTarget != null && LightofDawn ())
 					return;
 			}
 
-			if (UseBeaconofLight ())
+			if (LowestPlayerCount (0.7) >= AOECount && FocusTankorMe (0.2) == null) {
+
+				if (LightofDawnTarget != null && LightofDawn ())
+					return;
+				if (GetHolyPower ())
+					return;
+				if (HolyRadianceTarget != null && HolyRadiance (HolyRadianceTarget))
+					return;
+			}
+
+
+			if (FlashofLightTarget != null && FlashofLight (FlashofLightTarget))
+				return;
+			if (HolyLightTarget != null && HolyLight (HolyLightTarget))
 				return;
 
 			if (HealTarget && Target != null) {
@@ -132,31 +146,13 @@ namespace ReBot
 					return;
 			}
 
-			if (UseWarningHeal ())
-				return;
+//			if (UseWarningHeal ())
+//				return;
 
-			if (LowestPlayerCount (0.83) >= AOECount) {
-
-				if (UseLightofDawn ())
-					return;
-				if (GetHolyPower ())
-					return;
-				if (UseHolyRadiance ())
-					return;
-			}
-			if (Health (LowestPlayer) > FL) {
+			if (Health (LowestPlayer) > FlashofLightHealth) {
 				if (GetHolyPower ())
 					return;
 			}
-
-			if (UseFlashLight ())
-				return;
-			if (UseEternalFlame ())
-				return;
-			if (UseHolyLight ())
-				return;
-			if (UseLayonHands ())
-				return;
 
 			if (Usable ("Hammer of Wrath")) {
 				Unit = Enemy.Where (u => Range (30, u) && Health (u) < 0.2).DefaultIfEmpty (null).FirstOrDefault ();
@@ -175,23 +171,6 @@ namespace ReBot
 					return;
 				if (Denounce ())
 					return;
-			}
-
-			if (Mana (Me) > 0.6) {
-				if (Me.Focus != null)
-					Unit = Me.Focus;
-				else if (Tank != null)
-					Unit = Tank;
-				if (Enemy.Where (u => u.Target == Unit).DefaultIfEmpty (null).FirstOrDefault () != null) {
-					if (Usable ("Holy Shock")) {
-						if (HolyShock (Unit))
-							return;
-					}
-					if (Usable ("Holy Light")) {
-						if (HolyLight (Unit))
-							return;
-					}
-				}
 			}
 		}
 	}

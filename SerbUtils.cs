@@ -658,7 +658,65 @@ namespace ReBot
 
 		public PlayerObject Lowest (double h, int r = 40)
 		{
-			return PartyMembers.Where (p => Health (p) < h && Range (r, p)).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
+			return PartyMembers.Where (p => !p.IsDead && Health (p) < h && Range (r, p)).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
+		}
+
+		public PlayerObject LowestNoAura (double h, string a, int r = 40)
+		{
+			return PartyMembers.Where (p => !p.IsDead && Health (p) < h && Range (r, p) && !p.HasAura (a, true)).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
+		}
+
+
+		public UnitObject FocusTankorMe (double h, int r = 40)
+		{
+			if (Me.Focus != null && Me.Focus.IsFriendly) {
+				if (!Me.Focus.IsDead && Range (r, Me.Focus) && Health (Me.Focus) <= h)
+					return Me.Focus;
+			} else if (Tank != null) {
+				if (!Tank.IsDead && Range (r, Tank) && Health (Tank) <= h)
+					return Tank;
+			} else if (Health (Me) <= h) {
+				return Me;
+			}
+			return null;
+		}
+
+		public UnitObject FocusTankorLowest (double h, int r = 40)
+		{
+			if (Me.Focus != null && Me.Focus.IsFriendly) {
+				if (!Me.Focus.IsDead && Range (r, Me.Focus) && Health (Me.Focus) <= h)
+					return Me.Focus;
+			} else if (Tank != null) {
+				if (!Tank.IsDead && Range (r, Tank) && Health (Tank) <= h)
+					return Tank;
+			}
+			return Lowest (h);
+		}
+
+		public UnitObject FocusTankorLowestNoAura (double h, string a, int r = 40)
+		{
+			if (Me.Focus != null && Me.Focus.IsFriendly) {
+				if (!Me.Focus.IsDead && Range (r, Me.Focus) && Health (Me.Focus) <= h && !Me.Focus.HasAura (a, true))
+					return Me.Focus;
+			} else if (Tank != null) {
+				if (!Tank.IsDead && Range (r, Tank) && Health (Tank) <= h && !Tank.HasAura (a, true))
+					return Tank;
+			}
+			return LowestNoAura (h, a);
+		}
+
+		public UnitObject FocusTankorMeNoAura (double h, string a, int r = 40)
+		{
+			if (Me.Focus != null && Me.Focus.IsFriendly) {
+				if (!Me.Focus.IsDead && Range (r, Me.Focus) && Health (Me.Focus) <= h && !Me.Focus.HasAura (a, true))
+					return Me.Focus;
+			} else if (Tank != null) {
+				if (!Tank.IsDead && Range (r, Tank) && Health (Tank) <= h && !Tank.HasAura (a, true))
+					return Tank;
+			} else if (Health (Me) <= h && !Me.HasAura (a, true)) {
+				return Me;
+			}
+			return null;
 		}
 
 		public int LowestPlayerCount (double h, int r = 40)

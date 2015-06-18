@@ -99,7 +99,7 @@ namespace ReBot
 				if (RallyingCry ())
 					return true;
 			}
-			if (Health (Me) <= 0.8) {
+			if (Health (Me) <= 0.6) {
 				if (EnragedRegeneration ())
 					return true;
 			}
@@ -167,7 +167,7 @@ namespace ReBot
 					return true;
 			}
 			if (Usable ("Storm Bolt")) {
-				Unit = Enemy.Where (u => u.IsCasting && !IsBoss (u) && Range (30, u) && u.RemainingCastTime > 0 && (u.Target == Me && !Me.HasAura ("Spell Reflect")) && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
+				Unit = Enemy.Where (u => u.IsCasting && Mana (u) > 0 && !IsBoss (u) && Range (30, u) && u.RemainingCastTime > 0 && (u.Target == Me && !Me.HasAura ("Spell Reflect")) && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && StormBolt (Unit))
 					return true;
 			}
@@ -182,12 +182,12 @@ namespace ReBot
 		public bool Reflect ()
 		{
 			if (Usable ("Spell Reflection") && !HasGlobalCooldown ()) {
-				Unit = Enemy.Where (u => u.IsCasting && u.RemainingCastTime > 0 && u.Target == Me && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
+				Unit = Enemy.Where (u => u.IsCasting && !u.IsChanneling && Mana (u) > 0 && u.RemainingCastTime > 0 && u.Target == Me && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && SpellReflection ())
 					return true;
 			}
 			if (Usable ("Mass Spell Reflection") && !HasGlobalCooldown ()) {
-				Unit = Enemy.Where (u => u.IsCasting && u.RemainingCastTime > 0 && u.Target == Me && !Me.HasAura ("Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
+				Unit = Enemy.Where (u => u.IsCasting && !u.IsChanneling && Mana (u) > 0 && u.RemainingCastTime > 0 && u.Target == Me && !Me.HasAura ("Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && MassSpellReflection ())
 					return true;
 			}

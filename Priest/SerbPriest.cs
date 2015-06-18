@@ -41,8 +41,8 @@ namespace ReBot
 		double FHHealthRaid = 0.50;
 		double HealHealthDungeon = 0.85;
 		double HealHealthRaid = 0.75;
-		double HolyNovaHealthDungeon = 0.80;
-		double HolyNovaHealthRaid = 0.70;
+		//		double HolyNovaHealthDungeon = 0.80;
+		//		double HolyNovaHealthRaid = 0.70;
 		int HolyNovaPlayersDungeon = 2;
 		int HolyNovaPlayersRaid = 5;
 		int PoHPlayersDungeon = 3;

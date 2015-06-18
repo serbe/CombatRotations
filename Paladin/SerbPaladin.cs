@@ -25,7 +25,9 @@ namespace ReBot
 
 		double LayonHandsHealth = 0.2;
 		double HolyShockHealth = 0.95;
-		double HandofSacrifice = 0.55;
+		double EternalFlameHealth = 0.95;
+		double HandofSacrificeHealth = 0.55;
+		double HandofProtectionHealth = 0.2;
 
 		public UnitObject LastJudgmentTarget;
 
@@ -33,91 +35,105 @@ namespace ReBot
 		{
 			_choice = c;
 		}
-
+			
 		// Targets
 
-
-
-
-		public bool UseHolyLight ()
-		{
-			if (Usable ("Holy Light")) {
-				Unit = PartyMembers.Where (p => Health (p) <= HL).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Player != null && HolyLight (Player))
-					return true;
-			}
-			return false;
-		}
-
-		public bool UseFlashLight ()
-		{
-			if (Usable ("Holy Light") && Me.HasAura ("Infusion of Light")) {
-				Unit = PartyMembers.Where (p => Health (p) < HL).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Player != null && HolyLight (Player))
-					return true;
-			} else if (Usable ("Flash of Light")) {
-				Unit = PartyMembers.Where (p => Health (p) < FL).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Player != null && FlashofLight (Player))
-					return true;
-			}
-			return false;
-		}
-
-		public bool UseLightofDawn ()
-		{
-			if (HolyPower >= 3) {
-				Unit = PartyMembers.Where (p => Range (30, p) && Health (p) < 1).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Player != null && LightofDawn ())
-					return true;
-			}
-			return false;
-		}
-
-		public bool UseHolyRadiance ()
-		{
-			if (Usable ("Holy Radiance")) {
-				Unit = PartyMembers.Where (p => Health (p) < HR).OrderBy (p => p.HealthFraction).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Player != null && HolyRadiance (Player))
-					return true;
-			}
-			return false;
-		}
-
-		public PlayerObject FocusTankorMe (double h, int r = 40)
-		{
-			if (Me.Focus != null && Me.Focus.IsFriendly && !Me.Focus.IsDead && Range (r, Me.Focus)) {
-				if (Health (Me.Focus) <= h) {
-					return (PlayerObject)Me.Focus;
-				}
-			} else if (Tank != null && !Tank.IsDead && Range (r, Tank)) {
-				if (Health (Tank) <= h) {
-					return Tank;
-				}
-			} else {
-				if (Health (Me) <= h) {
-					return Me;
-				}
-			}
-			return null;
-		}
-
-		public PlayerObject LayonHandsTarget {
+		public PlayerObject CleanseTarget {
 			get {
-				return FocusTankorMe (LayonHandsHealth);
+				return PartyMembers.Where (u => Range (40, u) && u.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
-		public PlayerObject HolyShockTarget {
+		public UnitObject ExecutionSentenceTarget {
+			get {
+				return Usable ("Execution Sentence") ? FocusTankorMe (0.4) : null;
+			}
+		}
+
+		public UnitObject SacredShieldTarget {
+			get {
+				if (Usable ("Sacred Shield")) {
+					Unit = FocusTankorLowestNoAura (1, "Sacred Shield");
+					if (Unit != null && (Health (Unit) < 1 || (Unit == Me.Focus || Unit == Tank)))
+						return Unit;
+					if (!Me.HasAura ("Sacred Shield"))
+						return Me;
+				}
+				return null;
+			}
+		}
+
+		public UnitObject EternalFlameTarget {
+			get {
+				return HolyPower > 0 && Usable ("Eternal Flame") ? FocusTankorLowestNoAura (EternalFlameHealth, "Eternal Flame") : null;
+			}
+		}
+
+		public bool UseDivineProtection {
+			get {
+				if (Usable ("Divine Protection")) {
+					if (Enemy.Where (u => u.IsCasting && u.Target == Me && !Me.HasAura ("Divine Protection") && u.CastingTime > 0).ToList ().Count > 0)
+						return true;
+				}
+				return false;
+			}
+		}
+
+		public UnitObject BeaconofLightTarget {
+			get {
+				if (Usable ("Beacon of Light")) {
+					Unit = FocusTankorLowestNoAura (1, "Beacon of Light");
+					if (Unit != null && (Health (Unit) < 1 || Unit == Tank || Unit == Me.Focus))
+						return Unit;
+				}
+				return null;
+			}
+		}
+
+		public PlayerObject LightofDawnTarget {
+			get {
+				return Usable ("Light of Dawn") && HolyPower >= 3 ? Lowest (0.95, 30) : null;
+			}
+		}
+
+		// Вспышка Света
+		public PlayerObject FlashofLightTarget {
+			get {
+				return Usable ("Flash of Light") ? Lowest (FlashofLightHealth) : null;
+			}
+		}
+
+		public PlayerObject HolyRadianceTarget {
+			get {
+				return Usable ("Holy Radiance") ? Lowest (HolyRadianceHealth) : null;
+			}
+		}
+
+		// Свет небес
+		public PlayerObject HolyLightTarget {
+			get {
+				return Usable ("Holy Light") ? Lowest (HolyLightHealth) : null;
+			}
+		}
+
+		public UnitObject LayonHandsTarget {
+			get {
+				return Usable ("Layon Hands") ? FocusTankorMe (LayonHandsHealth) : null;
+			}
+		}
+
+		// Шок небес
+		public UnitObject HolyShockTarget {
 			get {
 				if (HolyPower < MaxHolyPower) {
-					Player = Lowest (HolyShockHealth);
-					if (Player != null)
-						return Player;
+					Unit = Lowest (HolyShockHealth);
+					if (Unit != null)
+						return Unit;
 				}
 				if (!Me.InCombat) {
-					Player = FocusTankorMe (1);
-					if (Player != null && Player != Me && Player.InCombat)
-						return Player;
+					Unit = FocusTankorMe (1);
+					if (Unit != null && Unit != Me && Unit.InCombat)
+						return Unit;
 				}
 				return null;
 			}
@@ -125,39 +141,22 @@ namespace ReBot
 
 		public PlayerObject HandOfProtectionTarget {
 			get {
-				return PartyMembers.Where (p => Health (p) <= HoP && Range (40, p) && (!IsTank (p) || p == Me || IsHealer (p))).DefaultIfEmpty (null).FirstOrDefault ();
+				return PartyMembers.Where (p => !p.IsDead && Health (p) <= HandofProtectionHealth && Range (40, p) && (!IsTank (p) || p == Me || IsHealer (p))).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
 		// Длань жертвенности
-		public PlayerObject HandofSacrificeTarget {
+		public UnitObject HandofSacrificeTarget {
 			get {
-				if (Me.Focus != null && Range (40, Me.Focus) && Health (Me.Focus) <= HoS && !Me.Focus.HasAura ("Hand of Sacrifice", true)) {
-					return Me.Focus;
-				}
+				return HasGlyph (146957) && Usable ("Hand of Sacrifice") ? LowestNoAura (HandofSacrificeHealth, "Hand of Sacrifice") : null;
 			}
 		}
-
-//		bool DoHoS ( lowestPlayer) {
-//			// Hand of Sacrifice
-//			bool done = false;
-//			int hos = API.ExecuteLua<int>("return GetSpellCharges(6940)");
-//			if (!lowestPlayer.HasAura("Hand of Sacrifice") && lowestPlayer != (PlayerObject)Me && hos > 1) {
-//				if (Cast("Hand of Sacrifice",() => lowestPlayer.HealthFraction < HoSHeal && !lowestPlayer.HasAura("Hand of Sacrifice"),lowestPlayer)) {
-//					DebugWrite("Hand of Sacrifice on " + lowestPlayer.Name);
-//					done = true;
-//				}
-//			}
-//			return done;
-//		}
 
 		// Get
 
 		public int MaxHolyPower {
 			get {
-				if (HasSpell ("Boundless Conviction"))
-					return 5;
-				return 3;
+				return Me.Level >= 85 ? 5 : 3;
 			}
 		}
 
@@ -192,7 +191,7 @@ namespace ReBot
 			}
 		}
 
-		public double FL {
+		public double FlashofLightHealth {
 			get {
 				switch (Playstyle) {
 				case Menu.EFBlanket:
@@ -210,7 +209,7 @@ namespace ReBot
 			}
 		}
 
-		public double HL {
+		public double HolyLightHealth {
 			get {
 				switch (Playstyle) {
 				case Menu.EFBlanket:
@@ -228,20 +227,38 @@ namespace ReBot
 			}
 		}
 
-		public double HoP {
+		public double HolyRadianceHealth {
 			get {
 				switch (Playstyle) {
 				case Menu.EFBlanket:
 					return 0;
 				case Menu.Ultimate:
-					return 0.35;
+					return 0.80;
 				case Menu.Aggressive:
-					return 0.25;			
+					return 0.70;		
 				case Menu.Normal:
 				default:
-					return 0.20;
+					return 0.65;
 				case Menu.Conservative:
-					return 0.15;
+					return 0.60;
+				}
+			}
+		}
+
+		public double WordofGloryHealth {
+			get {
+				switch (Playstyle) {
+				case Menu.EFBlanket:
+					return 0.99;
+				case Menu.Ultimate:
+					return 0.97;
+				case Menu.Aggressive:
+					return 0.97;			
+				case Menu.Normal:
+				default:
+					return 0.97;
+				case Menu.Conservative:
+					return 0.97;
 				}
 			}
 		}
@@ -264,20 +281,60 @@ namespace ReBot
 			}
 		}
 
-		public double HR {
+
+		public double HSHeal {
 			get {
 				switch (Playstyle) {
 				case Menu.EFBlanket:
 					return 0;
 				case Menu.Ultimate:
-					return 0.80;
+					return 0.98;
 				case Menu.Aggressive:
-					return 0.70;		
+					return 0.98;			
 				case Menu.Normal:
 				default:
-					return 0.65;
+					return 0.98;
 				case Menu.Conservative:
-					return 0.60;
+					return 0.98;
+				}
+			}
+		}
+
+
+		public double HPHeal {
+			get {
+				switch (Playstyle) {
+				case Menu.EFBlanket:
+					return 0;
+				case Menu.Ultimate:
+					return 0.99;
+				case Menu.Aggressive:
+					return 0.89;			
+				case Menu.Normal:
+				default:
+					return 0.99;
+				case Menu.Conservative:
+					return 0.99;
+				}
+			}
+		}
+
+
+
+		public double HoP {
+			get {
+				switch (Playstyle) {
+				case Menu.EFBlanket:
+					return 0;
+				case Menu.Ultimate:
+					return 0.35;
+				case Menu.Aggressive:
+					return 0.25;			
+				case Menu.Normal:
+				default:
+					return 0.20;
+				case Menu.Conservative:
+					return 0.15;
 				}
 			}
 		}
@@ -308,16 +365,6 @@ namespace ReBot
 		
 			if (!Target.IsInCombatRange && Me.MovementSpeed > 0 && Me.MovementSpeed < MovementSpeed.NormalRunning) {
 				if (Emancipate ())
-					return true;
-			}
-			return false;
-		}
-
-		public bool Clean (UnitObject u = null)
-		{
-			u = u ?? Me;
-			if (Range (40, u) && u.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType))) {
-				if (Cleanse (u))
 					return true;
 			}
 			return false;
@@ -461,86 +508,6 @@ namespace ReBot
 		}
 
 		// Healer
-		public bool UseBeaconofLight ()
-		{
-			if (Usable ("Beacon of Light")) {
-				if (Me.Focus != null) {
-					if (Me.Focus.IsFriendly && Range (60, Me.Focus) && !Me.Focus.HasAura ("Beacon of Light", true)) {
-						if (BeaconofLight (Me.Focus))
-							return true;
-					}
-				} else if (Tank != null) {
-					if (!Tank.HasAura ("Beacon of Light", true)) {
-						if (BeaconofLight (Tank))
-							return true;
-					}
-				} else if (LowestPlayer != null) {
-					if (!LowestPlayer.HasAura ("Beacon of Light", true) && !LowestPlayer.HasAura ("Beacon of Faith", true)) {
-						if (BeaconofLight (LowestPlayer))
-							return true;
-					}
-				}
-			}
-			return false;
-		}
-
-		public bool UseSacredShield ()
-		{
-			if (Usable ("Sacred Shield")) {
-				if (Me.Focus != null) {
-					if (Me.Focus.IsFriendly && Range (40, Me.Focus) && !Me.Focus.HasAura ("Sacred Shield", true)) {
-						if (SacredShield (Me.Focus))
-							return true;
-					}
-				} else if (Tank != null) {
-					if (!Tank.HasAura ("Sacred Shield", true)) {
-						if (SacredShield (Tank))
-							return true;
-					}
-				} else {
-					if (!Me.HasAura ("Sacred Shield", true)) {
-						if (SacredShield (Me))
-							return true;
-					}
-				}
-
-				if (LowestPlayer != null) {
-					if (!LowestPlayer.HasAura ("Sacred Shield", true)) {
-						if (SacredShield (LowestPlayer))
-							return true;
-					}
-				}
-			}
-			return false;
-		}
-
-		public bool UseEternalFlame ()
-		{
-			if (HolyPower > 0 && Usable ("Eternal Flame")) {
-				if (Me.Focus != null) {
-					if (Me.Focus.IsFriendly && Range (40, Me.Focus) && Health (Me.Focus) < 0.95 && !Me.Focus.HasAura ("Eternal Flame", true)) {
-						if (EternalFlame (Me.Focus))
-							return true;
-					}
-				} else if (Tank != null) {
-					if (!Tank.HasAura ("Eternal Flame", true) && Health (Tank) < 0.95) {
-						if (EternalFlame (Tank))
-							return true;
-					}
-				} else if (LowestPlayer != null) {
-					if (!LowestPlayer.HasAura ("Eternal Flame", true) && Health (LowestPlayer) < 0.95) {
-						if (EternalFlame (LowestPlayer))
-							return true;
-					}
-				} else {
-					if (!Me.HasAura ("Eternal Flame", true) && Health (Me) < 0.95) {
-						if (EternalFlame (Me))
-							return true;
-					}
-				}
-			}
-			return false;
-		}
 
 
 		public bool UseWarningHeal ()
@@ -579,11 +546,11 @@ namespace ReBot
 					if (WordofGlory ())
 						return true;
 				}
-				if (Health () <= HL) {
+				if (Health () <= HolyLightHealth) {
 					if (HolyLight ())
 						return true;
 				}
-				if (Health () <= FL) {
+				if (Health () <= FlashofLightHealth) {
 					if (FlashofLight ())
 						return true;
 				}
@@ -600,21 +567,12 @@ namespace ReBot
 			}
 			if (HolyPower <= MaxHolyPower && LowestPlayer != null) {
 				if (LowestPlayerCount (0.8) >= AOECount) {
-					if (Health (LowestPlayer) <= HR && HolyRadiance (LowestPlayer))
+					if (Health (LowestPlayer) <= HolyRadianceHealth && HolyRadiance (LowestPlayer))
 						return true;
 				} else {
 					if (HolyShock (LowestPlayer))
 						return true;
 				}
-			}
-			return false;
-		}
-
-		public bool CleanAll ()
-		{
-			if (Usable ("Cleanse")) {
-				Unit = PartyMembers.Where (u => u.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
-				return Player != null && Cleanse (Player);
 			}
 			return false;
 		}
@@ -707,6 +665,7 @@ namespace ReBot
 			return Usable ("Holy Shock") && Range (40, u) && C ("Holy Shock", u);
 		}
 
+		// Вечное пламя
 		public bool EternalFlame (UnitObject u = null)
 		{
 			u = u ?? Target;
