@@ -193,7 +193,7 @@ namespace ReBot
 					return true;
 			}
 			//	actions.prot+=/bloodbath,if=talent.bloodbath.enabled&((cooldown.dragon_roar.remains=0&talent.dragon_roar.enabled)|(cooldown.storm_bolt.remains=0&talent.storm_bolt.enabled)|talent.shockwave.enabled)
-			if (Danger () && HasSpell ("Bloodbath") && ((Cooldown ("Dragon Roar") == 0 && HasSpell ("Dragon Roar")) || (Cooldown ("Storm Bolt") == 0 && HasSpell ("Storm Bolt")) || HasSpell ("Shockwave")))
+			if (Danger (Target, 8) && HasSpell ("Bloodbath") && ((Cooldown ("Dragon Roar") == 0 && HasSpell ("Dragon Roar")) || (Cooldown ("Storm Bolt") == 0 && HasSpell ("Storm Bolt")) || HasSpell ("Shockwave")))
 				Bloodbath ();
 			//	actions.prot+=/avatar,if=talent.avatar.enabled&((cooldown.ravager.remains=0&talent.ravager.enabled)|(cooldown.dragon_roar.remains=0&talent.dragon_roar.enabled)|(talent.storm_bolt.enabled&cooldown.storm_bolt.remains=0)|(!(talent.dragon_roar.enabled|talent.ravager.enabled|talent.storm_bolt.enabled)))
 			if (HasSpell ("Avatar") && ((Cooldown ("Ravager") == 0 && HasSpell ("Ravager")) || (Cooldown ("Dragon Roar") == 0 && HasSpell ("Dragon Roar")) || (Cooldown ("Storm Bolt") == 0 && HasSpell ("Storm Bolt")) || (!(HasSpell ("Dragon Roar") || HasSpell ("Ravager") || HasSpell ("Storm Bolt")))))
@@ -211,7 +211,7 @@ namespace ReBot
 			if (StormBolt ())
 				return true;
 			//	actions.prot+=/dragon_roar
-			if (Danger ())
+			if (Danger (Target, 8))
 				DragonRoar ();
 			//	actions.prot+=/impending_victory,if=talent.impending_victory.enabled&cooldown.shield_slam.remains<=execute_time
 			if (HasSpell ("Impending Victory") && Cooldown ("Shield Slam") <= 1.5) {
@@ -238,7 +238,7 @@ namespace ReBot
 		public bool ProtAoe ()
 		{
 			//	actions.prot_aoe=bloodbath
-			if (Danger ())
+			if (Danger (Target, 8))
 				Bloodbath ();
 			//	actions.prot_aoe+=/avatar
 			Avatar ();
@@ -350,7 +350,7 @@ namespace ReBot
 			//	actions+=/avatar
 			Avatar ();
 			//	actions+=/bloodbath
-			if (Danger ())
+			if (Danger (Target, 8))
 				Bloodbath ();
 			//	actions+=/use_item,name=vial_of_convulsive_shadows,if=buff.bloodbath.up|buff.avatar.up|buff.shield_charge.up|target.time_to_die<15
 			//	actions+=/blood_fury,if=buff.bloodbath.up|buff.avatar.up|buff.shield_charge.up|target.time_to_die<10
