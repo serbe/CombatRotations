@@ -53,7 +53,7 @@ namespace ReBot
 		public bool MassDispel ()
 		{
 			if (MyGroup.Count > 0) {
-				foreach (PlayerObject p in MyGroup) {
+				foreach (UnitObject p in MyGroup) {
 					if (p.Auras.Any (x => x.IsDebuff && "Magic,Poison,Disease".Contains (x.DebuffType)) && Detox (p))
 						return true;
 				}

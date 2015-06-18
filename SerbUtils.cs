@@ -72,8 +72,8 @@ namespace ReBot
 		public int PlayerFigthWithTarget (UnitObject u)
 		{
 			int x = 0;
-			foreach (PlayerObject p in PartyMembers) {
-				if (!p.IsDead && u.IsPlayer && !p.IsHealer && p.Target == u) {
+			foreach (UnitObject p in PartyMembers) {
+				if (!p.IsDead && u.IsPlayer && !IsHealer (p) && p.Target == u) {
 					x++;
 				}
 			}
@@ -556,15 +556,15 @@ namespace ReBot
 
 		// Party
 
-		public PlayerObject Healer {
+		public UnitObject Healer {
 			get {
 				return Healers.DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
-		public IEnumerable<PlayerObject> Healers {
+		public IEnumerable<UnitObject> Healers {
 			get {
-				return MyGroup.Where (p => p.IsHealer).Distinct ();
+				return MyGroup.Where (p => IsHealer (p)).Distinct ();
 			}
 		}
 

@@ -81,12 +81,12 @@ namespace RebotClasses
 
 		public IEnumerable<UnitObject> PartyMembers ()
 		{
-			return !MeIsInProvingGrounds ? myParty () : pgParty ();
+			return !MeIsInProvingGrounds ? MyParty () : pgParty ();
 		}
 
-		public IEnumerable<UnitObject> myParty ()
+		public IEnumerable<UnitObject> MyParty ()
 		{
-			var list = new List<PlayerObject> ();
+			List<PlayerObject> list;
 			list = Group.GetGroupMemberObjects ();
 			list.Add (Me);
 			return list.Distinct ();
