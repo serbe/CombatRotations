@@ -21,7 +21,7 @@ namespace ReBot
 		public bool InCombat;
 		public UnitObject Unit;
 		public UnitObject InterruptTarget;
-		public PlayerObject Player;
+		//		public PlayerObject Player;
 		public IEnumerable<UnitObject> MaxCycle;
 		public String RangedAttack = "Throw";
 		public bool InRun;
@@ -320,12 +320,12 @@ namespace ReBot
 			return null;
 		}
 
-		public PlayerObject BestAOEPlayer (int spellRange, int aoeRange, int minCount, double minHealth = 1)
+		public UnitObject BestAOEPlayer (int spellRange, int aoeRange, int minCount, double minHealth = 1)
 		{
-			Player = PartyMembers.Where (u => Range (spellRange, u) && Health (u) <= minHealth).OrderByDescending (u => PartyMembers.Count (o => Vector3.Distance (u.Position, o.Position) <= aoeRange)).DefaultIfEmpty (null).FirstOrDefault ();
-			if (Player != null) {
-				if (Enemy.Where (u => Vector3.Distance (u.Position, Player.Position) <= aoeRange).ToList ().Count >= minCount)
-					return Player;
+			Unit = PartyMembers.Where (u => Range (spellRange, u) && Health (u) <= minHealth).OrderByDescending (u => PartyMembers.Count (o => Vector3.Distance (u.Position, o.Position) <= aoeRange)).DefaultIfEmpty (null).FirstOrDefault ();
+			if (Unit != null) {
+				if (Enemy.Where (u => Vector3.Distance (u.Position, Unit.Position) <= aoeRange).ToList ().Count >= minCount)
+					return Unit;
 			}
 			return null;
 		}
@@ -568,28 +568,41 @@ namespace ReBot
 			}
 		}
 
-		public bool IsTank (PlayerObject u)
+		public bool IsTank (UnitObject unit)
 		{
-			return Tanks.Contains (u); 
+			return Tanks ().Contains (unit); 
 		}
 
-		public bool IsHealer (PlayerObject u)
+		public bool IsHealer (UnitObject u)
 		{
 			return Healers.Contains (u); 
 		}
 
-		public IEnumerable<PlayerObject> Tanks {
+		public IEnumerable<UnitObject> Tanks ()
+		{
+			if (InPG) {
+				return API.Units.Where (p => p.Name == "Oto the Protector");
+			}
+			return Group.GetGroupMemberObjects ().Where (p => p.IsTank).Distinct ();
+		}
+
+		public UnitObject Tank {
 			get {
-				if (InPG) {
-					return (IEnumerable<PlayerObject>)API.Units.Where (p => p.Name == "Oto the Protector" && !p.IsDead);
+				foreach (UnitObject u in Tanks()) {
+					if (u != null && !u.IsDead && Range (40, u) && u.InCombat)
+						return u;
 				}
-				return MyGroup.Where (p => p.IsTank).Distinct ();
+				return null;
 			}
 		}
 
-		public PlayerObject Tank {
+		public UnitObject Tank2 {
 			get {
-				return Tanks.Where (p => !p.IsDead).DefaultIfEmpty (null).FirstOrDefault ();
+				foreach (UnitObject u in Tanks()) {
+					if (u != null && !u.IsDead && Range (40, u) && u.InCombat)
+						return u;
+				}
+				return null;
 			}
 		}
 
@@ -619,7 +632,7 @@ namespace ReBot
 			}
 		}
 
-		public IEnumerable<PlayerObject> MyParty {
+		public IEnumerable<UnitObject> MyParty {
 			get {
 				List<PlayerObject> Units;
 				Units = MyGroup;
@@ -644,24 +657,24 @@ namespace ReBot
 			}
 		}
 
-		public IEnumerable<PlayerObject> PartyMembers {
+		public IEnumerable<UnitObject> PartyMembers {
 			get {
-				return InPG ? (IEnumerable<PlayerObject>)PGParty : MyParty;
+				return InPG ? PGParty : MyParty;
 			}
 		}
 
-		public PlayerObject LowestPlayer {
+		public UnitObject LowestPlayer {
 			get {
 				return PartyMembers.Where (u => !u.IsDead && Range (40, u) && Health (u) < 1).OrderBy (u => Health (u)).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
-		public PlayerObject Lowest (double h, int r = 40)
+		public UnitObject Lowest (double h, int r = 40)
 		{
 			return PartyMembers.Where (p => !p.IsDead && Health (p) < h && Range (r, p)).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
 		}
 
-		public PlayerObject LowestNoAura (double h, string a, int r = 40)
+		public UnitObject LowestNoAura (double h, string a, int r = 40)
 		{
 			return PartyMembers.Where (p => !p.IsDead && Health (p) < h && Range (r, p) && !p.HasAura (a, true)).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
 		}

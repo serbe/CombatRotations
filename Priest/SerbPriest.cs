@@ -52,55 +52,55 @@ namespace ReBot
 
 		// Targets
 
-		public PlayerObject HealTarget {
+		public UnitObject HealTarget {
 			get {
 				return Lowest (GetDR (HealHealthDungeon, HealHealthRaid));
 			}
 		}
 
-		public PlayerObject FlashHealTarget {
+		public UnitObject FlashHealTarget {
 			get {
 				return Lowest (GetDR (FHHealthDungeon, FHHealthRaid));
 			}
 		}
 
-		public PlayerObject PoHTarget {
+		public UnitObject PoHTarget {
 			get {
 				return LowestPlayerCount (GetDR (PoHHealthDungeon, PoHHealthRaid)) > GetDR (PoHPlayersDungeon, PoHPlayersRaid) ? LowestPlayer : null;
 			}
 		}
 
-		public PlayerObject PoMTarget {
+		public UnitObject PoMTarget {
 			get {
 				return Lowest (GetDR (PoMHealthDungeon, PoMHealthRaid));
 			}
 		}
 
-		public PlayerObject PenanceTarget {
+		public UnitObject PenanceTarget {
 			get {
 				return Lowest (GetDR (PenanceHealthDungeon, PenanceHealthRaid));
 			}
 		}
 
-		public PlayerObject CascadeHealthTarget {
+		public UnitObject CascadeHealthTarget {
 			get {
 				return LowestPlayerCount (GetDR (CascadeHealthDungeon, CascadeHealthRaid)) > GetDR (CascadePlayersDungeon, CascadePlayersRaid) ? LowestPlayer : null;
 			}
 		}
 
-		public PlayerObject HaloHealthTarget {
+		public UnitObject HaloHealthTarget {
 			get {
 				return LowestPlayerCount (GetDR (HaloHealthDungeon, HaloHealthRaid), 30) > GetDR (HaloPlayersDungeon, HaloPlayersRaid) ? LowestPlayer : null;
 			}
 		}
 
-		public PlayerObject PurifyTarget {
+		public UnitObject PurifyTarget {
 			get {
 				return PartyMembers.Where (u => Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic,Disease".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
-		public PlayerObject DispelTarget {
+		public UnitObject DispelTarget {
 			get {
 				return PartyMembers.Where (u => Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
 			}
@@ -111,7 +111,7 @@ namespace ReBot
 			return API.Units.Where (u => u != null && !u.IsDead && u.IsAttackable && (u.InCombat && u.IsTargetingMeOrPets) && !Me.IsNotInFront (u) && Range (30, u) && ((r == 0 && !u.HasAura ("Shadow Word: Pain", true)) || (r > 0 && u.HasAura ("Shadow Word: Pain", true) && u.AuraTimeRemaining ("Shadow Word: Pain", true) <= r))).DefaultIfEmpty (null).FirstOrDefault ();
 		}
 
-		public PlayerObject PWSTarget {
+		public UnitObject PWSTarget {
 			get {
 				return PartyMembers.Where (u => !u.HasAura ("Power Word: Shield") && !u.HasAura ("Weakened Soul") && (Health (u) <= GetDR (PWSHealthDungeon, PWSHealthRaid) || (IsTank (u) && PWSTank))).DefaultIfEmpty (null).FirstOrDefault ();
 			}
@@ -123,7 +123,7 @@ namespace ReBot
 			}
 		}
 
-		public PlayerObject ClarityofWillTarget {
+		public UnitObject ClarityofWillTarget {
 			get {
 				return Lowest (ClarityofWillHealth);
 			}

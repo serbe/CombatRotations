@@ -173,8 +173,8 @@ namespace ReBot
 		{
 			if (Usable ("Misdirection") && Me.HasAlivePet) {
 				if (InInstance || InRaid) {
-					Player = MyGroup.Where (u => !u.IsDead && Range (100, u) && u.IsTank).DefaultIfEmpty (null).FirstOrDefault ();
-					if (Player != null && Misdirection (Player))
+					Unit = MyGroup.Where (u => !u.IsDead && Range (100, u) && u.IsTank).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null && Misdirection (Unit))
 						return true;
 				}
 				if (Me.Focus != null && Misdirection (Me.Focus))

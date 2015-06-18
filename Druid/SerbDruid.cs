@@ -190,12 +190,12 @@ namespace ReBot
 
 		public bool HealPartyMember ()
 		{
-			Player = MyGroup.Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingParty && !x.HasAura ("Rejuvenation", true)).DefaultIfEmpty (null).FirstOrDefault ();
-			if (Player != null && Rejuvenation (Player, true))
+			Unit = MyGroup.Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingParty && !x.HasAura ("Rejuvenation", true)).DefaultIfEmpty (null).FirstOrDefault ();
+			if (Unit != null && Rejuvenation (Unit, true))
 				return true;
 			if (Me.HasAura ("Predatory Swiftness")) {
-				Player = MyGroup.Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingParty && Health (x) < Health (Me)).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Player != null && HealingTouch (Player, true))
+				Unit = MyGroup.Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingParty && Health (x) < Health (Me)).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && HealingTouch (Unit, true))
 					return true;
 			}
 			if (InArena && UseHealingTouch && !Me.IsMoving && GroupMemberCount > 1) {

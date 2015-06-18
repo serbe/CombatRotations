@@ -38,7 +38,7 @@ namespace ReBot
 			
 		// Targets
 
-		public PlayerObject CleanseTarget {
+		public UnitObject CleanseTarget {
 			get {
 				return PartyMembers.Where (u => Range (40, u) && u.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
 			}
@@ -90,27 +90,27 @@ namespace ReBot
 			}
 		}
 
-		public PlayerObject LightofDawnTarget {
+		public UnitObject LightofDawnTarget {
 			get {
 				return Usable ("Light of Dawn") && HolyPower >= 3 ? Lowest (0.95, 30) : null;
 			}
 		}
 
 		// Вспышка Света
-		public PlayerObject FlashofLightTarget {
+		public UnitObject FlashofLightTarget {
 			get {
 				return Usable ("Flash of Light") ? Lowest (FlashofLightHealth) : null;
 			}
 		}
 
-		public PlayerObject HolyRadianceTarget {
+		public UnitObject HolyRadianceTarget {
 			get {
 				return Usable ("Holy Radiance") ? Lowest (HolyRadianceHealth) : null;
 			}
 		}
 
 		// Свет небес
-		public PlayerObject HolyLightTarget {
+		public UnitObject HolyLightTarget {
 			get {
 				return Usable ("Holy Light") ? Lowest (HolyLightHealth) : null;
 			}
@@ -139,7 +139,7 @@ namespace ReBot
 			}
 		}
 
-		public PlayerObject HandOfProtectionTarget {
+		public UnitObject HandOfProtectionTarget {
 			get {
 				return PartyMembers.Where (p => !p.IsDead && Health (p) <= HandofProtectionHealth && Range (40, p) && (!IsTank (p) || p == Me || IsHealer (p))).DefaultIfEmpty (null).FirstOrDefault ();
 			}
@@ -478,19 +478,19 @@ namespace ReBot
 		{
 			if (InArena || InBg) {
 				if (Usable ("Rebuke")) {
-					Player = API.Players.Where (x => x.IsPlayer && x.IsEnemy && x.IsHealer && Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (Player != null && Rebuke (Player))
+					Unit = API.Players.Where (x => x.IsPlayer && x.IsEnemy && x.IsHealer && Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null && Rebuke (Unit))
 						return true; 
-					Player = API.Players.Where (x => x.IsPlayer && x.IsEnemy && Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (Player != null && Rebuke (Player))
+					Unit = API.Players.Where (x => x.IsPlayer && x.IsEnemy && Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null && Rebuke (Unit))
 						return true; 
 				}
 				if (Cooldown ("Fist of Justice") == 0) {
-					Player = API.Players.Where (x => x.IsPlayer && x.IsEnemy && x.IsHealer && Range (20, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (Player != null && FistofJustice (Player))
+					Unit = API.Players.Where (x => x.IsPlayer && x.IsEnemy && x.IsHealer && Range (20, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null && FistofJustice (Unit))
 						return true;
-					Player = API.Players.Where (x => x.IsPlayer && x.IsEnemy && Range (20, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
-					if (Player != null && FistofJustice (Player))
+					Unit = API.Players.Where (x => x.IsPlayer && x.IsEnemy && Range (20, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					if (Unit != null && FistofJustice (Unit))
 						return true;
 				}
 			} else {
@@ -580,8 +580,8 @@ namespace ReBot
 		public bool RessurectAll ()
 		{
 			if (InGroup && Usable ("Redemption")) {
-				Player = MyGroup.Where (p => p.IsDead).DefaultIfEmpty (null).FirstOrDefault ();
-				if (Player != null && Redemption (Player))
+				Unit = MyGroup.Where (p => p.IsDead).DefaultIfEmpty (null).FirstOrDefault ();
+				if (Unit != null && Redemption (Unit))
 					return true;
 			}
 			return false;
