@@ -22,87 +22,87 @@ namespace ReBot
 		public string Spell = "";
 
 		public double PainSuppressionHealth = 0.45;
-		double PWSHealthDungeon = 0.95;
-		double PWSHealthRaid = 0.85;
-		double ClarityofWillHealth = 0.40;
-		double CascadeHealthDungeon = 0.85;
-		double CascadeHealthRaid = 0.80;
-		int CascadePlayersDungeon = 2;
-		int CascadePlayersRaid = 5;
-		double HaloHealthDungeon = 0.85;
-		double HaloHealthRaid = 0.80;
-		double PenanceHealthDungeon = 0.90;
-		double PenanceHealthRaid = 0.80;
-		double PoMHealthDungeon = 0.95;
-		double PoMHealthRaid = 0.85;
-		double PoHHealthDungeon = 0.75;
-		double PoHHealthRaid = 0.65;
-		double FHHealthDungeon = 0.70;
-		double FHHealthRaid = 0.50;
-		double HealHealthDungeon = 0.85;
-		double HealHealthRaid = 0.75;
-		//		double HolyNovaHealthDungeon = 0.80;
-		//		double HolyNovaHealthRaid = 0.70;
-		int HolyNovaPlayersDungeon = 2;
-		int HolyNovaPlayersRaid = 5;
-		int PoHPlayersDungeon = 3;
-		int PoHPlayersRaid = 5;
-		int HaloPlayersDungeon = 2;
-		int HaloPlayersRaid = 5;
+		const double PWSHealthDungeon = 0.95;
+		const double PWSHealthRaid = 0.85;
+		const double ClarityofWillHealth = 0.40;
+		const double CascadeHealthDungeon = 0.85;
+		const double CascadeHealthRaid = 0.80;
+		const int CascadePlayersDungeon = 2;
+		const int CascadePlayersRaid = 5;
+		const double HaloHealthDungeon = 0.85;
+		const double HaloHealthRaid = 0.80;
+		const double PenanceHealthDungeon = 0.90;
+		const double PenanceHealthRaid = 0.80;
+		const double PoMHealthDungeon = 0.95;
+		const double PoMHealthRaid = 0.85;
+		const double PoHHealthDungeon = 0.75;
+		const double PoHHealthRaid = 0.65;
+		const double FHHealthDungeon = 0.70;
+		const double FHHealthRaid = 0.50;
+		const double HealHealthDungeon = 0.85;
+		const double HealHealthRaid = 0.75;
+		//		const double HolyNovaHealthDungeon = 0.80;
+		//		const double HolyNovaHealthRaid = 0.70;
+		const int HolyNovaPlayersDungeon = 2;
+		const int HolyNovaPlayersRaid = 5;
+		const int PoHPlayersDungeon = 3;
+		const int PoHPlayersRaid = 5;
+		const int HaloPlayersDungeon = 2;
+		const int HaloPlayersRaid = 5;
 
 		// Targets
 
-		public UnitObject HealTarget {
+		public PlayerObject HealTarget {
 			get {
 				return Lowest (GetDR (HealHealthDungeon, HealHealthRaid));
 			}
 		}
 
-		public UnitObject FlashHealTarget {
+		public PlayerObject FlashHealTarget {
 			get {
 				return Lowest (GetDR (FHHealthDungeon, FHHealthRaid));
 			}
 		}
 
-		public UnitObject PoHTarget {
+		public PlayerObject PoHTarget {
 			get {
 				return LowestPlayerCount (GetDR (PoHHealthDungeon, PoHHealthRaid)) > GetDR (PoHPlayersDungeon, PoHPlayersRaid) ? LowestPlayer : null;
 			}
 		}
 
-		public UnitObject PoMTarget {
+		public PlayerObject PoMTarget {
 			get {
 				return Lowest (GetDR (PoMHealthDungeon, PoMHealthRaid));
 			}
 		}
 
-		public UnitObject PenanceTarget {
+		public PlayerObject PenanceTarget {
 			get {
 				return Lowest (GetDR (PenanceHealthDungeon, PenanceHealthRaid));
 			}
 		}
 
-		public UnitObject CascadeHealthTarget {
+		public PlayerObject CascadeHealthTarget {
 			get {
 				return LowestPlayerCount (GetDR (CascadeHealthDungeon, CascadeHealthRaid)) > GetDR (CascadePlayersDungeon, CascadePlayersRaid) ? LowestPlayer : null;
 			}
 		}
 
-		public UnitObject HaloHealthTarget {
+		public PlayerObject HaloHealthTarget {
 			get {
 				return LowestPlayerCount (GetDR (HaloHealthDungeon, HaloHealthRaid), 30) > GetDR (HaloPlayersDungeon, HaloPlayersRaid) ? LowestPlayer : null;
 			}
 		}
 
-		public UnitObject PurifyTarget {
+		public PlayerObject PurifyTarget {
 			get {
-				return PartyMembers.Where (u => Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic,Disease".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
+				return MyGroup.Where (u => Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic,Disease".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
-		public UnitObject DispelTarget {
+		public PlayerObject DispelTarget {
 			get {
-				return PartyMembers.Where (u => Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
+				return MyGroup.Where (u => Range (30, u) && u.Auras.Any (a => a.IsDebuff && "Magic".Contains (a.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
@@ -111,9 +111,9 @@ namespace ReBot
 			return API.Units.Where (u => u != null && !u.IsDead && u.IsAttackable && (u.InCombat && u.IsTargetingMeOrPets) && !Me.IsNotInFront (u) && Range (30, u) && ((r == 0 && !u.HasAura ("Shadow Word: Pain", true)) || (r > 0 && u.HasAura ("Shadow Word: Pain", true) && u.AuraTimeRemaining ("Shadow Word: Pain", true) <= r))).DefaultIfEmpty (null).FirstOrDefault ();
 		}
 
-		public UnitObject PWSTarget {
+		public PlayerObject PWSTarget {
 			get {
-				return PartyMembers.Where (u => !u.HasAura ("Power Word: Shield") && !u.HasAura ("Weakened Soul") && (Health (u) <= GetDR (PWSHealthDungeon, PWSHealthRaid) || (IsTank (u) && PWSTank))).DefaultIfEmpty (null).FirstOrDefault ();
+				return MyGroup.Where (u => !u.HasAura ("Power Word: Shield") && !u.HasAura ("Weakened Soul") && (Health (u) <= GetDR (PWSHealthDungeon, PWSHealthRaid) || (IsTank (u) && PWSTank))).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
@@ -162,22 +162,22 @@ namespace ReBot
 
 			if (Usable ("Silence")) {
 				if (InArena || InBg) {
-					Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && Silence (Unit))
 						return true;
 				} else {
-					Unit = targets.Where (u => u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = targets.Where (u => u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && Silence (Unit))
 						return true;
 				}
 			}
 			if (Usable ("Psychic Horror") && Orb >= 1) {
 				if (InArena || InBg) {
-					Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCasting && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCasting && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && PsychicHorror (Unit))
 						return true;
 				} else {
-					Unit = targets.Where (u => u.IsCasting && !IsBoss (u) && (IsElite (u) || IsPlayer (u)) && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = targets.Where (u => u.IsCasting && !IsBoss (u) && (IsElite (u) || IsPlayer (u)) && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && PsychicHorror (Unit))
 						return true;
 				}
@@ -386,7 +386,7 @@ namespace ReBot
 		public bool SetShieldAll ()
 		{
 			if (InArena) {
-				Unit = MyGroup.Where (u => !u.IsDead && Range (40, u) && !u.HasAura ("Power Word: Shield")).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = MyGroup.Where (u => !u.IsDead && Range (40, u) && !u.HasAura ("Power Word: Shield")).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && PowerWordShield (Unit))
 					return true;
 			}

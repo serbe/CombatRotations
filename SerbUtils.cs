@@ -19,7 +19,7 @@ namespace ReBot
 		public DateTime StartSleepTime;
 		public DateTime StartRun;
 		public bool InCombat;
-		public UnitObject Unit;
+		//		public UnitObject Unit;
 		public UnitObject InterruptTarget;
 		//		public PlayerObject Player;
 		public IEnumerable<UnitObject> MaxCycle;
@@ -72,7 +72,7 @@ namespace ReBot
 		public int PlayerFigthWithTarget (UnitObject u)
 		{
 			int x = 0;
-			foreach (UnitObject p in PartyMembers) {
+			foreach (PlayerObject p in MyParty) {
 				if (!p.IsDead && u.IsPlayer && !IsHealer (p) && p.Target == u) {
 					x++;
 				}
@@ -94,8 +94,8 @@ namespace ReBot
 		public int ActiveEnemiesPlayer (int range)
 		{
 			int x = 0;
-			foreach (UnitObject u in API.CollectUnits(range)) {
-				if ((u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable && u.InCombat && u.IsPlayer) {
+			foreach (PlayerObject u in API.CollectUnits(range)) {
+				if (u.IsPlayer && (u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable && u.InCombat) {
 					x++;
 				}
 			}
@@ -107,16 +107,21 @@ namespace ReBot
 			t = t ?? Target;
 			int x = 0;
 			foreach (UnitObject u in API.CollectUnits(45)) {
-				if (Vector3.Distance (t.Position, u.Position) <= r && (u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable) {
+				if ((u.IsEnemy || Me.Target == u) && !u.IsDead && u.IsAttackable && Vector3.Distance (t.Position, u.Position) <= r) {
 					x++;
 				}
 			}
 			return x;
 		}
 
-		public IEnumerable<UnitObject> EnemyPlayerTargetToMe {
+		public PlayerObject EnemyPlayerTargetToMe {
 			get {
-				return Enemy.Where (p => p.IsPlayer && p.Target == Me && p.CanParticipateInCombat && Range (40, p)).DefaultIfEmpty (null);
+				foreach (PlayerObject u in API.CollectUnits(45)) {
+					if (!u.IsDead && u.IsEnemy && u.Target == Me) {
+						return u;
+					}
+				}
+				return null;
 			}
 		}
 
@@ -312,7 +317,7 @@ namespace ReBot
 
 		public UnitObject BestAOETarget (int spellRange, int aoeRange, int minCount)
 		{
-			Unit = Enemy.Where (u => Range (spellRange, u)).OrderByDescending (u => Enemy.Count (o => Vector3.Distance (u.Position, o.Position) <= aoeRange)).DefaultIfEmpty (null).FirstOrDefault ();
+			var Unit = Enemy.Where (u => Range (spellRange, u)).OrderByDescending (u => Enemy.Count (o => Vector3.Distance (u.Position, o.Position) <= aoeRange)).DefaultIfEmpty (null).FirstOrDefault ();
 			if (Unit != null) {
 				if (Enemy.Where (u => Vector3.Distance (u.Position, Unit.Position) <= aoeRange).ToList ().Count >= minCount)
 					return Unit;
@@ -320,12 +325,12 @@ namespace ReBot
 			return null;
 		}
 
-		public UnitObject BestAOEPlayer (int spellRange, int aoeRange, int minCount, double minHealth = 1)
+		public PlayerObject BestAOEPlayer (int spellRange, int aoeRange, int minCount, double minHealth = 1)
 		{
-			Unit = PartyMembers.Where (u => Range (spellRange, u) && Health (u) <= minHealth).OrderByDescending (u => PartyMembers.Count (o => Vector3.Distance (u.Position, o.Position) <= aoeRange)).DefaultIfEmpty (null).FirstOrDefault ();
-			if (Unit != null) {
-				if (Enemy.Where (u => Vector3.Distance (u.Position, Unit.Position) <= aoeRange).ToList ().Count >= minCount)
-					return Unit;
+			var Player = MyParty.Where (u => Range (spellRange, u) && Health (u) <= minHealth).OrderByDescending (u => MyParty.Count (o => Vector3.Distance (u.Position, o.Position) <= aoeRange)).DefaultIfEmpty (null).FirstOrDefault ();
+			if (Player != null) {
+				if (Enemy.Where (u => Vector3.Distance (u.Position, Player.Position) <= aoeRange).ToList ().Count >= minCount)
+					return Player;
 			}
 			return null;
 		}
@@ -556,39 +561,39 @@ namespace ReBot
 
 		// Party
 
-		public UnitObject Healer {
+		public PlayerObject Healer {
 			get {
 				return Healers.DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
-		public IEnumerable<UnitObject> Healers {
+		public IEnumerable<PlayerObject> Healers {
 			get {
 				return MyGroup.Where (p => IsHealer (p)).Distinct ();
 			}
 		}
 
-		public bool IsTank (UnitObject unit)
+		public bool IsTank (PlayerObject unit)
 		{
 			return Tanks ().Contains (unit); 
 		}
 
-		public bool IsHealer (UnitObject u)
+		public bool IsHealer (PlayerObject u)
 		{
 			return Healers.Contains (u); 
 		}
 
-		public IEnumerable<UnitObject> Tanks ()
+		public IEnumerable<PlayerObject> Tanks ()
 		{
-			if (InPG) {
-				return API.Units.Where (p => p.Name == "Oto the Protector");
-			}
+//			if (InPG) {
+//				return API.Units.Where (p => p.Name == "Oto the Protector");
+//			}
 			return Group.GetGroupMemberObjects ().Where (p => p.IsTank).Distinct ();
 		}
 
-		public UnitObject Tank {
+		public PlayerObject Tank {
 			get {
-				foreach (UnitObject u in Tanks()) {
+				foreach (PlayerObject u in Tanks()) {
 					if (u != null && !u.IsDead && Range (40, u) && u.InCombat)
 						return u;
 				}
@@ -596,9 +601,9 @@ namespace ReBot
 			}
 		}
 
-		public UnitObject Tank2 {
+		public PlayerObject Tank2 {
 			get {
-				foreach (UnitObject u in Tanks()) {
+				foreach (PlayerObject u in Tanks()) {
 					if (u != null && !u.IsDead && Range (40, u) && u.InCombat)
 						return u;
 				}
@@ -632,7 +637,7 @@ namespace ReBot
 			}
 		}
 
-		public IEnumerable<UnitObject> MyParty {
+		public IEnumerable<PlayerObject> MyParty {
 			get {
 				List<PlayerObject> Units;
 				Units = MyGroup;
@@ -657,34 +662,28 @@ namespace ReBot
 			}
 		}
 
-		public IEnumerable<UnitObject> PartyMembers {
+		public PlayerObject LowestPlayer {
 			get {
-				return InPG ? PGParty : MyParty;
+				return MyParty.Where (u => !u.IsDead && Range (40, u) && Health (u) < 1).OrderBy (u => Health (u)).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
-		public UnitObject LowestPlayer {
-			get {
-				return PartyMembers.Where (u => !u.IsDead && Range (40, u) && Health (u) < 1).OrderBy (u => Health (u)).DefaultIfEmpty (null).FirstOrDefault ();
-			}
-		}
-
-		public UnitObject Lowest (double h, int r = 40)
+		public PlayerObject Lowest (double h, int r = 40)
 		{
-			return PartyMembers.Where (p => !p.IsDead && Health (p) < h && Range (r, p)).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
+			return MyParty.Where (p => !p.IsDead && Health (p) < h && Range (r, p)).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
 		}
 
-		public UnitObject LowestNoAura (double h, string a, int r = 40)
+		public PlayerObject LowestNoAura (double h, string a, int r = 40)
 		{
-			return PartyMembers.Where (p => !p.IsDead && Health (p) < h && Range (r, p) && !p.HasAura (a, true)).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
+			return MyParty.Where (p => !p.IsDead && Health (p) < h && Range (r, p) && !p.HasAura (a, true)).OrderBy (p => Health (p)).DefaultIfEmpty (null).FirstOrDefault ();
 		}
 
 
-		public UnitObject FocusTankorMe (double h, int r = 40)
+		public PlayerObject FocusTankorMe (double h, int r = 40)
 		{
 			if (Me.Focus != null && Me.Focus.IsFriendly) {
-				if (!Me.Focus.IsDead && Range (r, Me.Focus) && Health (Me.Focus) <= h)
-					return Me.Focus;
+				if (Me.Focus.IsPlayer && !Me.Focus.IsDead && Range (r, Me.Focus) && Health (Me.Focus) <= h)
+					return (PlayerObject)Me.Focus;
 			} else if (Tank != null) {
 				if (!Tank.IsDead && Range (r, Tank) && Health (Tank) <= h)
 					return Tank;
@@ -694,11 +693,11 @@ namespace ReBot
 			return null;
 		}
 
-		public UnitObject FocusTankorLowest (double h, int r = 40)
+		public PlayerObject FocusTankorLowest (double h, int r = 40)
 		{
 			if (Me.Focus != null && Me.Focus.IsFriendly) {
-				if (!Me.Focus.IsDead && Range (r, Me.Focus) && Health (Me.Focus) <= h)
-					return Me.Focus;
+				if (Me.Focus.IsPlayer && !Me.Focus.IsDead && Range (r, Me.Focus) && Health (Me.Focus) <= h)
+					return (PlayerObject)Me.Focus;
 			} else if (Tank != null) {
 				if (!Tank.IsDead && Range (r, Tank) && Health (Tank) <= h)
 					return Tank;
@@ -706,11 +705,11 @@ namespace ReBot
 			return Lowest (h);
 		}
 
-		public UnitObject FocusTankorLowestNoAura (double h, string a, int r = 40)
+		public PlayerObject FocusTankorLowestNoAura (double h, string a, int r = 40)
 		{
 			if (Me.Focus != null && Me.Focus.IsFriendly) {
-				if (!Me.Focus.IsDead && Range (r, Me.Focus) && Health (Me.Focus) <= h && !Me.Focus.HasAura (a, true))
-					return Me.Focus;
+				if (Me.Focus.IsPlayer && !Me.Focus.IsDead && Range (r, Me.Focus) && Health (Me.Focus) <= h && !Me.Focus.HasAura (a, true))
+					return (PlayerObject)Me.Focus;
 			} else if (Tank != null) {
 				if (!Tank.IsDead && Range (r, Tank) && Health (Tank) <= h && !Tank.HasAura (a, true))
 					return Tank;
@@ -718,11 +717,11 @@ namespace ReBot
 			return LowestNoAura (h, a);
 		}
 
-		public UnitObject FocusTankorMeNoAura (double h, string a, int r = 40)
+		public PlayerObject FocusTankorMeNoAura (double h, string a, int r = 40)
 		{
 			if (Me.Focus != null && Me.Focus.IsFriendly) {
-				if (!Me.Focus.IsDead && Range (r, Me.Focus) && Health (Me.Focus) <= h && !Me.Focus.HasAura (a, true))
-					return Me.Focus;
+				if (Me.Focus.IsPlayer && !Me.Focus.IsDead && Range (r, Me.Focus) && Health (Me.Focus) <= h && !Me.Focus.HasAura (a, true))
+					return (PlayerObject)Me.Focus;
 			} else if (Tank != null) {
 				if (!Tank.IsDead && Range (r, Tank) && Health (Tank) <= h && !Tank.HasAura (a, true))
 					return Tank;
@@ -734,7 +733,7 @@ namespace ReBot
 
 		public int LowestPlayerCount (double h, int r = 40)
 		{
-			return PartyMembers.Count (p => Health (p) < h && Range (r, p));
+			return MyParty.Count (p => Health (p) < h && Range (r, p));
 		}
 
 		public int AOECount {
@@ -774,7 +773,7 @@ namespace ReBot
 				if (Me.Target != null)
 					API.SetFacing (Me.Target);
 				else if (autoFacing == Facing.TargetAndSelect) {
-					Unit = API.CollectUnits (u => u.IsAttackable && Range (r, u) && u.IsTargetingMeOrPets && u.CanParticipateInCombat && u.InCombat).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = API.CollectUnits (u => u.IsAttackable && Range (r, u) && u.IsTargetingMeOrPets && u.CanParticipateInCombat && u.InCombat).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						Me.SetTarget (Unit);
 						API.SetFacing (Unit);

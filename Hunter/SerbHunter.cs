@@ -157,11 +157,11 @@ namespace ReBot
 		{
 			if (Usable ("Tranquilizing Shot")) {
 				if (InArena || InBg) {
-					Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && x.IsPlayer && x.Auras.Any (a => a.IsStealable)).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && x.IsPlayer && x.Auras.Any (a => a.IsStealable)).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && TranquilizingShot (Unit))
 						return true;
 				} else {
-					Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && x.Auras.Any (a => a.IsStealable)).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && x.Auras.Any (a => a.IsStealable)).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && TranquilizingShot (Unit))
 						return true;
 				}
@@ -173,7 +173,7 @@ namespace ReBot
 		{
 			if (Usable ("Misdirection") && Me.HasAlivePet) {
 				if (InInstance || InRaid) {
-					Unit = MyGroup.Where (u => !u.IsDead && Range (100, u) && u.IsTank).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = MyGroup.Where (u => !u.IsDead && Range (100, u) && u.IsTank).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && Misdirection (Unit))
 						return true;
 				}
@@ -190,7 +190,7 @@ namespace ReBot
 		public bool Interrupt ()
 		{
 			if (Usable ("Counter Shot")) {
-				Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && CounterShot (Unit))
 					return true;
 			}

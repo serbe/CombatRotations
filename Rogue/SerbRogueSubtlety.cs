@@ -310,7 +310,7 @@ namespace ReBot
 
 			// actions.finisher=rupture,cycle_targets=1,if=(!ticking|remains<duration*0.3|(buff.shadow_reflection.remains>8&dot.rupture.remains<12))&target.time_to_die>=8
 			if (Multitarget && Aoe) {
-				Unit = targets.Where (x => x.IsInCombatRangeAndLoS && !IsNotForDamage (x) && (!x.HasAura ("Rupture", true) || (x.AuraTimeRemaining ("Rupture", true) < 7.2 || (Me.AuraTimeRemaining ("Shadow Reflection") > 8 && x.AuraTimeRemaining ("Rupture", true) < 12)))).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = targets.Where (x => x.IsInCombatRangeAndLoS && !IsNotForDamage (x) && (!x.HasAura ("Rupture", true) || (x.AuraTimeRemaining ("Rupture", true) < 7.2 || (Me.AuraTimeRemaining ("Shadow Reflection") > 8 && x.AuraTimeRemaining ("Rupture", true) < 12)))).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (Rupture (Unit))
 						return true;

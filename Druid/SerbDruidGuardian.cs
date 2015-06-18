@@ -103,7 +103,7 @@ namespace ReBot
 		public void MultiTarget ()
 		{
 			if (Usable ("Thrash")) {
-				Unit = Enemy.Where (u => Range (8, u) && !u.HasAura ("Thrash")).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => Range (8, u) && !u.HasAura ("Thrash")).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Thrash ())
 					return;
 			}
@@ -202,7 +202,7 @@ namespace ReBot
 			}
 
 			if (ActiveEnemies (10) > 1) {
-				Unit = Enemy.Where (u => Range (8, u) && !u.HasAura ("Thrash")).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => Range (8, u) && !u.HasAura ("Thrash")).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Thrash (Unit))
 					return;
 			}

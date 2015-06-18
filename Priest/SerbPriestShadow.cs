@@ -203,7 +203,7 @@ namespace ReBot
 			} 
 			//	actions.main+=/shadow_word_death,if=natural_shadow_word_death_range&shadow_orb<=4,cycle_Enemy=1
 			if (Orb <= 4) {
-				Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (ShadowWordDeath (Unit))
 						return true;
@@ -216,7 +216,7 @@ namespace ReBot
 			}
 			//	actions.main+=/devouring_plague,if=shadow_orb=5&!target.dot.devouring_plague_dot.ticking&(talent.surge_of_darkness.enabled|set_bonus.tier17_4pc),cycle_Enemy=1
 			if (Orb == 5 && (HasSpell ("Surge of Darkness") || HasSpell ("Mental Instinct"))) {
-				Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Devouring Plague", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Devouring Plague", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (DevouringPlague (Unit))
 						return true;
@@ -244,7 +244,7 @@ namespace ReBot
 			}
 			//	actions.main+=/devouring_plague,if=shadow_orb>=4&talent.auspicious_spirits.enabled&((cooldown.mind_blast.remains<gcd&!set_bonus.tier17_2pc)|(natural_shadow_word_death_range&cooldown.shadow_word_death.remains<gcd))&!target.dot.devouring_plague_tick.ticking&talent.surge_of_darkness.enabled,cycle_Enemy=1
 			if (Orb >= 4 && HasSpell ("Auspicious Spirits")) {
-				Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && ((Cooldown ("Mind Blast") < 1.5 && !HasSpell ("Mental Instinct")) || (Health (u) < 0.2 && Cooldown ("Shadow Word: Death") < 1.5)) && !u.HasAura ("Devouring Plague", true) && HasSpell ("Surge of Darkness")).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && ((Cooldown ("Mind Blast") < 1.5 && !HasSpell ("Mental Instinct")) || (Health (u) < 0.2 && Cooldown ("Shadow Word: Death") < 1.5)) && !u.HasAura ("Devouring Plague", true) && HasSpell ("Surge of Darkness")).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (DevouringPlague (Unit))
 						return true;
@@ -257,7 +257,7 @@ namespace ReBot
 			}
 			//	actions.main+=/devouring_plague,if=shadow_orb>=3&!talent.auspicious_spirits.enabled&((cooldown.mind_blast.remains<gcd&!set_bonus.tier17_2pc)|(natural_shadow_word_death_range&cooldown.shadow_word_death.remains<gcd))&!target.dot.devouring_plague_tick.ticking&talent.surge_of_darkness.enabled,cycle_Enemy=1
 			if (Orb >= 3 && !HasSpell ("Auspicious Spirits") && HasSpell ("Surge of Darkness")) {
-				Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && ((Cooldown ("Mind Blast") < 1.5 && !HasSpell ("Mental Instinct")) || (Health (u) < 0.2 && Cooldown ("Shadow Word: Death") < 1.5)) && !u.HasAura ("Devouring Plague", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && ((Cooldown ("Mind Blast") < 1.5 && !HasSpell ("Mental Instinct")) || (Health (u) < 0.2 && Cooldown ("Shadow Word: Death") < 1.5)) && !u.HasAura ("Devouring Plague", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (DevouringPlague (Unit))
 						return true;
@@ -270,7 +270,7 @@ namespace ReBot
 			}
 			//	actions.main+=/mind_blast,if=glyph.mind_harvest.enabled&mind_harvest=0,cycle_Enemy=1
 			if (HasGlyph (162532)) {
-				Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Glyph of Mind Blast", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Glyph of Mind Blast", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (MindBlast (Unit))
 						return true;
@@ -285,7 +285,7 @@ namespace ReBot
 			if (HasSpell ("Auspicious Spirits")) {
 				MaxCycle = Enemy.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Shadow Word: Pain", true) < 18 * 0.3);
 				if (MaxCycle.ToList ().Count <= 7) {
-					Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						if (ShadowWordPain (Unit))
 							return true;
@@ -299,7 +299,7 @@ namespace ReBot
 			}
 			//	actions.main+=/searing_insanity,if=buff.insanity.remains<0.5*gcd&active_enemies>=3&cooldown.mind_blast.remains>0.5*gcd,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Me.HasAura ("Insanity") && Me.AuraTimeRemaining ("Insanity") < 0.5 * 1.5 && ActiveEnemies (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
-				Unit = BestAOETarget (40, 10, 3);
+				var Unit = BestAOETarget (40, 10, 3);
 				if (Unit != null) {
 					if (SearingInsanity (Unit)) {
 						IfInterrupt = "ChainMS";
@@ -310,7 +310,7 @@ namespace ReBot
 			}
 			//	actions.main+=/searing_insanity,if=active_enemies>=3&cooldown.mind_blast.remains>0.5*gcd,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Me.HasAura ("Insanity") && ActiveEnemies (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
-				Unit = BestAOETarget (40, 10, 3);
+				var Unit = BestAOETarget (40, 10, 3);
 				if (Unit != null) {
 					if (SearingInsanity (Unit)) {
 						IfInterrupt = "ChainMS";
@@ -354,7 +354,7 @@ namespace ReBot
 			if (!HasSpell ("Auspicious Spirits") && ActiveEnemies (40) <= 5) {
 				MaxCycle = Enemy.Where (u => Range (40, u) && u.AuraTimeRemaining ("Shadow Word: Pain", true) < 18 * 0.3 && TimeToDie (u) > (18 * 0.75));
 				if (MaxCycle.ToList ().Count <= 5) {
-					Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						if (ShadowWordPain (Unit))
 							return true;
@@ -365,7 +365,7 @@ namespace ReBot
 			if (ActiveEnemies (40) <= 5) {
 				MaxCycle = Enemy.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Vampiric Touch", true) < (15 * 0.3 + CastTime (34914)) && TimeToDie (u) > (15 * 0.75 + CastTime (34914)));
 				if (MaxCycle.ToList ().Count <= 5) {
-					Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						if (VampiricTouch (Unit))
 							return true;
@@ -419,7 +419,7 @@ namespace ReBot
 			}
 			//	actions.main+=/mind_sear,chain=1,if=active_enemies>=4,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1|shadow_orb=5)
 			if (ActiveEnemies (40) >= 4) {
-				Unit = BestAOETarget (40, 10, 4);
+				var Unit = BestAOETarget (40, 10, 4);
 				if (Unit != null) {
 					if (MindSear (Unit)) {
 						IfInterrupt = "ChainMSO";
@@ -472,7 +472,7 @@ namespace ReBot
 				}
 				//	actions.main+=/shadow_word_pain,moving=1,cycle_Enemy=1
 				if (Usable ("Shadow Word: Pain")) {
-					Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Shadow Word: Pain", true)).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Shadow Word: Pain", true)).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						if (ShadowWordPain (Unit))
 							return true;
@@ -496,7 +496,7 @@ namespace ReBot
 			if (Orb == 5 && ActiveEnemies (40) >= 1 && Usable ("Void Entropy")) {
 				MaxCycle = Enemy.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Void Entropy", true) && TimeToDie (u) > 60);
 				if (MaxCycle.ToList ().Count <= 6) {
-					Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						if (VoidEntropy ())
 							return true;
@@ -510,7 +510,7 @@ namespace ReBot
 			}
 			//	actions.vent+=/devouring_plague,if=dot.void_entropy.ticking&dot.void_entropy.remains<=gcd*2&cooldown_react&active_enemies>1,cycle_Enemy=1
 			if (ActiveEnemies (40) > 1 && Usable ("Devouring Plague") && Orb >= 3) {
-				Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && u.HasAura ("Void Entropy", true) && u.AuraTimeRemaining ("Void Entropy", true) <= 1.5 * 2).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && u.HasAura ("Void Entropy", true) && u.AuraTimeRemaining ("Void Entropy", true) <= 1.5 * 2).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (DevouringPlague ())
 						return true;
@@ -518,7 +518,7 @@ namespace ReBot
 			}
 			//	actions.vent+=/devouring_plague,if=shadow_orb=5&dot.void_entropy.remains<5&active_enemies>1,cycle_Enemy=1
 			if (Orb == 5 && ActiveEnemies (40) > 1 && Usable ("Devouring Plague")) {
-				Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Void Entropy", true) < 5).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Void Entropy", true) < 5).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (DevouringPlague ())
 						return true;
@@ -526,7 +526,7 @@ namespace ReBot
 			}
 			//	actions.vent+=/devouring_plague,if=shadow_orb=5&dot.void_entropy.remains<10&active_enemies>2,cycle_Enemy=1
 			if (Orb == 5 && ActiveEnemies (40) > 2 && Usable ("Devouring Plague")) {
-				Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Void Entropy", true) < 10).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Void Entropy", true) < 10).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (DevouringPlague ())
 						return true;
@@ -534,7 +534,7 @@ namespace ReBot
 			}
 			//	actions.vent+=/devouring_plague,if=shadow_orb=5&dot.void_entropy.remains<15&active_enemies>3,cycle_Enemy=1
 			if (Orb == 5 && ActiveEnemies (40) > 3 && Usable ("Devouring Plague")) {
-				Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Void Entropy", true) < 15).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Void Entropy", true) < 15).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (DevouringPlague ())
 						return true;
@@ -542,7 +542,7 @@ namespace ReBot
 			}
 			//	actions.vent+=/devouring_plague,if=shadow_orb=5&dot.void_entropy.remains<20&active_enemies>4,cycle_Enemy=1
 			if (Orb == 5 && ActiveEnemies (40) > 4 && Usable ("Devouring Plague")) {
-				Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Void Entropy", true) < 20).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Void Entropy", true) < 20).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (DevouringPlague ())
 						return true;
@@ -555,7 +555,7 @@ namespace ReBot
 			}
 			//	actions.vent+=/devouring_plague,if=shadow_orb=5&dot.void_entropy.remains&(cooldown.mind_blast.remains<=gcd*2|(natural_shadow_word_death_range&cooldown.shadow_word_death.remains<=gcd*2))&active_enemies>1,cycle_Enemy=1
 			if (Orb == 5 && ActiveEnemies (40) > 1 && Usable ("Devouring Plague")) {
-				Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && u.HasAura ("Void Entropy", true) && (Cooldown ("Mind Blast") <= 1.5 * 2 || (Health (u) < 0.2 && Cooldown ("Shadow Word: Death") <= 1.5 * 2))).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && u.HasAura ("Void Entropy", true) && (Cooldown ("Mind Blast") <= 1.5 * 2 || (Health (u) < 0.2 && Cooldown ("Shadow Word: Death") <= 1.5 * 2))).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (DevouringPlague ())
 						return true;
@@ -583,7 +583,7 @@ namespace ReBot
 			}
 			//	actions.vent+=/mind_blast,if=glyph.mind_harvest.enabled&mind_harvest=0&shadow_orb<=2,cycle_Enemy=1
 			if (HasGlyph (162532) && Orb <= 2 && Usable ("Mind Blast")) {
-				Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Glyph of Mind Blast", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Glyph of Mind Blast", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (MindBlast (Unit))
 						return true;
@@ -591,7 +591,7 @@ namespace ReBot
 			}
 			//	actions.vent+=/devouring_plague,if=glyph.mind_harvest.enabled&mind_harvest=0&shadow_orb>=3,cycle_Enemy=1
 			if (HasGlyph (162532) && Orb >= 3 && Usable ("Devouring Plague")) {
-				Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Glyph of Mind Blast", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Glyph of Mind Blast", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (DevouringPlague (Unit))
 						return true;
@@ -604,7 +604,7 @@ namespace ReBot
 			}
 			//	actions.vent+=/shadow_word_death,if=natural_shadow_word_death_range&cooldown_react&shadow_orb<=4,cycle_Enemy=1
 			if (Usable ("Shadow Word: Death") && Orb <= 4) {
-				Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (ShadowWordDeath (Unit))
 						return true;
@@ -612,7 +612,7 @@ namespace ReBot
 			}
 			//	actions.vent+=/searing_insanity,if=buff.insanity.remains<0.5*gcd&active_enemies>=3&cooldown.mind_blast.remains>0.5*gcd,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Me.HasAura ("Insanity") && Me.AuraTimeRemaining ("Insanity") < 0.5 * 1.5 && ActiveEnemies (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
-				Unit = BestAOETarget (40, 10, 3);
+				var Unit = BestAOETarget (40, 10, 3);
 				if (Unit != null) {
 					if (SearingInsanity (Unit)) {
 						IfInterrupt = "ChainMS";
@@ -623,7 +623,7 @@ namespace ReBot
 			}
 			//	actions.vent+=/searing_insanity,if=active_enemies>=3&cooldown.mind_blast.remains>0.5*gcd,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Me.HasAura ("Insanity") && ActiveEnemies (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
-				Unit = BestAOETarget (40, 10, 3);
+				var Unit = BestAOETarget (40, 10, 3);
 				if (Unit != null) {
 					if (SearingInsanity (Unit)) {
 						IfInterrupt = "ChainMS";
@@ -662,7 +662,7 @@ namespace ReBot
 			if (Usable ("Shadow Word: Pain")) {
 				MaxCycle = Enemy.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Shadow Word: Pain", true) <= (18 * 0.3) && TimeToDie (u) > (18 * 0.75));
 				if (MaxCycle.ToList ().Count <= 5) {
-					Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						if (ShadowWordPain (Unit))
 							return true;
@@ -673,7 +673,7 @@ namespace ReBot
 			if (Usable ("Vampiric Touch")) {
 				MaxCycle = Enemy.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Vampiric Touch", true) < (15 * 0.3 + CastTime (34914)) && TimeToDie (u) > (15 * 0.75 + CastTime (34914)));
 				if (MaxCycle.ToList ().Count <= 5) {
-					Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						if (VampiricTouch (Unit))
 							return true;
@@ -702,7 +702,7 @@ namespace ReBot
 			}
 			//	actions.vent+=/mind_sear,chain=1,if=active_enemies>=3&cooldown.mind_blast.remains>0.5*gcd,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (ActiveEnemies (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5 && Usable ("Mind Sear")) {
-				Unit = BestAOETarget (40, 10, 3);
+				var Unit = BestAOETarget (40, 10, 3);
 				if (Unit != null) {
 					if (MindSear (Unit)) {
 						IfInterrupt = "ChainMS";
@@ -747,7 +747,7 @@ namespace ReBot
 				}
 				//	actions.vent+=/shadow_word_pain,moving=1,cycle_Enemy=1
 				if (Usable ("Shadow Word: Pain")) {
-					Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Shadow Word: Pain", true)).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Shadow Word: Pain", true)).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						if (ShadowWordPain (Unit))
 							return true;
@@ -780,7 +780,7 @@ namespace ReBot
 			}
 			//	actions.cop_dotweave+=/shadow_word_death,if=natural_shadow_word_death_range&!target.dot.shadow_word_pain.ticking&!target.dot.vampiric_touch.ticking,cycle_Enemy=1
 			if (Usable ("Shadow Word: Death")) {
-				Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2 && !Target.HasAura ("Shadow Word: Pain", true) && !Target.HasAura ("Vampiric Touch", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2 && !Target.HasAura ("Shadow Word: Pain", true) && !Target.HasAura ("Vampiric Touch", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (ShadowWordDeath (Unit))
 						return true;
@@ -788,7 +788,7 @@ namespace ReBot
 			}
 			//	actions.cop_dotweave+=/shadow_word_death,if=natural_shadow_word_death_range,cycle_Enemy=1
 			if (Usable ("Shadow Word: Death")) {
-				Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (ShadowWordDeath (Unit))
 						return true;
@@ -796,7 +796,7 @@ namespace ReBot
 			}
 			//	actions.cop_dotweave+=/mind_blast,if=glyph.mind_harvest.enabled&mind_harvest=0&shadow_orb<=2,cycle_Enemy=1
 			if (HasGlyph (162532) && Orb <= 2 && Usable ("Mind Blast")) {
-				Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Glyph of Mind Blast", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Glyph of Mind Blast", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (MindBlast (Unit))
 						return true;
@@ -809,7 +809,7 @@ namespace ReBot
 			}
 			//	actions.cop_dotweave+=/searing_insanity,if=buff.insanity.remains<0.5*gcd&active_enemies>=3&cooldown.mind_blast.remains>0.5*gcd,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Me.HasAura ("Insanity") && Me.AuraTimeRemaining ("Insanity") < 0.5 * 1.5 && ActiveEnemies (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
-				Unit = BestAOETarget (40, 10, 3);
+				var Unit = BestAOETarget (40, 10, 3);
 				if (Unit != null) {
 					if (SearingInsanity (Unit)) {
 						IfInterrupt = "ChainMS";
@@ -820,7 +820,7 @@ namespace ReBot
 			}
 			//	actions.cop_dotweave+=/searing_insanity,if=active_enemies>=3&cooldown.mind_blast.remains>0.5*gcd,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Me.HasAura ("Insanity") && ActiveEnemies (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
-				Unit = BestAOETarget (40, 10, 3);
+				var Unit = BestAOETarget (40, 10, 3);
 				if (Unit != null) {
 					if (SearingInsanity (Unit)) {
 						IfInterrupt = "ChainMS";
@@ -891,7 +891,7 @@ namespace ReBot
 			if (Usable ("Shadow Word: Pain")) {
 				MaxCycle = Adds.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Shadow Word: Pain", true) && u != Target);
 				if (MaxCycle.ToList ().Count <= 5) {
-					Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						if (ShadowWordPain (Unit))
 							return true;
@@ -902,7 +902,7 @@ namespace ReBot
 			if (Usable ("Vampiric Touch")) {
 				MaxCycle = Adds.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Vampiric Touch", true) && u != Target);
 				if (MaxCycle.ToList ().Count <= 5) {
-					Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						if (VampiricTouch (Unit))
 							return true;
@@ -918,7 +918,7 @@ namespace ReBot
 			if (Usable ("Shadow Word: Pain")) {
 				MaxCycle = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && (!u.HasAura ("Shadow Word: Pain", true) || u.AuraTimeRemaining ("Shadow Word: Pain", true) <= 18 * 0.3) && TimeToDie (u) > (18 * 0.75));
 				if (MaxCycle.ToList ().Count <= 5) {
-					Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && ShadowWordPain (Unit))
 						return true;
 				}
@@ -927,14 +927,14 @@ namespace ReBot
 			if (Usable ("Vampiric Touch")) {			
 				MaxCycle = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && (!u.HasAura ("Vampiric Touch", true) || u.AuraTimeRemaining ("Vampiric Touch", true) <= 15 * 0.3 + CastTime (34914)) && TimeToDie (u) > (15 * 0.75 + CastTime (34914)));
 				if (MaxCycle.ToList ().Count <= 5) {
-					Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = MaxCycle.DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && VampiricTouch (Unit))
 						return true;
 				}
 			}
 			//	actions.cop_dotweave+=/mind_sear,if=active_enemies>=8,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Usable ("Mind Sear") && ActiveEnemies (40) >= 8) {
-				Unit = BestAOETarget (40, 10, 8);
+				var Unit = BestAOETarget (40, 10, 8);
 				if (Unit != null) {
 					if (MindSear (Unit)) {
 						IfInterrupt = "ChainMS";
@@ -948,7 +948,7 @@ namespace ReBot
 				return true;
 			//	actions.cop_dotweave+=/shadow_word_death,moving=1,if=!target.dot.shadow_word_pain.ticking&!target.dot.vampiric_touch.ticking,cycle_Enemy=1
 			if (Usable ("Shadow Word: Death")) {
-				Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2 && !Target.HasAura ("Shadow Word: Pain", true) && !Target.HasAura ("Vampiric Touch", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2 && !Target.HasAura ("Shadow Word: Pain", true) && !Target.HasAura ("Vampiric Touch", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (ShadowWordDeath (Unit))
 						return true;
@@ -986,7 +986,7 @@ namespace ReBot
 					return true;
 				//	actions.cop_dotweave+=/shadow_word_pain,if=primary_target=0,moving=1,cycle_Enemy=1
 				if (Usable ("Shadow Word: Pain")) {
-					Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && !u.HasAura ("Shadow Word: Pain", true)).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && !u.HasAura ("Shadow Word: Pain", true)).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && ShadowWordPain (Unit))
 						return true;
 				}
@@ -1008,7 +1008,7 @@ namespace ReBot
 			}
 			//	actions.cop_insanity+=/mind_blast,if=glyph.mind_harvest.enabled&mind_harvest=0,cycle_Enemy=1
 			if (HasGlyph (162532)) {
-				Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Glyph of Mind Blast", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Glyph of Mind Blast", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (MindBlast (Unit))
 						return true;
@@ -1021,7 +1021,7 @@ namespace ReBot
 			}
 			//	actions.cop_insanity+=/shadow_word_death,if=natural_shadow_word_death_range&!target.dot.shadow_word_pain.ticking&!target.dot.vampiric_touch.ticking,cycle_Enemy=1
 			if (Usable ("Shadow Word: Death")) {
-				Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2 && !Target.HasAura ("Shadow Word: Pain", true) && !Target.HasAura ("Vampiric Touch", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2 && !Target.HasAura ("Shadow Word: Pain", true) && !Target.HasAura ("Vampiric Touch", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (ShadowWordDeath (Unit))
 						return true;
@@ -1029,7 +1029,7 @@ namespace ReBot
 			}
 			//	actions.cop_insanity+=/shadow_word_death,if=natural_shadow_word_death_range,cycle_Enemy=1
 			if (Usable ("Shadow Word: Death")) {
-				Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (ShadowWordDeath (Unit))
 						return true;
@@ -1037,7 +1037,7 @@ namespace ReBot
 			}
 			//	actions.cop_insanity+=/devouring_plague,if=shadow_orb>=3&!set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<gcd|(natural_shadow_word_death_range&cooldown.shadow_word_death.remains<gcd)),cycle_Enemy=1
 			if (Orb >= 3 && !HasSpell (165628) && !HasSpell (165629)) {
-				Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && (Cooldown ("Mind Blast") < 1.5 || (Health (u) < 0.2 && Cooldown ("Shadow Word: Death") < 1.5))).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && (Cooldown ("Mind Blast") < 1.5 || (Health (u) < 0.2 && Cooldown ("Shadow Word: Death") < 1.5))).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (DevouringPlague (Unit))
 						return true;
@@ -1045,7 +1045,7 @@ namespace ReBot
 			}
 			//	actions.cop_insanity+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=2|(natural_shadow_word_death_range&cooldown.shadow_word_death.remains<gcd)),cycle_Enemy=1
 			if (Orb >= 3 && HasSpell (165628) && !HasSpell (165629)) {
-				Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && (Cooldown ("Mind Blast") <= 2 || (Health (u) < 0.2 && Cooldown ("Shadow Word: Death") < 1.5))).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && (Cooldown ("Mind Blast") <= 2 || (Health (u) < 0.2 && Cooldown ("Shadow Word: Death") < 1.5))).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (DevouringPlague (Unit))
 						return true;
@@ -1053,7 +1053,7 @@ namespace ReBot
 			}
 			//	actions.cop_insanity+=/searing_insanity,if=buff.insanity.remains<0.5*gcd&active_enemies>=3&cooldown.mind_blast.remains>0.5*gcd,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Me.HasAura ("Insanity") && Me.AuraTimeRemaining ("Insanity") < 0.5 * 1.5 && ActiveEnemies (40) >= 3 && Cooldown ("Mind Blast") > 0.5 * 1.5) {
-				Unit = BestAOETarget (40, 10, 3);
+				var Unit = BestAOETarget (40, 10, 3);
 				if (Unit != null) {
 					if (SearingInsanity (Unit)) {
 						IfInterrupt = "ChainMS";
@@ -1064,7 +1064,7 @@ namespace ReBot
 			}
 			//	actions.cop_insanity+=/searing_insanity,if=active_enemies>=5,chain=1,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Usable ("Mind Sear") && Me.HasAura ("Insanity") && ActiveEnemies (40) >= 5) {
-				Unit = BestAOETarget (40, 10, 5);
+				var Unit = BestAOETarget (40, 10, 5);
 				if (Unit != null) {
 					if (SearingInsanity (Unit)) {
 						IfInterrupt = "ChainMS";
@@ -1085,7 +1085,7 @@ namespace ReBot
 			} 
 			//	actions.cop_insanity+=/shadow_word_pain,if=remains<(18*0.3)&target.time_to_die>(18*0.75)&miss_react&active_enemies<=5&primary_target=0,cycle_Enemy=1,max_cycle_Enemy=5
 			if (ActiveEnemies (40) <= 5) {
-				Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Shadow Word: Pain", true) < (18 * 0.3) && TimeToDie (u) > (18 * 0.75)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u.AuraTimeRemaining ("Shadow Word: Pain", true) < (18 * 0.3) && TimeToDie (u) > (18 * 0.75)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (ShadowWordPain (Unit))
 						return true;
@@ -1093,7 +1093,7 @@ namespace ReBot
 			}
 			//	actions.cop_insanity+=/vampiric_touch,if=remains<(15*0.3+cast_time)&target.time_to_die>(15*0.75+cast_time)&miss_react&active_enemies<=5&primary_target=0,cycle_Enemy=1,max_cycle_Enemy=5
 			if (ActiveEnemies (40) <= 5) {
-				Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && u.AuraTimeRemaining ("Vampiric Touch", true) < (15 * 0.3 + CastTime (34914)) && TimeToDie (u) > (15 * 0.75 + CastTime (34914))).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && u.AuraTimeRemaining ("Vampiric Touch", true) < (15 * 0.3 + CastTime (34914)) && TimeToDie (u) > (15 * 0.75 + CastTime (34914))).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (VampiricTouch (Unit))
 						return true;
@@ -1132,7 +1132,7 @@ namespace ReBot
 			}
 			//	actions.cop_insanity+=/mind_sear,if=active_enemies>=8,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (Usable ("Mind Sear") && ActiveEnemies (40) >= 8) {
-				Unit = BestAOETarget (40, 10, 8);
+				var Unit = BestAOETarget (40, 10, 8);
 				if (Unit != null) {
 					if (MindSear (Unit)) {
 						IfInterrupt = "ChainMS";
@@ -1146,7 +1146,7 @@ namespace ReBot
 				return true;
 			//	actions.cop_insanity+=/shadow_word_death,moving=1,if=!target.dot.shadow_word_pain.ticking&!target.dot.vampiric_touch.ticking,cycle_Enemy=1
 			if (Usable ("Shadow Word: Death")) {
-				Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2 && !Target.HasAura ("Shadow Word: Pain", true) && !Target.HasAura ("Vampiric Touch", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2 && !Target.HasAura ("Shadow Word: Pain", true) && !Target.HasAura ("Vampiric Touch", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (ShadowWordDeath (Unit))
 						return true;
@@ -1184,7 +1184,7 @@ namespace ReBot
 					return true;
 				//	actions.cop_insanity+=/shadow_word_pain,if=primary_target=0,moving=1,cycle_Enemy=1
 				if (Usable ("Shadow Word: Pain")) {
-					Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && !u.HasAura ("Shadow Word: Pain", true)).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && !u.HasAura ("Shadow Word: Pain", true)).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						if (ShadowWordPain (Unit))
 							return true;
@@ -1202,7 +1202,7 @@ namespace ReBot
 
 			//	actions.cop=devouring_plague,if=shadow_orb=5&primary_target=0&!target.dot.devouring_plague_dot.ticking&target.time_to_die>=(gcd*4*7%6),cycle_Enemy=1
 			if (Orb == 5) {
-				Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && !u.HasAura ("Devouring Plague", true) && TimeToDie (u) >= (1.5 * 4 * 7 / 6)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && !u.HasAura ("Devouring Plague", true) && TimeToDie (u) >= (1.5 * 4 * 7 / 6)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (DevouringPlague (Unit))
 						return true;
@@ -1210,7 +1210,7 @@ namespace ReBot
 			}
 			//	actions.cop+=/devouring_plague,if=shadow_orb=5&primary_target=0&target.time_to_die>=(gcd*4*7%6)&(cooldown.mind_blast.remains<=gcd|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20)),cycle_Enemy=1
 			if (Orb == 5) {
-				Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && TimeToDie (u) >= (1.5 * 4 * 7 / 6) && (Cooldown ("Mind Blast") <= 1.5 || Cooldown ("Shadow Word: Death") <= 1.5 && Health (u) < 0.2)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && TimeToDie (u) >= (1.5 * 4 * 7 / 6) && (Cooldown ("Mind Blast") <= 1.5 || Cooldown ("Shadow Word: Death") <= 1.5 && Health (u) < 0.2)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (DevouringPlague (Unit))
 						return true;
@@ -1228,7 +1228,7 @@ namespace ReBot
 			}
 			//	actions.cop+=/devouring_plague,if=primary_target=0&buff.mental_instinct.remains<gcd&buff.mental_instinct.remains>(gcd*0.7)&buff.mental_instinct.remains&active_enemies>1,cycle_Enemy=1
 			if (Me.AuraTimeRemaining ("Mental Instinct") < 1.5 && Me.AuraTimeRemaining ("Mental Instinct") > (1.5 * 0.7) && Me.HasAura ("Mental Instinct") && ActiveEnemies (40) > 1) {
-				Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (DevouringPlague (Unit))
 						return true;
@@ -1241,7 +1241,7 @@ namespace ReBot
 			}
 			//	actions.cop+=/devouring_plague,if=shadow_orb>=3&!set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=gcd|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&primary_target=0&target.time_to_die>=(gcd*4*7%6),cycle_Enemy=1
 			if (Orb >= 3 && !HasSpell (165628) && !HasSpell (165629)) {
-				Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && (Cooldown ("Mind Blast") <= 1.5 || (Cooldown ("Shadow Word: Death") <= 1.5 && Health (u) < 0.2))).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && (Cooldown ("Mind Blast") <= 1.5 || (Cooldown ("Shadow Word: Death") <= 1.5 && Health (u) < 0.2))).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (DevouringPlague (Unit))
 						return true;
@@ -1254,7 +1254,7 @@ namespace ReBot
 			}
 			//	actions.cop+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&!set_bonus.tier17_4pc&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&primary_target=0&target.time_to_die>=(gcd*4*7%6)&active_enemies>1,cycle_Enemy=1
 			if (Orb >= 3 && HasSpell (165628) && !HasSpell (165629) && ActiveEnemies (40) > 1) {
-				Unit = Adds.Where (u => u != Target && Cooldown ("Mind Blast") <= 1.5 * 2 || (Cooldown ("Shadow Word: Death") <= 1.5 && Health (u) < 0.2) && TimeToDie (u) >= (1.5 * 4 * 7 / 6)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u != Target && Cooldown ("Mind Blast") <= 1.5 * 2 || (Cooldown ("Shadow Word: Death") <= 1.5 && Health (u) < 0.2) && TimeToDie (u) >= (1.5 * 4 * 7 / 6)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (DevouringPlague (Unit))
 						return true;
@@ -1267,7 +1267,7 @@ namespace ReBot
 			}
 			//	actions.cop+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&talent.mindbender.enabled&!target.dot.devouring_plague_dot.ticking&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&primary_target=0&target.time_to_die>=(gcd*4*7%6)&active_enemies=1,cycle_Enemy=1
 			if (Orb >= 3 && HasSpell (165628) && HasSpell ("Mindbender") && ActiveEnemies (40) == 2) {
-				Unit = Adds.Where (u => u != Target && !u.HasAura ("Devouring Plague") && (Cooldown ("Mind Blast") <= 1.5 * 2 || (Cooldown ("Shadow Word: Death") <= 1.5 && Health (u) < 0.2)) && TimeToDie (u) >= (1.5 * 4 * 7 / 6)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u != Target && !u.HasAura ("Devouring Plague") && (Cooldown ("Mind Blast") <= 1.5 * 2 || (Cooldown ("Shadow Word: Death") <= 1.5 && Health (u) < 0.2)) && TimeToDie (u) >= (1.5 * 4 * 7 / 6)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (DevouringPlague (Unit))
 						return true;
@@ -1280,7 +1280,7 @@ namespace ReBot
 			}
 			//	actions.cop+=/devouring_plague,if=shadow_orb>=3&set_bonus.tier17_2pc&talent.surge_of_darkness.enabled&buff.mental_instinct.remains<(gcd*1.4)&buff.mental_instinct.remains>(gcd*0.7)&buff.mental_instinct.remains&(cooldown.mind_blast.remains<=gcd*2|(cooldown.shadow_word_death.remains<=gcd&target.health.pct<20))&primary_target=0&target.time_to_die>=(gcd*4*7%6)&active_enemies=1,cycle_Enemy=1
 			if (Orb >= 3 && HasSpell (165628) && HasSpell ("Surge of Darkness") && ActiveEnemies (40) == 2 && Me.AuraTimeRemaining ("Mental Instinct") < (1.5 * 1.4) && Me.AuraTimeRemaining ("Mental Instinct") > (1.5 * 0.7) && Me.HasAura ("Mental Instinct")) {
-				Unit = Adds.Where (u => u != Target && (Cooldown ("Mind Blast") <= 1.5 * 2 || (Cooldown ("Shadow Word: Death") <= 1.5 && Health (u) < 0.2)) && TimeToDie (u) >= (1.5 * 4 * 7 / 6)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u != Target && (Cooldown ("Mind Blast") <= 1.5 * 2 || (Cooldown ("Shadow Word: Death") <= 1.5 && Health (u) < 0.2)) && TimeToDie (u) >= (1.5 * 4 * 7 / 6)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (DevouringPlague (Unit))
 						return true;
@@ -1288,7 +1288,7 @@ namespace ReBot
 			}
 			//	actions.cop+=/mind_blast,if=mind_harvest=0,cycle_Enemy=1
 			if (HasGlyph (162532)) {
-				Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Glyph of Mind Blast", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInCombatRangeAndLoS && !u.HasAura ("Glyph of Mind Blast", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (MindBlast (Unit))
 						return true;
@@ -1301,7 +1301,7 @@ namespace ReBot
 			}
 			//	actions.cop+=/shadow_word_death,if=natural_shadow_word_death_range&!target.dot.shadow_word_pain.ticking&!target.dot.vampiric_touch.ticking,cycle_Enemy=1
 			if (Usable ("Shadow Word: Death")) {
-				Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2 && !Target.HasAura ("Shadow Word: Pain", true) && !Target.HasAura ("Vampiric Touch", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2 && !Target.HasAura ("Shadow Word: Pain", true) && !Target.HasAura ("Vampiric Touch", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (ShadowWordDeath (Unit))
 						return true;
@@ -1309,7 +1309,7 @@ namespace ReBot
 			}
 			//	actions.cop+=/shadow_word_death,if=natural_shadow_word_death_range,cycle_Enemy=1
 			if (Usable ("Shadow Word: Death")) {
-				Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (ShadowWordDeath (Unit))
 						return true;
@@ -1342,13 +1342,13 @@ namespace ReBot
 			}
 			//	actions.cop+=/shadow_word_pain,if=remains<(18*0.3)&target.time_to_die>(18*0.75)&miss_react&!ticking&active_enemies<=5&primary_target=0,cycle_Enemy=1,max_cycle_Enemy=5
 			if (ActiveEnemies (40) <= 5) {
-				Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && u.AuraTimeRemaining ("Shadow Word: Pain", true) < (18 * 0.3) && TimeToDie (u) > (18 * 0.75)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && u.AuraTimeRemaining ("Shadow Word: Pain", true) < (18 * 0.3) && TimeToDie (u) > (18 * 0.75)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && ShadowWordPain (Unit))
 					return true;
 			}
 			//	actions.cop+=/vampiric_touch,if=remains<(15*0.3+cast_time)&target.time_to_die>(15*0.75+cast_time)&miss_react&active_enemies<=5&primary_target=0,cycle_Enemy=1,max_cycle_Enemy=5
 			if (ActiveEnemies (40) <= 5) {
-				Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && u.AuraTimeRemaining ("Vampiric Touch", true) < (15 * 0.3 + CastTime (34914)) && TimeToDie (u) > (15 * 0.75 + CastTime (34914))).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && u != Target && u.AuraTimeRemaining ("Vampiric Touch", true) < (15 * 0.3 + CastTime (34914)) && TimeToDie (u) > (15 * 0.75 + CastTime (34914))).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && VampiricTouch (Unit))
 					return true;
 			}
@@ -1364,7 +1364,7 @@ namespace ReBot
 			}
 			//	actions.cop+=/mind_sear,if=active_enemies>=8,interrupt_if=(cooldown.mind_blast.remains<=0.1|cooldown.shadow_word_death.remains<=0.1)
 			if (ActiveEnemies (40) >= 8) {
-				Unit = BestAOETarget (40, 10, 3);
+				var Unit = BestAOETarget (40, 10, 3);
 				if (Unit != null) {
 					if (MindSear (Unit)) {
 						IfInterrupt = "ChainMS";
@@ -1391,7 +1391,7 @@ namespace ReBot
 				return true;
 			//	actions.cop+=/shadow_word_death,moving=1,if=!target.dot.shadow_word_pain.ticking&!target.dot.vampiric_touch.ticking,cycle_Enemy=1
 			if (Usable ("Shadow Word: Death")) {
-				Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2 && !Target.HasAura ("Shadow Word: Pain", true) && !Target.HasAura ("Vampiric Touch", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Adds.Where (u => u.IsInCombatRangeAndLoS && Health (u) < 0.2 && !Target.HasAura ("Shadow Word: Pain", true) && !Target.HasAura ("Vampiric Touch", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && ShadowWordDeath (Unit))
 					return true;
 			}

@@ -149,13 +149,13 @@ namespace ReBot
 			}
 
 			if (Usable ("Shadow Word: Pain")) {
-				Unit = targets.Where (u => !u.HasAura ("Shadow Word: Pain", true) || (u.HasAura ("Shadow Word: Pain", true) && u.AuraTimeRemaining ("Shadow Word: Pain") <= 5.6)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = targets.Where (u => !u.HasAura ("Shadow Word: Pain", true) || (u.HasAura ("Shadow Word: Pain", true) && u.AuraTimeRemaining ("Shadow Word: Pain") <= 5.6)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && ShadowWordPain (Unit))
 					return true;
 			}
 
 			if (Usable ("Vampiric Touch")) {
-				Unit = targets.Where (u => !u.HasAura ("Vampiric Touch", true) || (u.HasAura ("Vampiric Touch", true) && u.AuraTimeRemaining ("Vampiric Touch") <= 4.5)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = targets.Where (u => !u.HasAura ("Vampiric Touch", true) || (u.HasAura ("Vampiric Touch", true) && u.AuraTimeRemaining ("Vampiric Touch") <= 4.5)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && VampiricTouch (Unit))
 					return true;
 			}
@@ -195,7 +195,7 @@ namespace ReBot
 				return true;
 			
 			if (Usable ("Shadow Word: Pain")) {
-				Unit = targets.Where (u => !u.HasAura ("Shadow Word: Pain", true) || (u.HasAura ("Shadow Word: Pain", true) && u.AuraTimeRemaining ("Shadow Word: Pain") <= 5.6)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = targets.Where (u => !u.HasAura ("Shadow Word: Pain", true) || (u.HasAura ("Shadow Word: Pain", true) && u.AuraTimeRemaining ("Shadow Word: Pain") <= 5.6)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (ShadowWordPain (Unit))
 						return true;
@@ -203,7 +203,7 @@ namespace ReBot
 			}
 
 			if (Usable ("Vampiric Touch")) {
-				Unit = targets.Where (u => !u.HasAura ("Vampiric Touch", true) || (u.HasAura ("Vampiric Touch", true) && u.AuraTimeRemaining ("Vampiric Touch") <= 4.5)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = targets.Where (u => !u.HasAura ("Vampiric Touch", true) || (u.HasAura ("Vampiric Touch", true) && u.AuraTimeRemaining ("Vampiric Touch") <= 4.5)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (VampiricTouch (Unit))
 						return true;

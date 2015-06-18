@@ -74,7 +74,7 @@ namespace ReBot
 		{
 			if (Usable ("Mighty Bash")) {
 				if (ActiveEnemies (6) > 1 && Multitarget) {
-					Unit = Enemy.Where (x => Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = Enemy.Where (x => Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && MightyBash (Unit))
 						return true;
 				} else {
@@ -86,7 +86,7 @@ namespace ReBot
 			}
 			if (Usable ("Solar Beam")) {
 				if (ActiveEnemies (40) > 1 && Multitarget) {
-					Unit = Enemy.Where (x => Range (40, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = Enemy.Where (x => Range (40, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && SolarBeam (Unit))
 						return true;
 				} else {
@@ -98,7 +98,7 @@ namespace ReBot
 			}
 			if (Usable ("Skull Bash")) {
 				if (ActiveEnemies (13) > 1 && Multitarget) {
-					Unit = Enemy.Where (x => Range (13, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = Enemy.Where (x => Range (13, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && SkullBash (Unit))
 						return true;
 				} else {
@@ -110,7 +110,7 @@ namespace ReBot
 			}
 			if (Usable ("Wild Charge")) {
 				if (ActiveEnemies (25) > 1 && Multitarget) {
-					Unit = Enemy.Where (x => Range (25, x, 8) && x.IsCasting && !IsBoss (x) && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = Enemy.Where (x => Range (25, x, 8) && x.IsCasting && !IsBoss (x) && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && WildCharge (Unit))
 						return true;
 				} else {
@@ -122,7 +122,7 @@ namespace ReBot
 			}
 			if (Usable ("Maim") && ComboPoints >= 3) {
 				if (ActiveEnemies (6) > 1 && Multitarget) {
-					Unit = Enemy.Where (x => Range (5, x) && x.IsCasting && !IsBoss (x) && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = Enemy.Where (x => Range (5, x) && x.IsCasting && !IsBoss (x) && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						if (Maim (Unit))
 							return true;
@@ -143,7 +143,7 @@ namespace ReBot
 
 			if (InBearForm && Usable ("Faerie Fire") && HasGlyph (114237)) {
 				if (ActiveEnemies (35) > 1 && Multitarget) {
-					Unit = Enemy.Where (x => Range (35, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = Enemy.Where (x => Range (35, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						if (FaerieFire (Unit))
 							return true;
@@ -190,7 +190,7 @@ namespace ReBot
 
 		public bool HealPartyMember ()
 		{
-			Unit = MyGroup.Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingParty && !x.HasAura ("Rejuvenation", true)).DefaultIfEmpty (null).FirstOrDefault ();
+			var Unit = MyGroup.Where (x => !x.IsDead && Range (40, x) && Health (x) <= HealingParty && !x.HasAura ("Rejuvenation", true)).DefaultIfEmpty (null).FirstOrDefault ();
 			if (Unit != null && Rejuvenation (Unit, true))
 				return true;
 			if (Me.HasAura ("Predatory Swiftness")) {
@@ -281,7 +281,7 @@ namespace ReBot
 		{
 			if (InArena && Usable ("Soothe")) {
 				if (ActiveEnemies (40) > 1) {
-					Unit = Enemy.Where (u => Range (40, u) && IsInEnrage (u)).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = Enemy.Where (u => Range (40, u) && IsInEnrage (u)).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && Soothe (Unit))
 						return true;
 				} else if (IsInEnrage ()) {

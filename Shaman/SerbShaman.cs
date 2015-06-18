@@ -91,7 +91,7 @@ namespace ReBot
 		public bool Interrupt ()
 		{
 			if (Usable ("Wind Shear")) {
-				Unit = Enemy.Where (t => t.IsCastingAndInterruptible () && t.CastingTime > 0 && Range (25, t)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (t => t.IsCastingAndInterruptible () && t.CastingTime > 0 && Range (25, t)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && WindShear (Unit))
 					return true;
 			}
@@ -104,7 +104,7 @@ namespace ReBot
 				if (CleanseSpirit (Me))
 					return true;
 			}
-			Unit = MyGroup.Where (p => !p.IsDead && Range (40, p) && p.Auras.Any (x => x.IsDebuff && "Curse".Contains (x.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
+			var Unit = MyGroup.Where (p => !p.IsDead && Range (40, p) && p.Auras.Any (x => x.IsDebuff && "Curse".Contains (x.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
 			if (Unit != null && CleanseSpirit (Unit))
 				return true;
 

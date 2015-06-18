@@ -127,7 +127,7 @@ namespace ReBot.Hunter
 				// 	if (CastOnTerrain("Ice Trap", IceTarget, () => Cooldown("Ice Trap") == 0)) return;
 				// }
 				if ((InArena || InBg) && Usable ("Freezing Trap") && ActiveEnemies (15) == 0) {
-					Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && x.IsPlayer && x != Target && x.CanParticipateInCombat).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && x.IsPlayer && x != Target && x.CanParticipateInCombat).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						if (FreezingTrap (Unit))
 							return;

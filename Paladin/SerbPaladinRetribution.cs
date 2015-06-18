@@ -329,7 +329,7 @@ namespace ReBot
 			}
 			//	actions.single+=/judgment,cycle_targets=1,if=last_judgment_target!=target&glyph.double_jeopardy.enabled&holy_power<5
 			if (HasGlyph (54922) && HolyPower < 5) {
-				Unit = Enemy.Where (u => u != LastJudgmentTarget && Range (30, u)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u != LastJudgmentTarget && Range (30, u)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Judgment (Unit)) {
 					LastJudgmentTarget = Unit;
 					return;
@@ -550,7 +550,7 @@ namespace ReBot
 			}
 			//	actions.cleave+=/judgment,cycle_targets=1,if=glyph.double_jeopardy.enabled&holy_power<5
 			if (HasGlyph (54922) && HolyPower < 5) {
-				Unit = Enemy.Where (u => Range (30, u)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => Range (30, u)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Judgment (Unit)) {
 					LastJudgmentTarget = Target;
 					return;

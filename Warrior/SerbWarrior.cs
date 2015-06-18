@@ -162,12 +162,12 @@ namespace ReBot
 		public bool Interrupt ()
 		{
 			if (Usable ("Pummel")) {
-				Unit = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (MeleeRange, u) && u.RemainingCastTime > 0 && (u.Target == Me && !Me.HasAura ("Spell Reflect")) && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (MeleeRange, u) && u.RemainingCastTime > 0 && (u.Target == Me && !Me.HasAura ("Spell Reflect")) && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Pummel (Unit))
 					return true;
 			}
 			if (Usable ("Storm Bolt")) {
-				Unit = Enemy.Where (u => u.IsCasting && Mana (u) > 0 && !IsBoss (u) && Range (30, u) && u.RemainingCastTime > 0 && (u.Target == Me && !Me.HasAura ("Spell Reflect")) && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsCasting && Mana (u) > 0 && !IsBoss (u) && Range (30, u) && u.RemainingCastTime > 0 && (u.Target == Me && !Me.HasAura ("Spell Reflect")) && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && StormBolt (Unit))
 					return true;
 			}
@@ -182,12 +182,12 @@ namespace ReBot
 		public bool Reflect ()
 		{
 			if (Usable ("Spell Reflection") && !HasGlobalCooldown ()) {
-				Unit = Enemy.Where (u => u.IsCasting && !u.IsChanneling && Mana (u) > 0 && u.RemainingCastTime > 0 && u.Target == Me && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsCasting && !u.IsChanneling && Mana (u) > 0 && u.RemainingCastTime > 0 && u.Target == Me && !Me.HasAura ("Mass Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && SpellReflection ())
 					return true;
 			}
 			if (Usable ("Mass Spell Reflection") && !HasGlobalCooldown ()) {
-				Unit = Enemy.Where (u => u.IsCasting && !u.IsChanneling && Mana (u) > 0 && u.RemainingCastTime > 0 && u.Target == Me && !Me.HasAura ("Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsCasting && !u.IsChanneling && Mana (u) > 0 && u.RemainingCastTime > 0 && u.Target == Me && !Me.HasAura ("Spell Reflection")).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && MassSpellReflection ())
 					return true;
 			}

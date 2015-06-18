@@ -183,7 +183,7 @@ namespace ReBot
 				int revivalLimit = 3;
 				if (GroupMemberCount > 5)
 					revivalLimit = 5;
-				var lowPlayerCount = PartyMembers.Count (p => p.HealthFraction <= RHeal);
+				var lowPlayerCount = MyGroup.Count (p => p.HealthFraction <= RHeal);
 				if (lowPlayerCount >= revivalLimit) {
 					var revCD = SpellCooldown ("Revival");
 //					API.Print ("{0} players have low hp: Casting Revival! (Cooldown={1:0.0})", lowPlayerCount, revCD);

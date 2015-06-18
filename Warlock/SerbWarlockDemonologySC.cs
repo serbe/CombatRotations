@@ -176,7 +176,7 @@ namespace ReBot
 			}
 			//	actions+=/corruption,cycle_targets=1,if=target.time_to_die>=6&remains<=(0.3*duration)&buff.metamorphosis.down
 			if (Usable ("Corruption") && !Me.HasAura ("Metamorphosis")) {
-				Unit = Enemy.Where (u => u.IsInLoS && u.CombatRange <= 40 && u.AuraTimeRemaining ("Corruption", true) < (18 * 0.3) && TimeToDie (u) >= 6).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInLoS && u.CombatRange <= 40 && u.AuraTimeRemaining ("Corruption", true) < (18 * 0.3) && TimeToDie (u) >= 6).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (Corruption (Unit))
 						return;
@@ -201,7 +201,7 @@ namespace ReBot
 			//	actions+=/soul_fire,if=buff.metamorphosis.up&buff.molten_core.react&(buff.dark_soul.remains>execute_time|target.health.pct<=25)&(((buff.molten_core.stack*execute_time>=trinket.stacking_proc.multistrike.remains-1|demonic_fury<=ceil((trinket.stacking_proc.multistrike.remains-buff.molten_core.stack*execute_time)*40)+80*buff.molten_core.stack)|target.health.pct<=25)&trinket.stacking_proc.multistrike.remains>=execute_time|trinket.stacking_proc.multistrike.down|!trinket.has_stacking_proc.multistrike)
 			//	actions+=/touch_of_chaos,cycle_targets=1,if=buff.metamorphosis.up&dot.corruption.remains<17.4&demonic_fury>750
 			if (Me.HasAura ("Metamorphosis") && DemonicFury > 750) {
-				Unit = Enemy.Where (x => x.IsInLoS && x.CombatRange <= 40 && x.AuraTimeRemaining ("Corruption", true) < 17.4).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (x => x.IsInLoS && x.CombatRange <= 40 && x.AuraTimeRemaining ("Corruption", true) < 17.4).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (TouchofChaos (Unit))
 						return;
@@ -289,7 +289,7 @@ namespace ReBot
 			}
 			//	actions.db+=/doom,cycle_targets=1,if=buff.metamorphosis.up&active_enemies>=6&target.time_to_die>=30*spell_haste&remains<=(duration*0.3)&(buff.dark_soul.down|!glyph.dark_soul.enabled)
 			if (Me.HasAura ("Metamorphosis") && ActiveEnemies (40) >= 6 && (Me.HasAura ("Dark Soul: Instability") || !HasSpell (165451))) {
-				Unit = Enemy.Where (u => u.IsInLoS && u.CombatRange <= 40 && TimeToDie (u) >= 30 * SpellHaste && u.AuraTimeRemaining ("Doom", true) < (60 * 0.3)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInLoS && u.CombatRange <= 40 && TimeToDie (u) >= 30 * SpellHaste && u.AuraTimeRemaining ("Doom", true) < (60 * 0.3)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (Doom (Unit))
 						return true;
@@ -299,7 +299,7 @@ namespace ReBot
 			//	actions.db+=/demonbolt,if=buff.demonbolt.stack=0|(buff.demonbolt.stack<4&buff.demonbolt.remains>=(40*spell_haste-execute_time))
 			//	actions.db+=/doom,cycle_targets=1,if=buff.metamorphosis.up&target.time_to_die>=30*spell_haste&remains<=(duration*0.3)&(buff.dark_soul.down|!glyph.dark_soul.enabled)
 			if (Me.HasAura ("Metamorphosis") && DemonicFury > 750 && (Me.HasAura ("Dark Soul: Instability") || !HasSpell (165451))) {
-				Unit = Enemy.Where (u => u.IsInLoS && u.CombatRange <= 40 && TimeToDie (u) >= 30 * SpellHaste && u.AuraTimeRemaining ("Doom", true) < (60 * 0.3)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsInLoS && u.CombatRange <= 40 && TimeToDie (u) >= 30 * SpellHaste && u.AuraTimeRemaining ("Doom", true) < (60 * 0.3)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (Doom (Unit))
 						return true;

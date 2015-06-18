@@ -292,7 +292,7 @@ namespace ReBot
 				return true;
 			//	actions.two_targets+=/execute,cycle_targets=1
 			if (HasRage (30) || Me.HasAura ("Sudden Death")) {
-				Unit = Enemy.Where (u => Range (5, u) && (Health (u) < 0.2 || Me.HasAura ("Sudden Death"))).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => Range (5, u) && (Health (u) < 0.2 || Me.HasAura ("Sudden Death"))).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Execute (Unit))
 					return true; 
 			}
@@ -353,7 +353,7 @@ namespace ReBot
 				return true;
 			//	actions.three_targets+=/execute,cycle_targets=1
 			if (HasRage (30) || Me.HasAura ("Sudden Death")) {
-				Unit = Enemy.Where (u => Range (5, u) && (Health (u) < 0.2 || Me.HasAura ("Sudden Death"))).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => Range (5, u) && (Health (u) < 0.2 || Me.HasAura ("Sudden Death"))).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Execute (Unit))
 					return true; 
 			}

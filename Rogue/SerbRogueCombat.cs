@@ -184,7 +184,7 @@ namespace ReBot
 
 				if (IsNotForDamage (Target)) {
 					//				API.ExecuteMacro ("/stopattack");
-					Unit = API.CollectUnits (u => u.IsAttackable && u.IsPlayer && u != Target && !IsNotForDamage (u)).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = API.CollectUnits (u => u.IsAttackable && u.IsPlayer && u != Target && !IsNotForDamage (u)).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						Me.SetTarget (Unit.GUID);
 						return;
@@ -352,7 +352,7 @@ namespace ReBot
 				return true;
 
 			if (InArena && !IncapacitatedInRange (12)) {
-				Unit = Enemy.Where (u => Range (10, u) && !u.HasAura ("CrimsonTempest")).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => Range (10, u) && !u.HasAura ("CrimsonTempest")).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && CrimsonTempest ())
 					return true;
 			}

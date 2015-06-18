@@ -67,12 +67,12 @@ namespace ReBot
 		{
 			if (Usable ("Kick")) {
 				if (InArena) {
-					Unit = API.CollectUnits (u => u.IsAttackable && u.IsPlayer && Range (5, u) && u.IsCastingAndInterruptible () && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = API.CollectUnits (u => u.IsAttackable && u.IsPlayer && Range (5, u) && u.IsCastingAndInterruptible () && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && Kick (Unit))
 						return true;
 				} else {
 					if (ActiveEnemies (6) > 1 && Multitarget) {
-						Unit = Enemy.Where (u => Range (5, u) && u.IsCastingAndInterruptible () && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+						var Unit = Enemy.Where (u => Range (5, u) && u.IsCastingAndInterruptible () && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 						if (Unit != null && Kick (Unit))
 							return true;
 					} else if (Target.IsCastingAndInterruptible () && Range (5, Target) && Target.RemainingCastTime > 0)
@@ -82,12 +82,12 @@ namespace ReBot
 			}
 			if (Usable ("Deadly Throw") && (ComboPoints == 5 || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") > 0))) {
 				if (InArena) {
-					Unit = API.CollectUnits (u => u.IsAttackable && u.IsPlayer && Range (30, u) && u.IsCasting && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = API.CollectUnits (u => u.IsAttackable && u.IsPlayer && Range (30, u) && u.IsCasting && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && DeadlyThrow (Unit))
 						return true;
 				} else {
 					if (ActiveEnemies (6) > 1 && Multitarget) {
-						Unit = Enemy.Where (u => Range (30, u) && u.IsCasting && !IsBoss (u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+						var Unit = Enemy.Where (u => Range (30, u) && u.IsCasting && !IsBoss (u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 						if (Unit != null && DeadlyThrow (Unit))
 							return true;
 					} else if (Target.IsCasting && Range (30, Target) && !IsBoss (Target) && Target.RemainingCastTime > 0)
@@ -96,7 +96,7 @@ namespace ReBot
 				}
 			}
 			if (Usable ("Gouge") && (InArena || InBg) && Multitarget) {
-				Unit = API.CollectUnits (u => u.IsAttackable && u.IsPlayer && Range (5, u) && u.IsCasting && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = API.CollectUnits (u => u.IsAttackable && u.IsPlayer && Range (5, u) && u.IsCasting && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Gouge (Unit))
 					return true;
 			}
@@ -108,12 +108,12 @@ namespace ReBot
 		{
 			if (Usable ("Shiv") && HasCost (20)) {
 				if (InArena) {
-					Unit = API.CollectUnits (u => u.IsAttackable && u.IsPlayer && Range (5, u) && IsInEnrage (u)).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = API.CollectUnits (u => u.IsAttackable && u.IsPlayer && Range (5, u) && IsInEnrage (u)).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && Shiv (Unit))
 						return true;
 				} else {
 					if (ActiveEnemies (6) > 1 && Multitarget) {
-						Unit = Enemy.Where (u => Range (5, u) && IsInEnrage (u)).DefaultIfEmpty (null).FirstOrDefault ();
+						var Unit = Enemy.Where (u => Range (5, u) && IsInEnrage (u)).DefaultIfEmpty (null).FirstOrDefault ();
 						if (Unit != null && Shiv (Unit))
 							return true;
 					} else if (IsInEnrage ()) {
@@ -191,24 +191,24 @@ namespace ReBot
 			if (!Me.HasAura ("Blade Flurry")) {
 				if (InArena || InBg) {
 					if (Usable ("Blind")) {
-						Unit = API.CollectUnits (u => u.IsAttackable && u.CanParticipateInCombat && u.InCombat && u.IsPlayer && Range (15, u, 8) && u != Target && (HasGlyph (91299) || HasSpell ("Dirty Tricks") || !u.Auras.Any (x => x.IsDebuff && x.DebuffType.Contains ("Poison")))).DefaultIfEmpty (null).FirstOrDefault ();
+						var Unit = API.CollectUnits (u => u.IsAttackable && u.CanParticipateInCombat && u.InCombat && u.IsPlayer && Range (15, u, 8) && u != Target && (HasGlyph (91299) || HasSpell ("Dirty Tricks") || !u.Auras.Any (x => x.IsDebuff && x.DebuffType.Contains ("Poison")))).DefaultIfEmpty (null).FirstOrDefault ();
 						if (Unit != null && Blind (Unit))
 							return true;
 					}
 					if (Usable ("Gouge")) {
-						Unit = API.CollectUnits (u => u.IsAttackable && u.CanParticipateInCombat && u.InCombat && u.IsPlayer && Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+						var Unit = API.CollectUnits (u => u.IsAttackable && u.CanParticipateInCombat && u.InCombat && u.IsPlayer && Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
 						if (Unit != null && Gouge (Unit))
 							return true;
 					}
 				} else {
 					if (!InRaid && Usable ("Gouge") && ActiveEnemies (8) == 2 && Multitarget) {
-						Unit = Enemy.Where (u => Range (5, u) && u.CanParticipateInCombat && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+						var Unit = Enemy.Where (u => Range (5, u) && u.CanParticipateInCombat && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
 						if (Unit != null && Gouge (Unit))
 							return true;
 					}
 
 					if (!InRaid && Usable ("Blind") && ActiveEnemies (15) == 2 && Multitarget) {
-						Unit = Enemy.Where (u => Range (15, u) && u.CanParticipateInCombat && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+						var Unit = Enemy.Where (u => Range (15, u) && u.CanParticipateInCombat && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
 						if (Unit != null && Blind (Unit))
 							return true;
 					}			
@@ -220,7 +220,7 @@ namespace ReBot
 		public bool UnBurst ()
 		{
 			if (InArena) {
-				Unit = API.CollectUnits (u => u.IsAttackable && u.CanParticipateInCombat && u.IsPlayer && u.IsTargetingMeOrPets && Range (15, u, 8) && u.Auras.Any (a => BurstAura.Contains (a.Name))).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = API.CollectUnits (u => u.IsAttackable && u.CanParticipateInCombat && u.IsPlayer && u.IsTargetingMeOrPets && Range (15, u, 8) && u.Auras.Any (a => BurstAura.Contains (a.Name))).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (Blind (Unit))
 						return true;
@@ -420,7 +420,7 @@ namespace ReBot
 		public bool TricksoftheTrade ()
 		{
 			if (Usable ("Tricks of the Trade")) {
-				Unit = MyGroup.Where (u => !u.IsDead && Range (100, u) && u.IsTank).OrderBy (u => Health (u)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = MyGroup.Where (u => !u.IsDead && Range (100, u) && u.IsTank).OrderBy (u => Health (u)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && C ("Tricks of the Trade", Unit))
 					return true;
 			}

@@ -214,7 +214,7 @@ namespace ReBot
 		{
 			//	actions.aoe=earthquake,cycle_targets=1,if=!ticking&(buff.enhanced_chain_lightning.up|level<=90)&active_enemies>=2
 			if ((Me.HasAura ("Enhanced Chain Lightning") || Me.Level <= 90) && ActiveEnemies (40) >= 2) {
-				Unit = Enemy.Where (u => !u.HasAura ("Earthquake") && !u.IsMoving && Range (35, u)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => !u.HasAura ("Earthquake") && !u.IsMoving && Range (35, u)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Earthquake (Unit))
 					return;
 			}

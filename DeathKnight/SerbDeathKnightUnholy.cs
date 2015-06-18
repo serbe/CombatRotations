@@ -133,7 +133,7 @@ namespace ReBot.DeathKnight
 			}
 			//	actions.unholy+=/outbreak,cycle_targets=1,if=(active_enemies>=1&!talent.necrotic_plague.enabled)&(!(dot.blood_plague.ticking|dot.frost_fever.ticking))
 			if (ActiveEnemies (30) >= 1 && !HasSpell ("Necrotic Plague")) {
-				Unit = Enemy.Where (u => Range (30, u) && !(HasBloodDisease (u) || HasFrostDisease (u))).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => Range (30, u) && !(HasBloodDisease (u) || HasFrostDisease (u))).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Outbreak (Unit))
 					return true;
 			}
@@ -247,7 +247,7 @@ namespace ReBot.DeathKnight
 			}
 			//	actions.bos+=/blood_boil,cycle_targets=1,if=(active_enemies>=2&!(dot.blood_plague.ticking|dot.frost_fever.ticking))|active_enemies>=4&(runic_power<88&runic_power>30)
 			if (ActiveEnemies (10) >= 2) {
-				Unit = Enemy.Where (u => Range (10, u) && ((ActiveEnemies (10) >= 2 && !(HasBloodDisease (u) || HasFrostDisease (u))) || ActiveEnemies (10) >= 4 && (RunicPower < 88 && RunicPower > 30))).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => Range (10, u) && ((ActiveEnemies (10) >= 2 && !(HasBloodDisease (u) || HasFrostDisease (u))) || ActiveEnemies (10) >= 4 && (RunicPower < 88 && RunicPower > 30))).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && BloodBoil ())
 					return true;
 			}
@@ -578,7 +578,7 @@ namespace ReBot.DeathKnight
 			}
 			//actions.bos_st+=/outbreak,cycle_targets=1,if=!(dot.blood_plague.ticking|dot.frost_fever.ticking)
 			if (Usable ("Outbreak")) {
-				Unit = targets.Where (x => !(x.HasAura ("Blood Plague") || x.HasAura ("Frost Fever"))).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = targets.Where (x => !(x.HasAura ("Blood Plague") || x.HasAura ("Frost Fever"))).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (Outbreak (Unit))
 						return true;
@@ -591,7 +591,7 @@ namespace ReBot.DeathKnight
 			}
 			//actions.bos_st+=/blood_boil,cycle_targets=1,if=!(dot.blood_plague.ticking|dot.frost_fever.ticking)
 			if (Usable ("Blood Boil")) {
-				Unit = targets.Where (x => !(x.HasAura ("Blood Plague") || x.HasAura ("Frost Fever"))).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = targets.Where (x => !(x.HasAura ("Blood Plague") || x.HasAura ("Frost Fever"))).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (BloodBoil ())
 						return true;

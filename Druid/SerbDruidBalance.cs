@@ -196,7 +196,7 @@ namespace ReBot
 			}
 			// actions.aoe+=/sunfire,cycle_targets=1,if=remains<8
 			if (Usable ("Sunfire") && Eclipse > 0) {
-				Unit = Enemy.Where (x => Range (40, x) && x.AuraTimeRemaining ("Sunfire", true) < 8).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (x => Range (40, x) && x.AuraTimeRemaining ("Sunfire", true) < 8).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Sunfire (Unit))
 					return true;
 			}
@@ -212,13 +212,13 @@ namespace ReBot
 			}
 			// actions.aoe+=/moonfire,cycle_targets=1,if=remains<12
 			if (Usable ("Moonfire") && Eclipse <= 0) {
-				Unit = Enemy.Where (x => Range (40, x) && x.AuraTimeRemaining ("Moonfire", true) < 12).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (x => Range (40, x) && x.AuraTimeRemaining ("Moonfire", true) < 12).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Moonfire ())
 					return true;
 			}
 			// actions.aoe+=/stellar_flare,cycle_targets=1,if=remains<7
 			if (Usable ("Stellar Flare")) {
-				Unit = Enemy.Where (x => Range (40, x) && x.AuraTimeRemaining ("Stellar Flare", true) < 7).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (x => Range (40, x) && x.AuraTimeRemaining ("Stellar Flare", true) < 7).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && StellarFlare ())
 					return true;
 			}

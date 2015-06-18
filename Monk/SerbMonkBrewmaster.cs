@@ -257,7 +257,7 @@ namespace ReBot
 			}
 			//	actions.st+=/zen_sphere,cycle_targets=1,if=!dot.zen_sphere.ticking&energy.time_to_max>2&buff.serenity.down
 			if (EnergyTimeToMax > 2 && !Me.HasAura ("Serenity")) {
-				Unit = MyGroup.Where (p => !p.IsDead && Range (40, p) && !p.HasAura ("Zen Sphere", true) && Health (p) < 0.95).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = MyGroup.Where (p => !p.IsDead && Range (40, p) && !p.HasAura ("Zen Sphere", true) && Health (p) < 0.95).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && ZenSphere (Unit))
 					return;
 				if (!Me.HasAura ("Zen Sphere", true)) {
@@ -355,7 +355,7 @@ namespace ReBot
 			}
 			//	actions.aoe+=/zen_sphere,cycle_targets=1,if=!dot.zen_sphere.ticking&energy.time_to_max>2&buff.serenity.down
 			if (EnergyTimeToMax > 2 && !Me.HasAura ("Serenity")) {
-				Unit = MyGroup.Where (p => !p.IsDead && Range (40, p) && !p.HasAura ("Zen Sphere", true) && Health (p) < 0.95).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = MyGroup.Where (p => !p.IsDead && Range (40, p) && !p.HasAura ("Zen Sphere", true) && Health (p) < 0.95).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && ZenSphere (Unit))
 					return;
 				if (!Me.HasAura ("Zen Sphere", true)) {
@@ -381,7 +381,7 @@ namespace ReBot
 
 
 			if (InInstance && CombatRole == CombatRole.Tank) {
-				Unit = Enemy.Where (u => u.Target != Me && Range (5, u)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.Target != Me && Range (5, u)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && TigerPalm (Unit))
 					return;
 			}

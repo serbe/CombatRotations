@@ -224,7 +224,7 @@ namespace ReBot
 		public bool Aggro ()
 		{ 
 			if (InInstance && Time > 3) {
-				Unit = Enemy.Where (u => (Range (30, u) || (HasGlyph (62259) && Range (35, u))) && u.Target != Me).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => (Range (30, u) || (HasGlyph (62259) && Range (35, u))) && u.Target != Me).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && DeathGrip (Unit))
 					return true;
 			}
@@ -236,11 +236,11 @@ namespace ReBot
 		{
 			if (Usable ("Mind Freeze")) {
 				if (InArena || InBg) {
-					Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCastingAndInterruptible () && Range (u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCastingAndInterruptible () && Range (u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && MindFreeze (Unit))
 						return true;
 				} else {
-					Unit = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && MindFreeze (Unit))
 						return true;
 				}
@@ -248,14 +248,14 @@ namespace ReBot
 
 			if (Usable ("Strangulate")) {
 				if (InArena || InBg) {
-					Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsHealer && u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsHealer && u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && Strangulate (Unit))
 						return true;
 					Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && Strangulate (Unit))
 						return true;
 				} else {
-					Unit = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && Strangulate (Unit))
 						return true;
 				}
@@ -263,14 +263,14 @@ namespace ReBot
 
 			if (Usable ("Asphyxiate")) {
 				if (InArena || InBg) {
-					Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsHealer && u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsHealer && u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && Asphyxiate (Unit))
 						return true;
 					Unit = API.Players.Where (u => u.IsPlayer && u.IsEnemy && u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && Asphyxiate (Unit))
 						return true;
 				} else {
-					Unit = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = Enemy.Where (u => u.IsCastingAndInterruptible () && Range (30, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && Asphyxiate (Unit))
 						return true;
 				}

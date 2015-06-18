@@ -135,7 +135,7 @@ namespace ReBot
 
 				if (IsNotForDamage (Target)) {
 					//				API.ExecuteMacro ("/stopattack");
-					Unit = API.CollectUnits (u => u.IsAttackable && u.IsPlayer && u != Target && !IsNotForDamage (u)).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = API.CollectUnits (u => u.IsAttackable && u.IsPlayer && u != Target && !IsNotForDamage (u)).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						Me.SetTarget (Unit.GUID);
 						return;
@@ -173,7 +173,7 @@ namespace ReBot
 			}
 //			actions+=/rupture,cycle_targets=1,if=active_enemies>1&!ticking&combo_points=5
 			if (Multitarget && ActiveEnemies (6) > 1 && ComboPoints == 5) {
-				Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && !x.HasAura ("Rupture")).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && !x.HasAura ("Rupture")).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Rupture ())
 					return;
 			}
@@ -230,7 +230,7 @@ namespace ReBot
 			}
 //			actions+=/envenom,cycle_targets=1,if=(combo_points>4&(cooldown.death_from_above.remains>2|!talent.death_from_above.enabled))&active_enemies<4&!dot.deadly_poison_dot.ticking
 			if (Multitarget && ComboPoints > 4 && (Cooldown ("Death from Above") > 2 || !HasSpell ("Death from Above")) && ActiveEnemies (6) < 4) {
-				Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && !x.HasAura ("Deadly Poison", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && !x.HasAura ("Deadly Poison", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Envenom (Unit))
 					return;
 			}
@@ -241,13 +241,13 @@ namespace ReBot
 			}
 //			actions+=/fan_of_knives,cycle_targets=1,if=active_enemies>2&!dot.deadly_poison_dot.ticking&debuff.vendetta.down
 			if (!InArena && Multitarget && HasCost (35) && ActiveEnemies (10) > 2) {
-				Unit = Enemy.Where (x => x.IsInLoS && x.CombatRange <= 10 && !x.HasAura ("Deadly Poison", true) && !x.HasAura ("Vendetta", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (x => x.IsInLoS && x.CombatRange <= 10 && !x.HasAura ("Deadly Poison", true) && !x.HasAura ("Vendetta", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && FanofKnives ())
 					return;
 			}
 //			actions+=/dispatch,cycle_targets=1,if=(combo_points<5|(talent.anticipation.enabled&anticipation_charges<4))&active_enemies=2&!dot.deadly_poison_dot.ticking&debuff.vendetta.down
 			if (Multitarget && ((!HasSpell ("Anticipation") && ComboPoints < 5) || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") < 4)) && ActiveEnemies (6) == 2) {
-				Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && !x.HasAura ("Deadly Poison", true) && !x.HasAura ("Vendetta", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && !x.HasAura ("Deadly Poison", true) && !x.HasAura ("Vendetta", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Dispatch (Unit))
 					return;
 			}
@@ -258,7 +258,7 @@ namespace ReBot
 			}
 //			actions+=/mutilate,cycle_targets=1,if=target.health.pct>35&(combo_points<4|(talent.anticipation.enabled&anticipation_charges<3))&active_enemies=2&!dot.deadly_poison_dot.ticking&debuff.vendetta.down
 			if (Multitarget && ((!HasSpell ("Anticipation") && ComboPoints < 4) || (HasSpell ("Anticipation") && SpellCharges ("Anticipation") < 3)) && ActiveEnemies (6) == 2) {
-				Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && x.HealthFraction > 0.35 && !x.HasAura ("Deadly Poison", true) && !x.HasAura ("Vendetta", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && x.HealthFraction > 0.35 && !x.HasAura ("Deadly Poison", true) && !x.HasAura ("Vendetta", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Mutilate (Unit))
 					return;
 			}
@@ -269,7 +269,7 @@ namespace ReBot
 			}
 //			actions+=/mutilate,cycle_targets=1,if=active_enemies=2&!dot.deadly_poison_dot.ticking&debuff.vendetta.down
 			if (Multitarget && ActiveEnemies (6) == 2) {
-				Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && !x.HasAura ("Deadly Poison", true) && !x.HasAura ("Vendetta", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (x => x.IsInCombatRangeAndLoS && !x.HasAura ("Deadly Poison", true) && !x.HasAura ("Vendetta", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Mutilate (Unit))
 					return;
 			}

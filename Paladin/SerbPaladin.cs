@@ -38,9 +38,9 @@ namespace ReBot
 			
 		// Targets
 
-		public UnitObject CleanseTarget {
+		public PlayerObject CleanseTarget {
 			get {
-				return PartyMembers.Where (u => Range (40, u) && u.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
+				return MyGroup.Where (u => Range (40, u) && u.Auras.Any (x => x.IsDebuff && "Disease,Poison".Contains (x.DebuffType))).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
@@ -50,10 +50,10 @@ namespace ReBot
 			}
 		}
 
-		public UnitObject SacredShieldTarget {
+		public PlayerObject SacredShieldTarget {
 			get {
 				if (Usable ("Sacred Shield")) {
-					Unit = FocusTankorLowestNoAura (1, "Sacred Shield");
+					var Unit = FocusTankorLowestNoAura (1, "Sacred Shield");
 					if (Unit != null && (Health (Unit) < 1 || (Unit == Me.Focus || Unit == Tank)))
 						return Unit;
 					if (!Me.HasAura ("Sacred Shield"))
@@ -63,7 +63,7 @@ namespace ReBot
 			}
 		}
 
-		public UnitObject EternalFlameTarget {
+		public PlayerObject EternalFlameTarget {
 			get {
 				return HolyPower > 0 && Usable ("Eternal Flame") ? FocusTankorLowestNoAura (EternalFlameHealth, "Eternal Flame") : null;
 			}
@@ -79,10 +79,10 @@ namespace ReBot
 			}
 		}
 
-		public UnitObject BeaconofLightTarget {
+		public PlayerObject BeaconofLightTarget {
 			get {
 				if (Usable ("Beacon of Light")) {
-					Unit = FocusTankorMe (1);
+					var Unit = FocusTankorMe (1);
 					if (Unit != null && !Unit.HasAura ("Beacon of Light"))
 						return Unit;
 					if (HasSpell ("Beacon of Faith")) {
@@ -97,33 +97,33 @@ namespace ReBot
 			}
 		}
 
-		public UnitObject LightofDawnTarget {
+		public PlayerObject LightofDawnTarget {
 			get {
 				return Usable ("Light of Dawn") && HolyPower >= 3 ? Lowest (0.95, 30) : null;
 			}
 		}
 
 		// Вспышка Света
-		public UnitObject FlashofLightTarget {
+		public PlayerObject FlashofLightTarget {
 			get {
 				return Usable ("Flash of Light") ? Lowest (FlashofLightHealth) : null;
 			}
 		}
 
-		public UnitObject HolyRadianceTarget {
+		public PlayerObject HolyRadianceTarget {
 			get {
 				return Usable ("Holy Radiance") ? Lowest (HolyRadianceHealth) : null;
 			}
 		}
 
 		// Свет небес
-		public UnitObject HolyLightTarget {
+		public PlayerObject HolyLightTarget {
 			get {
 				return Usable ("Holy Light") ? Lowest (HolyLightHealth) : null;
 			}
 		}
 
-		public UnitObject LayonHandsTarget {
+		public PlayerObject LayonHandsTarget {
 			get {
 				return Usable ("Layon Hands") ? FocusTankorMe (LayonHandsHealth) : null;
 			}
@@ -133,12 +133,12 @@ namespace ReBot
 		public UnitObject HolyShockTarget {
 			get {
 				if (HolyPower < MaxHolyPower) {
-					Unit = Lowest (HolyShockHealth);
+					var Unit = Lowest (HolyShockHealth);
 					if (Unit != null)
 						return Unit;
 				}
 				if (!Me.InCombat) {
-					Unit = FocusTankorMe (1);
+					var Unit = FocusTankorMe (1);
 					if (Unit != null && Unit != Me && Unit.InCombat)
 						return Unit;
 				}
@@ -146,9 +146,9 @@ namespace ReBot
 			}
 		}
 
-		public UnitObject HandOfProtectionTarget {
+		public PlayerObject HandOfProtectionTarget {
 			get {
-				return PartyMembers.Where (p => !p.IsDead && Health (p) <= HandofProtectionHealth && Range (40, p) && (!IsTank (p) || p == Me || IsHealer (p))).DefaultIfEmpty (null).FirstOrDefault ();
+				return MyGroup.Where (p => !p.IsDead && Health (p) <= HandofProtectionHealth && Range (40, p) && (!IsTank (p) || p == Me || IsHealer (p))).DefaultIfEmpty (null).FirstOrDefault ();
 			}
 		}
 
@@ -356,7 +356,7 @@ namespace ReBot
 
 		public bool NeedDivineProtection {
 			get {
-				Unit = Enemy.Where (u => u.IsCasting && u.CastingTime > 0 && u.CastingTime < 2).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsCasting && u.CastingTime > 0 && u.CastingTime < 2).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && (Health (Me) < 0.7 || IsBoss (Unit)))
 					return true;
 				return false;
@@ -485,7 +485,7 @@ namespace ReBot
 		{
 			if (InArena || InBg) {
 				if (Usable ("Rebuke")) {
-					Unit = API.Players.Where (x => x.IsPlayer && x.IsEnemy && x.IsHealer && Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = API.Players.Where (x => x.IsPlayer && x.IsEnemy && x.IsHealer && Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && Rebuke (Unit))
 						return true; 
 					Unit = API.Players.Where (x => x.IsPlayer && x.IsEnemy && Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
@@ -493,7 +493,7 @@ namespace ReBot
 						return true; 
 				}
 				if (Cooldown ("Fist of Justice") == 0) {
-					Unit = API.Players.Where (x => x.IsPlayer && x.IsEnemy && x.IsHealer && Range (20, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = API.Players.Where (x => x.IsPlayer && x.IsEnemy && x.IsHealer && Range (20, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null && FistofJustice (Unit))
 						return true;
 					Unit = API.Players.Where (x => x.IsPlayer && x.IsEnemy && Range (20, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
@@ -501,7 +501,7 @@ namespace ReBot
 						return true;
 				}
 			} else {
-				Unit = Enemy.Where (x => Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (x => Range (5, x) && x.IsCastingAndInterruptible () && x.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Rebuke (Unit))
 					return true; 
 				if (Cooldown ("Fist of Justice") == 0) {
@@ -568,7 +568,7 @@ namespace ReBot
 		public bool GetHolyPower ()
 		{
 			if (Me.HasAura ("Daybreak")) {
-				Unit = BestAOEPlayer (40, 10, AOECount, 0.9);
+				var Unit = BestAOEPlayer (40, 10, AOECount, 0.9);
 				if (Unit != null && HolyShock (Unit))
 					return true;
 			}
@@ -587,7 +587,7 @@ namespace ReBot
 		public bool RessurectAll ()
 		{
 			if (InGroup && Usable ("Redemption")) {
-				Unit = MyGroup.Where (p => p.IsDead).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = MyGroup.Where (p => p.IsDead).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Redemption (Unit))
 					return true;
 			}

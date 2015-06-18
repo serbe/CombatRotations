@@ -79,7 +79,7 @@ namespace ReBot
 			//	actions+=/drain_soul,interrupt=1,chain=1
 			//	actions+=/agony,cycle_targets=1,moving=1,if=mana.pct>50
 			if (Usable ("Agony") && Me.IsMoving && Mana (Me) > 0.5) {
-				Unit = Enemy.Where (u => Range (40, u)).OrderBy (u => u.AuraTimeRemaining ("Agony", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => Range (40, u)).OrderBy (u => u.AuraTimeRemaining ("Agony", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Agony (Unit))
 					return;
 			}

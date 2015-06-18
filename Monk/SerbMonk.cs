@@ -66,7 +66,7 @@ namespace ReBot
 		public bool MassResurect ()
 		{
 			if (CurrentBotName == "Combat" && MyGroup.Count > 0) {
-				Unit = MyGroup.FirstOrDefault (u => Range (40, u) && u.IsDead);
+				var Unit = MyGroup.FirstOrDefault (u => Range (40, u) && u.IsDead);
 				if (Unit != null && Resuscitate (Unit))
 					return true;
 			}
@@ -90,7 +90,7 @@ namespace ReBot
 		public bool Interrupt ()
 		{
 			if (Usable ("Leg Sweep") || Usable ("Spear Hand Strike") || Usable ("Ring of Peace")) {
-				Unit = Enemy.Where (u => u.IsCastingAndInterruptible () && !IsBoss (u) && Range (5, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.IsCastingAndInterruptible () && !IsBoss (u) && Range (5, u) && u.RemainingCastTime > 0).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && (SpearHandStrike (Unit) || LegSweep (Unit) || RingofPeace (Unit)))
 					return true;
 			}
@@ -100,7 +100,7 @@ namespace ReBot
 		public bool AggroDizzyingHaze ()
 		{
 			if (Usable ("Dizzying Haze") && Healer != null) {
-				Unit = Enemy.Where (u => u.InCombat && u.Target == Healer && Range (40, u, 8)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u.InCombat && u.Target == Healer && Range (40, u, 8)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && DizzyingHaze (Unit))
 					return true;
 			}
@@ -109,14 +109,14 @@ namespace ReBot
 
 		public bool HealStatue ()
 		{
-			if (!PartyMembers.Any (p => p.InCombat))
+			if (!MyGroup.Any (p => p.InCombat))
 				return false;
 		
 			const int StatueEntryID = 60849;
 		
 			var statue = API.Units.FirstOrDefault (u => u.EntryID == StatueEntryID && u.CreatedByMe);
 			if (statue == null || statue.Distance > 35) {
-				foreach (var u in PartyMembers.Where(p => IsTank(p) || p == Me)) {
+				foreach (var u in MyGroup.Where(p => IsTank(p) || p == Me)) {
 					if (u != null && u.Distance < 20) {
 						var pos = u.Position;
 						for (int i = 0; i < 8; i++) {

@@ -155,7 +155,7 @@ namespace ReBot
 			}
 
 			if (Usable ("Hammer of Wrath")) {
-				Unit = Enemy.Where (u => Range (30, u) && Health (u) < 0.2).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => Range (30, u) && Health (u) < 0.2).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && HammerofWrath (Unit))
 					return;
 			}

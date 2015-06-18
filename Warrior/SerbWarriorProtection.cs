@@ -244,7 +244,7 @@ namespace ReBot
 			Avatar ();
 			//	actions.prot_aoe+=/thunder_clap,if=!dot.deep_wounds.ticking
 			if (Me.Level >= 32 && Usable ("Thunder Clap")) {
-				Unit = Enemy.Where (u => Range (8, u) && !u.HasAura ("Deep Wounds", true)).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => Range (8, u) && !u.HasAura ("Deep Wounds", true)).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && ThunderClap ())
 					return true;
 			}
@@ -272,7 +272,7 @@ namespace ReBot
 				return true;
 			//	actions.prot_aoe+=/revenge
 			if (InInstance) {
-				Unit = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (Revenge (Unit))
 						return true;
@@ -302,7 +302,7 @@ namespace ReBot
 			//	actions.prot_aoe+=/execute,if=buff.sudden_death.react
 			if (Me.HasAura ("Sudden Death")) {
 				if (InInstance) {
-					Unit = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+					var Unit = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
 					if (Unit != null) {
 						if (Execute (Unit))
 							return true;
@@ -317,7 +317,7 @@ namespace ReBot
 			}
 			//	actions.prot_aoe+=/devastate
 			if (InInstance) {
-				Unit = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => Range (5, u) && u != Target).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (Devastate (Unit))
 						return true;
@@ -482,7 +482,7 @@ namespace ReBot
 			}
 			//	actions.aoe+=/thunder_clap,cycle_targets=1,if=dot.deep_wounds.remains<3&spell_targets.thunder_clap>4
 			if (ActiveEnemies (8) > 4) {
-				Unit = Enemy.Where (u => Me.Level >= 32 & u.AuraTimeRemaining ("Deep Wounds", true) < 3).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => Me.Level >= 32 & u.AuraTimeRemaining ("Deep Wounds", true) < 3).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && ThunderClap ())
 					return true;
 			}
@@ -502,9 +502,9 @@ namespace ReBot
 					return true;
 			}
 			//	actions.aoe+=/devastate,cycle_targets=1,if=dot.deep_wounds.remains<5&cooldown.shield_slam.remains>execute_time*0.4
-			Unit = Enemy.Where (u => Me.Level >= 32 && u.AuraTimeRemaining ("Deep Wounds", true) < 5 && Cooldown ("Shield Slam") > 1.5 * 0.4).DefaultIfEmpty (null).FirstOrDefault ();
-			if (Unit != null) {
-				if (Devastate (Unit))
+			var Un = Enemy.Where (u => Me.Level >= 32 && u.AuraTimeRemaining ("Deep Wounds", true) < 5 && Cooldown ("Shield Slam") > 1.5 * 0.4).DefaultIfEmpty (null).FirstOrDefault ();
+			if (Un != null) {
+				if (Devastate (Un))
 					return true;
 			}
 			//	actions.aoe+=/devastate,if=cooldown.shield_slam.remains>execute_time*0.4

@@ -242,7 +242,7 @@ namespace ReBot
 			}
 			//	actions+=/judgment,cycle_targets=1,if=glyph.double_jeopardy.enabled&last_judgment_target!=target
 			if (Usable ("Judgment") && HasGlyph (54922)) {
-				Unit = Enemy.Where (u => u != LastJudgmentTarget).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u != LastJudgmentTarget).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (Judgment (Unit))
 						LastJudgmentTarget = Unit;
@@ -411,7 +411,7 @@ namespace ReBot
 			}
 			//	actions.max_dps+=/judgment,cycle_targets=1,if=glyph.double_jeopardy.enabled&last_judgment_target!=target
 			if (Usable ("Judgment") && HasGlyph (54922)) {
-				Unit = Enemy.Where (u => u != LastJudgmentTarget).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u != LastJudgmentTarget).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null) {
 					if (Judgment (Unit))
 						LastJudgmentTarget = Unit;
@@ -577,7 +577,7 @@ namespace ReBot
 			}
 			//	actions.max_survival+=/judgment,cycle_targets=1,if=glyph.double_jeopardy.enabled&last_judgment_target!=target
 			if (Usable ("Judgment") && HasGlyph (54922)) {
-				Unit = Enemy.Where (u => u != LastJudgmentTarget).DefaultIfEmpty (null).FirstOrDefault ();
+				var Unit = Enemy.Where (u => u != LastJudgmentTarget).DefaultIfEmpty (null).FirstOrDefault ();
 				if (Unit != null && Judgment (Unit)) {
 					LastJudgmentTarget = Unit;
 					return true;
