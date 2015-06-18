@@ -82,9 +82,16 @@ namespace ReBot
 		public UnitObject BeaconofLightTarget {
 			get {
 				if (Usable ("Beacon of Light")) {
-					Unit = FocusTankorLowestNoAura (1, "Beacon of Light");
-					if (Unit != null && (Health (Unit) < 1 || Unit == Tank || Unit == Me.Focus))
+					Unit = FocusTankorMe (1);
+					if (Unit != null && !Unit.HasAura ("Beacon of Light"))
 						return Unit;
+					if (HasSpell ("Beacon of Faith")) {
+						if (Tank2 != null) {
+							if (!Tank2.HasAura ("Beacon of Light"))
+								return Tank2;
+						} else if (!Me.HasAura ("Beacon of Light"))
+							return Me;
+					}
 				}
 				return null;
 			}
